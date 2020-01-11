@@ -2,7 +2,7 @@ import sys
 import re
 import cv2
 import pytesseract
-
+pytesseract.pytesseract.tesseract_cmd = r'/home/olevelo/bin/tesseract'
 
 class Player(object):
 
@@ -27,10 +27,14 @@ class OCRTF(object):
         if self.filename[-3:] == "mp4":
             self.ocr_vid()
         else:
-            self.imgs.append(cv2.imread(filename))
+            print("Loading file(s)..." + filename, file=sys.stderr)
+            tmpfile = cv2.imread(filename)
+            print("Appending file...", file=sys.stderr)
+            self.imgs.append(tmpfile)
 
+        print("File loaded...", file=sys.stderr)
         # Get the potential names
-        with open('names.txt', 'r') as f:
+        with open(os.path.join(app.root_path, 'names.txt'), 'r') as f:
             names = [line.rstrip() for line in f]
 
         self.players = []
@@ -128,6 +132,7 @@ class OCRTF(object):
         return '\n'.join(unmatched)
 
     def processImages(self):
+        print("Processing Image(s)...", file=sys.stderr)
         texts = []
         for img in self.imgs:
             text = self.ocr_img(img)
@@ -165,10 +170,10 @@ def main(filename):
     print(ocr.unmatched)
     # output.append(ocr.unmatched)
 
-    fo = open('output.csv', 'w')
-    fo.write('\n'.join(output))
-    fo.close()
+    with open(os.path.join(app.root_path, 'output.csv'), 'w') as fo:
+        fo.write('\n'.join(output))
 
+    return output
 
 if __name__ == "__main__":
     main(sys.argv[1])
