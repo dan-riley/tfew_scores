@@ -1,0 +1,13 @@
+#scores_table td {
+  padding: 0;
+}
+
+#scores_left td, #scores_right td {
+  border: 1px solid black;
+  padding: 5px;
+}
+
+#order, #player, #score {
+  text-align: center;
+  font-weight: bold;
+}

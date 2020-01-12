@@ -3,7 +3,8 @@ var Uploader = (function() {
   var progress, progress_wrapper, progress_status;
   var upload_btn, loading_btn, cancel_btn;
   var input, file_input_label;
-  var alert_wrapper;
+  var alert_wrapper, scores_table;
+  var players;
 
   document.addEventListener('DOMContentLoaded', function(event) {
     // Get a reference to the progress bar, wrapper & status label
@@ -18,6 +19,8 @@ var Uploader = (function() {
 
     // Get a reference to the alert wrapper
     alert_wrapper = document.getElementById('alert_wrapper');
+    scores_left = document.getElementById('scores_left');
+    scores_right = document.getElementById('scores_right');
 
     input = document.getElementById('file_input');
     file_input_label = document.getElementById('file_input_label');
@@ -37,11 +40,49 @@ var Uploader = (function() {
 
       upload();
     });
+
+    document.getElementById('load_scores').addEventListener('click', function() {
+        var request = new XMLHttpRequest();
+        request.responseType = 'json';
+
+        request.addEventListener('load', function (e) {
+            if (request.status == 200) {
+                show_alert('Loaded previous scores', 'success');
+                players = request.response;
+                loadScoresTable();
+            } else {
+                show_alert('Error uploading file', 'danger');
+            }
+            reset();
+        });
+        request.open('POST', '/load_scores', true);
+        request.send('');
+    });
+
+    document.getElementById('add_scores').addEventListener('click', function() {
+      addScores();
+    });
+
+    addSortListeners();
+
   });
+
+  function addSortListeners() {
+    document.getElementById('order').addEventListener('click', function() {
+      sortScores('order', 'asc');
+    });
+
+    document.getElementById('player').addEventListener('click', function() {
+      sortScores('name', 'asc');
+    });
+
+    document.getElementById('score').addEventListener('click', function() {
+      sortScores('score', 'desc');
+    });
+  }
 
   // Function to show alerts
   function show_alert(message, alert) {
-      //<div id="alert" class="alert alert-${alert} alert-dismissible fade show" role="alert">
     alert_wrapper.innerHTML = `
       <div class="alert alert-${alert} alert-dismissible">
         <a href="#" class="close" data-dismiss="alert" aria-label="Close">&times;</a>
@@ -110,7 +151,11 @@ var Uploader = (function() {
     // request load handler (transfer complete)
     request.addEventListener('load', function (e) {
       if (request.status == 200) {
-        show_alert(`${request.response.message}`, 'success');
+        show_alert('Upload and processing complete!', 'success');
+
+        var row, cell;
+        players = request.response;
+        loadScoresTable();
       } else {
         show_alert('Error uploading file', 'danger');
       }
@@ -137,6 +182,62 @@ var Uploader = (function() {
     cancel_btn.addEventListener('click', function () {
       request.abort();
     })
+  }
+
+  function addScores() {
+    var score = 0;
+    for (player of players) {
+      newScore = parseInt(document.getElementById(player.name).innerHTML.trim());
+      if (newScore) score += newScore;
+    }
+
+    document.getElementById('add_scores').innerHTML = 'Total (click to update): ' + score;
+  }
+
+  function loadScoresTable() {
+    for (player of players) {
+      row = scores_left.insertRow();
+      cell = row.insertCell(0);
+      cell.innerHTML = player.order;
+      cell = row.insertCell(1);
+      cell.innerHTML = player.name;
+
+      row = scores_right.insertRow();
+      cell = row.insertCell(0);
+      if (player.score)
+        cell.innerHTML = player.score;
+      else
+        cell.innerHTML = '&nbsp;';
+      cell.setAttribute('contenteditable', 'true');
+      cell.id = player.name
+    }
+
+    addScores();
+  }
+
+  function compareValues(key, order = 'asc') {
+    return function innerSort(a, b) {
+      const comparison = a[key].localeCompare(b[key], undefined, {numeric: true});
+      return ((order === 'desc') ? (comparison * -1) : comparison );
+    };
+  }
+
+  function sortScores(sorter, order) {
+    // Update player scores with any changes
+    for (player of players) {
+      player.score = document.getElementById(player.name).innerHTML.trim();
+    }
+
+    // Sort
+    players.sort(compareValues(sorter, order));
+
+    //Remove all the rows except the title
+    scores_left.getElementsByTagName('tbody')[0].innerHTML = scores_left.rows[0].innerHTML;
+    scores_right.getElementsByTagName('tbody')[0].innerHTML = scores_right.rows[0].innerHTML;
+
+    // Re-add the listeners and then rebuild the table
+    addSortListeners();
+    loadScoresTable();
   }
 
   // Function to reset the page

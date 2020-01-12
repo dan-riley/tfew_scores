@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, send_file, jsonify, make_response
 from werkzeug.utils import secure_filename
+import json
 import ocr
 
 app = Flask(__name__)
@@ -25,12 +26,28 @@ def upload():
             filename = secure_filename(file.filename)
             fullfile = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(fullfile)
-            response =  make_response(jsonify({"message": "File uploaded"}), 200)
+
+            # Process the video or image and return the result to javascript
+            scores = ocr.main(app.root_path, fullfile)
+            response =  make_response(jsonify(scores), 200)
+            with open(os.path.join(app.root_path, 'scores.json'), 'w') as fo:
+                json.dump(scores, fo)
+
+            os.remove(fullfile)
         else:
             response = make_response(jsonify({"message": "Invalid file type"}), 300)
 
-        # ocr.main(fullfile)
         return response
+
+    return render_template('upload.html')
+
+@app.route('/load_scores', methods=['GET', 'POST'])
+def loadScores():
+    if request.method == 'POST':
+        with open(os.path.join(app.root_path, 'scores.json'), 'r') as fo:
+            scores = json.load(fo)
+
+            return make_response(jsonify(scores), 200)
 
     return render_template('upload.html')
 

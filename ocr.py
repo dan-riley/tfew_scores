@@ -1,4 +1,6 @@
 import sys
+import os
+import csv
 import re
 import cv2
 import pytesseract
@@ -6,16 +8,24 @@ pytesseract.pytesseract.tesseract_cmd = r'/home/olevelo/bin/tesseract'
 
 class Player(object):
 
-    def __init__(self, name):
+    def __init__(self, name, pot_names):
         self.name = name
+        self.names = pot_names
         self.score = ''
         self.order = 99
         self.line = ''
 
+    def serialize(self):
+        return {
+                'name': self.name,
+                'score': self.score,
+                'order': str(self.order)
+                }
+
 
 class OCRTF(object):
 
-    def __init__(self, filename):
+    def __init__(self, root_path, filename):
         self.filename = filename
         self.imgs = []
         self.output = ''
@@ -34,12 +44,11 @@ class OCRTF(object):
 
         print("File loaded...", file=sys.stderr)
         # Get the potential names
-        with open(os.path.join(app.root_path, 'names.txt'), 'r') as f:
-            names = [line.rstrip() for line in f]
-
         self.players = []
-        for name in names:
-            self.players.append(Player(name))
+        with open(os.path.join(root_path, 'tfw2005_players.csv'), 'r') as f:
+            csv_reader = csv.reader(f, delimiter=',')
+            for row in csv_reader:
+                self.players.append(Player(row[0], row[1:]))
 
     def getFrame(self, vid, sec):
         vid.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
@@ -96,29 +105,35 @@ class OCRTF(object):
                 # Could make this a final elif, but this seems cleaner
                 if keep:
                     for player in self.players:
-                        if player.name in line:
-                            rest = line.split(player.name)[1]
-                            scores = re.findall(r'\d+', rest)
-                            if scores:
-                                score = scores[-1]
-                                if int(score) % 5 or int(score) > 225:
+                        for name in player.names:
+                            if name in line:
+                                rest = line.split(name)[1]
+                                scores = re.findall(r'\d+', rest)
+                                if scores:
+                                    score = scores[-1]
+                                    if int(score) % 5 or int(score) > 225:
+                                        score = ''
+                                else:
                                     score = ''
-                            else:
-                                score = ''
 
-                            if player.order == 99:
-                                self.order += 1
-                                player.score = score
-                                player.order = self.order
-                                player.line = line
-                                # print(str(player.order) + ' ' + player.name + ' ' + score);
-                            elif score and (player.score == '' or score > player.score):
-                                # print('Duplicate: ')
-                                # print(player.name + ' old: ' + player.score + ' new: ' + score)
-                                player.score = score
-                                player.line = line
+                                if player.order == 99:
+                                    self.order += 1
+                                    player.score = score
+                                    player.order = self.order
+                                    player.line = line
+                                    # print(str(player.order) + ' ' + player.name + ' ' + score);
+                                elif score and (player.score == '' or score > player.score):
+                                    # print('Duplicate: ')
+                                    # print(player.name + ' old: ' + player.score + ' new: ' + score)
+                                    player.score = score
+                                    player.line = line
 
-                            added = True
+                                added = True
+                                # Stop looking at this player
+                                break
+
+                        # Stop looking at other players because we matched already
+                        if added:
                             break
 
                     if not added:
@@ -143,9 +158,9 @@ class OCRTF(object):
         self.unmatched = '\n'.join(texts)
 
 
-def main(filename):
+def main(root_path, filename):
 
-    ocr = OCRTF(filename)
+    ocr = OCRTF(root_path, filename)
     ocr.processImages()
 
     output = []
@@ -170,10 +185,10 @@ def main(filename):
     print(ocr.unmatched)
     # output.append(ocr.unmatched)
 
-    with open(os.path.join(app.root_path, 'output.csv'), 'w') as fo:
+    with open(os.path.join(root_path, 'output.csv'), 'w') as fo:
         fo.write('\n'.join(output))
 
-    return output
+    return [player.serialize() for player in ocr.players]
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main('', sys.argv[1])

@@ -12,17 +12,18 @@
 
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
+  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
   <script type="text/javascript" src="{{url_for('static', filename='uploader.js')}}"></script>
 
-  <title>Upload video</title>
+  <title>Upload scores</title>
 </head>
 
 <body>
   <div class="container">
     <div class="row">
-      <div class="col">
+      <div class="col-sm">
         <div class="mb-3 mt-3">
-          <h2 class="mb-3" style="font-weight: 300">Upload video</h2>
+          <h2 class="mb-3" style="font-weight: 300">Upload score video or image</h2>
           <div class="form-group mb-3">
             <div class="custom-file">
               <input type="file" class="custom-file-input" name="file_input" id="file_input" />
@@ -49,6 +50,30 @@
 
         <div id="alert_wrapper"></div>
 
+        <div id="scores">
+          <a id="load_scores" href="#">Load previous scores</a>
+          <br />
+          <a id="add_scores" href="#">Total (click to update):</a>
+          <table id="scores_table">
+            <tr>
+              <td>
+                <table id="scores_left">
+                  <tr>
+                    <td id="order">Order</td>
+                    <td id="player">Player</td>
+                  </tr>
+                </table>
+              </td>
+              <td>
+                <table id="scores_right">
+                  <tr>
+                    <td id="score">Score</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
   </div>
