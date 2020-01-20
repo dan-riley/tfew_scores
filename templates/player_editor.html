@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous">
+    </script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="{{url_for('static', filename='jquery.serialize-object.min.js')}}"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
+    <script type="text/javascript" src="{{url_for('static', filename='common.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='player_editor.js')}}"></script>
+
+    <title>Player Editor</title>
+  </head>
+  <body>
+    <h1>TFW2005 TFEW Player Editor</h1>
+    <form method="POST">
+      <table class="table table-sm table-striped">
+        <thead>
+          <tr>
+            <td>Name</td>
+            <td>Active</td>
+            <td>OCR Strings</td>
+          </tr>
+        </thead>
+        {% for player in players %}
+        <tr>
+          <td>
+            <input type="hidden" name="players[{{player.id}}][id]" value="{{player.id}}">
+            <input class="form-control" type="text" name="players[{{player.id}}][name]" value="{{player.name}}">
+          </td>
+          <td>
+            <input class="form-control" type="checkbox" name="players[{{player.id}}][active]" value="{{player.id}}"
+            {% if player.active %}
+              checked
+            {% endif %}
+            >
+          </td>
+          {% for ocr in player.ocr %}
+          <td>
+            <input class="form-control" type="text" name="players[{{player.id}}][ocr][]" value="{{ocr.ocr_string}}">
+          </td>
+          {% endfor %}
+          <td>
+            <input class="form-control" type="text" name="players[{{player.id}}][newocr]" value="">
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+      <input type="button" id="submit" value="Submit changes">
+    </form>
+    <div id="alert_wrapper"></div>
+  </body>
+</html>

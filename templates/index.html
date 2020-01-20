@@ -6,5 +6,13 @@
   <body>
     <h1>TFW2005 TFEW Player Tracker</h1>
     <a href="/upload">Process scores</a>
+    <a href="/player_editor">Edit Players</a>
+    <table>
+      {% for player in players %}
+      <tr>
+        <td>{{player.name}}</td>
+      </tr>
+      {% endfor %}
+    </table>
   </body>
 </html>
