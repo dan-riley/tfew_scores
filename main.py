@@ -2,9 +2,10 @@ import os
 from flask import Flask, render_template, request, send_file, jsonify, make_response
 from flask_script import Manager
 from werkzeug.utils import secure_filename
+import datetime
 import json
 import ocr
-from models import db, Player, OCR, War
+from models import db, Player, PlayerAction, OCR, War
 
 app = Flask(__name__)
 manager = Manager(app)
@@ -19,6 +20,10 @@ db.init_app(app)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.context_processor
+def inject_today():
+    return {'today': datetime.date.today()}
 
 @app.route('/')
 def home_page():
@@ -52,6 +57,16 @@ def player_editor():
                     player.active = False
                     changed = True
 
+            # Edit the last action
+            lastAction = player.actions[-1]
+            if lastAction.date != fplayer['lastDate']:
+                newAction = PlayerAction()
+                newAction.player_id = player.id
+                newAction.date = fplayer['lastDate']
+                newAction.action = fplayer['lastAction']
+                db.session.add(newAction)
+                changed = True
+
             # Edit the OCR strings
             i = 0
             for ocr in player.ocr:
@@ -69,6 +84,22 @@ def player_editor():
 
             if changed:
                 db.session.add(player)
+
+        if fplayers['newName']:
+            newplayer = Player()
+            newplayer.name = fplayers['newName']
+            newplayer.active = True
+
+            newaction = PlayerAction()
+            newaction.date = fplayers['newActionDate']
+            newaction.action = fplayers['newAction']
+            newplayer.actions.append(newaction)
+
+            newocr = OCR()
+            newocr.ocr_string = fplayers['newName'].upper()
+            newplayer.ocr.append(newocr)
+
+            db.session.add(newplayer)
 
         db.session.commit()
         return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)

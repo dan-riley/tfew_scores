@@ -18,6 +18,15 @@ class Player(db.Model):
     active = db.Column(db.Boolean())
     scores = db.relationship('War', secondary = war_scores, lazy = 'subquery', backref = 'player')
     ocr = db.relationship('OCR', lazy = 'subquery', backref = 'player')
+    actions = db.relationship('PlayerAction', order_by='PlayerAction.date', lazy = 'subquery', backref = 'player')
+
+
+class PlayerAction(db.Model):
+    __tablename__ = 'player_actions'
+    dummy_id = db.Column(db.Integer(), primary_key = True)
+    player_id = db.Column(db.Integer(), db.ForeignKey('players.id'))
+    date = db.Column(db.Date(), nullable = False)
+    action = db.Column(db.Integer(), nullable = False)
 
 
 class OCR(db.Model):

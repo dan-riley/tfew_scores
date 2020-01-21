@@ -20,42 +20,103 @@
     <title>Player Editor</title>
   </head>
   <body>
-    <h1>TFW2005 TFEW Player Editor</h1>
-    <form method="POST">
-      <table class="table table-sm table-striped">
-        <thead>
+    <div class="container">
+      <a href="/">Home</a><br />
+      <h1>TFW2005 TFEW Player Editor</h1>
+      <form method="POST">
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Active</th>
+              <th>Last Action</th>
+              <th>OCR Strings</th>
+              <th colspan="100"></th>
+            </tr>
+          </thead>
+          {% for player in players %}
           <tr>
-            <td>Name</td>
-            <td>Active</td>
-            <td>OCR Strings</td>
+            <td></td>
+            <td>
+              <input type="hidden" name="players[{{player.id}}][id]" value="{{player.id}}">
+              <input class="form-control" type="text" name="players[{{player.id}}][name]" value="{{player.name}}">
+            </td>
+            <td>
+              <input class="form-control" type="checkbox" name="players[{{player.id}}][active]" value="{{player.id}}"
+              {% if player.active %}
+                checked
+              {% endif %}
+              >
+            </td>
+            <td>
+              <input class="form-control" type="date" name="players[{{player.id}}][lastDate]" value="{{player.actions[-1].date}}">
+              <select class="custom-select" name="players[{{player.id}}][lastAction]">
+                <option disabled>Joined-------</option>
+                <option value="0"
+                {% if player.actions[-1].action == 0 %} selected {% endif %}>TFW OG</option>
+                <option value="1"
+                {% if player.actions[-1].action == 1 %} selected {% endif %}>Promoted to TFW</option>
+                <option value="2"
+                {% if player.actions[-1].action == 2 %} selected {% endif %}>Demoted to TFW</option>
+                <option value="3"
+                {% if player.actions[-1].action == 3 %} selected {% endif %}>Joined family</option>
+                <option disabled>Left---------</option>
+                <option value="4"
+                {% if player.actions[-1].action == 4 %} selected {% endif %}>Promoted from TFW</option>
+                <option value="5"
+                {% if player.actions[-1].action == 5 %} selected {% endif %}>Demoted from TFW</option>
+                <option value="6"
+                {% if player.actions[-1].action == 6 %} selected {% endif %}>Left family</option>
+              </select>
+            </td>
+            {% for ocr in player.ocr %}
+              {% if loop.index0 % 2 == 0 %}
+                <td>
+              {% endif %}
+              <input class="form-control" type="text" name="players[{{player.id}}][ocr][]" value="{{ocr.ocr_string}}">
+              {% if loop.index0 % 2 == 1 %}
+                </td>
+              {% endif %}
+              {% if loop.index0 % 2 == 1 and loop.last %}
+                <td>
+              {% endif %}
+              {% if loop.last %}
+                  <input class="form-control" type="text" name="players[{{player.id}}][newocr]" value="">
+                </td>
+              {% endif %}
+            {% endfor %}
+
+            <td colspan="100"></td>
           </tr>
-        </thead>
-        {% for player in players %}
-        <tr>
-          <td>
-            <input type="hidden" name="players[{{player.id}}][id]" value="{{player.id}}">
-            <input class="form-control" type="text" name="players[{{player.id}}][name]" value="{{player.name}}">
-          </td>
-          <td>
-            <input class="form-control" type="checkbox" name="players[{{player.id}}][active]" value="{{player.id}}"
-            {% if player.active %}
-              checked
-            {% endif %}
-            >
-          </td>
-          {% for ocr in player.ocr %}
-          <td>
-            <input class="form-control" type="text" name="players[{{player.id}}][ocr][]" value="{{ocr.ocr_string}}">
-          </td>
           {% endfor %}
-          <td>
-            <input class="form-control" type="text" name="players[{{player.id}}][newocr]" value="">
-          </td>
-        </tr>
-        {% endfor %}
-      </table>
-      <input type="button" id="submit" value="Submit changes">
-    </form>
-    <div id="alert_wrapper"></div>
+          <tr>
+            <th colspan="100">
+              Add new player
+            </th>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <input class="form-control" type="text" name="newName" value="">
+            </td>
+            <td>
+              <input class="form-control" type="checkbox" name="newActive" value="new" checked disabled>
+            </td>
+            <td>
+              <input class="form-control" type="date" name="newActionDate" value="{{today}}">
+              <select class="custom-select" name="newAction">
+                <option value="1" selected>Promoted to TFW</option>
+                <option value="2">Demoted to TFW</option>
+                <option value="3">Joined family</option>
+              </select>
+            </td>
+            <td colspan="100"></td>
+          </tr>
+        </table>
+        <input class="btn btn-primary" type="button" id="submit" value="Submit changes">
+      </form>
+      <div id="alert_wrapper"></div>
+    </div>
   </body>
 </html>
