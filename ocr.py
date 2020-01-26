@@ -45,7 +45,7 @@ class OCRTF(object):
         print("File loaded...", file=sys.stderr)
         # Get the potential names
         self.players = []
-        with open(os.path.join(root_path, 'tfw2005_players.csv'), 'r') as f:
+        with open(os.path.join(root_path, 'data/tfw2005_players.csv'), 'r') as f:
             csv_reader = csv.reader(f, delimiter=',')
             for row in csv_reader:
                 self.players.append(Player(row[0], row[1:]))

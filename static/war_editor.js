@@ -1,4 +1,4 @@
-var PlayerEditor = (function() {
+var WarEditor = (function() {
 
   var alert_wrapper;
 
@@ -17,7 +17,7 @@ var PlayerEditor = (function() {
 
       data = $(document.forms[0]).serializeObject();
       request.responseType = 'json';
-      request.open('POST', '/player_editor', true);
+      request.open('POST', '/war_editor', true);
       request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
       request.send(JSON.stringify(data));
     });

@@ -16,24 +16,14 @@
     <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
     <script type="text/javascript" src="{{url_for('static', filename='common.js')}}"></script>
 
-    <title>TFW2005 Player Tracker</title>
+    <title>Import Scores</title>
   </head>
   <body>
     <div class="container">
-      <h1>TFW2005 TFEW Player Tracker</h1>
-      <a href="/war_editor">New War</a>
-      <br />
+      <h1>TFW2005 Score Importer</h1>
       <a href="/upload">Process scores</a>
       <br />
       <a href="/player_editor">Edit Players</a>
-      <br />
-      <table>
-        {% for player in players %}
-        <tr>
-          <td>{{player.name}}</td>
-        </tr>
-        {% endfor %}
-      </table>
     </div>
   </body>
 </html>
