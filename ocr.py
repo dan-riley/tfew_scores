@@ -6,7 +6,7 @@ import cv2
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'/home/olevelo/bin/tesseract'
 
-class Player(object):
+class Player():
 
     def __init__(self, name, pot_names):
         self.name = name
@@ -17,13 +17,13 @@ class Player(object):
 
     def serialize(self):
         return {
-                'name': self.name,
-                'score': self.score,
-                'order': str(self.order)
-                }
+            'name': self.name,
+            'score': self.score,
+            'order': str(self.order)
+            }
 
 
-class OCRTF(object):
+class OCRTF():
 
     def __init__(self, root_path, filename):
         self.filename = filename

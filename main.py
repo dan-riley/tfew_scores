@@ -1,12 +1,12 @@
 import os
+from datetime import datetime, timedelta
+import json
+import csv
+import pytz
 from flask import Flask, render_template, request, send_file, jsonify, make_response
 from flask_script import Manager
 from flask_login import LoginManager
 from werkzeug.utils import secure_filename
-from datetime import datetime
-import pytz
-import json
-import csv
 import ocr
 from models import db, Player, PlayerAction, OCR, War, Score, Opponent
 
@@ -38,8 +38,13 @@ def inject_today():
 
 @app.route('/')
 def home_page():
-    players = db.session.query(Player).order_by(Player.name).all()
-    return render_template('index.html', players = players)
+    end_date = datetime.now(pytz.timezone('US/Central')).date()
+    start_date = end_date - timedelta(days=21)
+
+    wars = War.query.filter(War.date.between(start_date, end_date)).all()
+    players = Player.query.join(Score).join(War).filter(War.date.between(start_date, end_date)).all()
+
+    return render_template('index.html', players=players)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
 def player_editor():
@@ -69,7 +74,7 @@ def player_editor():
             # Edit the last action or add new last action
             lastAction = player.actions[-1]
             if (str(lastAction.date) != fplayer['lastDate'] and
-                str(lastAction.action) != fplayer['lastAction']):
+                    str(lastAction.action) != fplayer['lastAction']):
                 newAction = PlayerAction()
                 newAction.player_id = player.id
                 newAction.date = fplayer['lastDate']
@@ -87,9 +92,9 @@ def player_editor():
 
             # Edit the OCR strings
             i = 0
-            for ocr in player.ocr:
-                if ocr.ocr_string != fplayer['ocr'][i]:
-                    ocr.ocr_string = fplayer['ocr'][i];
+            for pocr in player.ocr:
+                if pocr.ocr_string != fplayer['ocr'][i]:
+                    pocr.ocr_string = fplayer['ocr'][i]
                     changed = True
                 i += 1
 
@@ -122,7 +127,7 @@ def player_editor():
         db.session.commit()
         return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)
 
-    return render_template('player_editor.html', players = players)
+    return render_template('player_editor.html', players=players)
 
 @app.route('/war_editor', methods=['GET', 'POST'])
 def war_editor():
@@ -134,7 +139,7 @@ def war_editor():
             players = war.players
         else:
             war = War()
-            players = Player.query.order_by(Player.name).filter(Player.active == True).all()
+            players = Player.query.order_by(Player.name).filter(Player.active).all()
 
     elif request.method == 'POST':
         fwar = request.get_json()
@@ -225,7 +230,7 @@ def war_editor():
         db.session.commit()
         return make_response(jsonify({"message": "War submitted"}), 200)
 
-    return render_template('war_editor.html', war = war, players = players)
+    return render_template('war_editor.html', war=war, players=players)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -239,7 +244,7 @@ def upload():
 
             # Process the video or image and return the result to javascript
             scores = ocr.main(app.root_path, fullfile)
-            response =  make_response(jsonify(scores), 200)
+            response = make_response(jsonify(scores), 200)
             with open(os.path.join(app.root_path, 'scores.json'), 'w') as fo:
                 json.dump(scores, fo)
 

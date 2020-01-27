@@ -160,24 +160,24 @@
               {{player.name}}
             </td>
             <td class="col-3">
-             <input class="form-control" type="number" name="players[{{player.id}}][score]" value="{{player.score(war.id).score}}">
+              <input class="form-control" type="number" name="players[{{player.id}}][score]" value="{{player.score(war.id).score}}">
             </td>
             <td class="col-3">
-              <input class="form-control" type="checkbox" name="players[{{player.id}}][excused]" value="{{player.id}}"
+              <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][excused]" value="{{player.id}}"
               {% if player.score(war.id).excused %}
                 checked
               {% endif %}
               >
             </td>
             <td class="col-3">
-              <input class="form-control" type="checkbox" name="players[{{player.id}}][attempts_left]" value="{{player.id}}"
+              <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][attempts_left]" value="{{player.id}}"
               {% if player.score(war.id).attempts_left %}
                 checked
               {% endif %}
               >
             </td>
             <td class="col-3">
-              <input class="form-control" type="checkbox" name="players[{{player.id}}][no_attempts]" value="{{player.id}}"
+              <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][no_attempts]" value="{{player.id}}"
               {% if player.score(war.id).no_attempts %}
                 checked
               {% endif %}
