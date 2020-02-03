@@ -11,3 +11,70 @@
   text-align: center;
   font-weight: bold;
 }
+
+#summary_table {
+  text-align: center;
+  font-size: 0.8em;
+}
+
+.sticky-left {
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0px;
+  background: white;
+}
+
+.sticky-top-2 {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 2.3em;
+  z-index: 1020;
+}
+
+.header-left {
+  min-width: 9em;
+  text-align: left!important;
+}
+
+.header-right {
+  min-width: 9em;
+  text-align: right!important;
+}
+
+.summary_sort {
+  min-width: 6em;
+  background: white;
+}
+
+.tracked {
+  font-weight: bold;
+}
+
+.untracked {
+
+}
+
+.optional {
+  font-weight: bold;
+  background-color: #fafaca;
+}
+
+.win {
+  min-width: 7em;
+  background-color: #4a9a4a;
+}
+
+.win a {
+  color: #d5d5d5;
+}
+
+.loss {
+  min-width: 7em;
+  background-color: #c14040;
+}
+
+.loss a {
+  color: #d5d5d5;
+}
+
+

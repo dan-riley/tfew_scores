@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import json
 import csv
 import pytz
+import operator
 from flask import Flask, render_template, request, send_file, jsonify, make_response
 from flask_script import Manager
 from flask_login import LoginManager
@@ -38,13 +39,141 @@ def inject_today():
 
 @app.route('/')
 def home_page():
-    end_date = datetime.now(pytz.timezone('US/Central')).date()
-    start_date = end_date - timedelta(days=21)
+    # Templates for converting database entries to text
+    templates = {}
+    templates['players'] = {}
+    templates['leagues'] = {8: 'Prime', 7: 'Cybertron', 6: 'Caminus'}
+    templates['tracked'] = {0: 'No', 1: 'Yes', 2: 'Optional'}
 
-    wars = War.query.filter(War.date.between(start_date, end_date)).all()
-    players = Player.query.join(Score).join(War).filter(War.date.between(start_date, end_date)).all()
+    filt = []
+    if request.args:
+        opp = request.args.get('war_opponent')
+        start_day = request.args.get('start_day')
+        end_day = request.args.get('end_day')
 
-    return render_template('index.html', players=players)
+        if opp:
+            filt.append(getattr(War, 'opponent_id') == int(opp))
+
+        if start_day:
+            filt.append(War.date.between(start_day, end_day))
+
+    if not filt:
+        end_day = datetime.now(pytz.timezone('US/Central')).date()
+        start_day = end_date - timedelta(days=21)
+        filt = [War.date.between(start_day, end_day)]
+
+    templates['start_day'] = start_day
+    templates['end_day'] = end_day
+
+    wars = War.query.order_by(War.date.desc()).filter(*filt).all()
+    players = Player.query.order_by(Player.name).join(Score).join(War).filter(*filt).all()
+
+    # Set the classes for formatting
+    for war in wars:
+        if war.our_score > war.opp_score:
+            war.winClass = 'win'
+        else:
+            war.winClass = 'loss'
+
+        if not war.tracked:
+            war.trackedClass = 'untracked'
+        elif war.tracked == 1:
+            war.trackedClass = 'tracked'
+        else:
+            war.trackedClass = 'optional'
+
+    # Build the player names index for base names and get averages
+    for player in players:
+        templates['players'][player.id] = player.name
+
+        totalScore = 0
+        totalCount = 0
+        totalMin = 300
+        untrackedScore = 0
+        untrackedCount = 0
+        untrackedMin = 300
+        trackedScore = 0
+        trackedCount = 0
+        trackedMin = 300
+        primeScore = 0
+        primeCount = 0
+        primeMin = 300
+        player.scoresRange = {}
+        # Get the scores and initial averages for this player
+        for war in wars:
+            score = player.score(war.id)
+            player.scoresRange[war.id] = score
+
+            if score and score.score is not None and not score.excused:
+                totalScore += score.score
+                totalCount += 1
+                if score.score < totalMin:
+                    totalMin = score.score
+
+                if war.tracked == 0:
+                    untrackedScore += score.score
+                    untrackedCount += 1
+                    if score.score < untrackedMin:
+                        untrackedMin = score.score
+                elif war.tracked == 1:
+                    trackedScore += score.score
+                    trackedCount += 1
+                    if score.score < trackedMin:
+                        trackedMin = score.score
+
+                if war.league == 8 and war.tracked != 2:
+                    primeScore += score.score
+                    primeCount += 1
+                    if score.score < primeMin:
+                        primeMin = score.score
+
+        # Remove the minimum scores
+        if totalCount > 1:
+            totalScore -= totalMin
+            totalCount -= 1
+
+        if untrackedCount > 1:
+            untrackedScore -= untrackedMin
+            untrackedCount -= 1
+
+        if trackedCount > 1:
+            trackedScore -= trackedMin
+            trackedCount -= 1
+
+        if primeCount > 1:
+            primeScore -= primeMin
+            primeCount -= 1
+
+        # Get the initial averages without optional wars
+        totalAvg = totalScore / totalCount if totalCount else totalScore
+        untrackedAvg = untrackedScore / untrackedCount if untrackedCount else untrackedScore
+        trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
+        primeAvg = primeScore / primeCount if primeCount else primeScore
+
+        # Go back and add in optional scores
+        for war in wars:
+            if war.tracked == 2:
+                score = player.scoresRange[war.id]
+                if score and score.score is not None and not score.excused:
+                    if score.score > trackedAvg:
+                        trackedScore += score.score
+                        trackedCount += 1
+
+                    if war.league == 8 and score.score > primeAvg:
+                        primeScore += score.score
+                        primeCount += 1
+
+        # Recalculate the averages with the optional scores added
+        trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
+        primeAvg = primeScore / primeCount if primeCount else primeScore
+
+        # Save the final averages, rounded for display
+        player.totalAvg = round(totalAvg)
+        player.untrackedAvg = round(untrackedAvg)
+        player.trackedAvg = round(trackedAvg)
+        player.primeAvg = round(primeAvg)
+
+    return render_template('index.html', players=players, wars=wars, templates=templates)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
 def player_editor():
@@ -286,7 +415,7 @@ def getIDbyNameCSV(table, name):
 
 @app.route('/import_scores')
 def importScores():
-    with open(os.path.join(app.root_path, 'data/jan_scores.csv'), 'r') as f:
+    with open(os.path.join(app.root_path, 'data/jan2_scores.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         count = 0
         wplayers = []
@@ -380,7 +509,7 @@ def importScores():
 
 @app.route('/import_blanks')
 def importBlanks():
-    with open(os.path.join(app.root_path, 'data/jan_scores.csv'), 'r') as f:
+    with open(os.path.join(app.root_path, 'data/jan2_scores.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         count = 0
         wplayers = []

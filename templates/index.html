@@ -27,10 +27,131 @@
       <br />
       <a href="/player_editor">Edit Players</a>
       <br />
-      <table>
+
+      <form method="GET">
+        <div class="d-flex">
+          <input class="btn btn-primary" type="submit" name="submit" value="Update Table">
+          <div class="col-auto">
+            Date Range:
+          </div>
+          <div class="col-auto">
+            <input class="form-control" type="date" name="start_day" value="{{templates['start_day']}}">
+          </div>
+          <div class="col-auto">
+            <input class="form-control" type="date" name="end_day" value="{{templates['end_day']}}">
+          </div>
+        </div>
+      </form>
+
+      <table id="summary_table" class="table table-sm table-bordered">
+        <tr>
+          <th class="header-right" colspan="5">Date</th>
+          {% for war in wars %}
+          <td class="sticky-top {{war.winClass}} {{war.trackedClass}}">
+            <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Opponent</th>
+          {% for war in wars %}
+          <td class="sticky-top-2 {{war.winClass}} {{war.trackedClass}}">
+            <a href="/?war_opponent={{war.opponent_id}}">{{war.opponent.name}}</a>
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">League</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{templates['leagues'][war.league]}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Tracked</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{templates['tracked'][war.tracked]}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Our Points</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{war.our_score}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Opponent Points</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{war.opp_score}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Base 1</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{templates['players'][war.b1]}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Base 2</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{templates['players'][war.b2]}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Base 3</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{templates['players'][war.b3]}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Base 4</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{templates['players'][war.b4]}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Base 5</th>
+          {% for war in wars %}
+          <td class="{{war.winClass}} {{war.trackedClass}}">
+            {{templates['players'][war.b5]}}
+          </td>
+          {% endfor %}
+        </tr>
+
+        <tr>
+          <th class="summary_sort sticky-top">Player</th>
+          <th class="summary_sort sticky-top">Tracked</th>
+          <th class="summary_sort sticky-top">Untracked</th>
+          <th class="summary_sort sticky-top">Prime</th>
+          <th class="summary_sort sticky-top">Total</th>
+        </tr>
+
         {% for player in players %}
         <tr>
-          <td>{{player.name}}</td>
+          <th class="header-left sticky-left">{{player.name}}</th>
+          <td>{{player.trackedAvg}}</td>
+          <td>{{player.untrackedAvg}}</td>
+          <td>{{player.primeAvg}}</td>
+          <td>{{player.totalAvg}}</td>
+          {% for war in wars %}
+          {% set score = player.scoresRange[war.id].score %}
+          <td class="{{war.trackedClass}}">{{score if score != None}}</td>
+          {% endfor %}
         </tr>
         {% endfor %}
       </table>
