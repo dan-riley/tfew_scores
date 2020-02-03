@@ -34,6 +34,7 @@
 .header-left {
   min-width: 9em;
   text-align: left!important;
+  font-weight: bold;
 }
 
 .header-right {

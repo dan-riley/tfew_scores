@@ -59,7 +59,7 @@ def home_page():
 
     if not filt:
         end_day = datetime.now(pytz.timezone('US/Central')).date()
-        start_day = end_date - timedelta(days=21)
+        start_day = end_day - timedelta(days=21)
         filt = [War.date.between(start_day, end_day)]
 
     templates['start_day'] = start_day
@@ -127,20 +127,20 @@ def home_page():
                     if score.score < primeMin:
                         primeMin = score.score
 
-        # Remove the minimum scores
-        if totalCount > 1:
+        # Remove the minimum scores if we have enough
+        if totalCount > 5:
             totalScore -= totalMin
             totalCount -= 1
 
-        if untrackedCount > 1:
+        if untrackedCount > 5:
             untrackedScore -= untrackedMin
             untrackedCount -= 1
 
-        if trackedCount > 1:
+        if trackedCount > 5:
             trackedScore -= trackedMin
             trackedCount -= 1
 
-        if primeCount > 1:
+        if primeCount > 5:
             primeScore -= primeMin
             primeCount -= 1
 

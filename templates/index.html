@@ -15,6 +15,7 @@
 
     <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
     <script type="text/javascript" src="{{url_for('static', filename='common.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='main.js')}}"></script>
 
     <title>TFW2005 Player Tracker</title>
   </head>
@@ -134,16 +135,16 @@
         </tr>
 
         <tr>
-          <th class="summary_sort sticky-top">Player</th>
-          <th class="summary_sort sticky-top">Tracked</th>
-          <th class="summary_sort sticky-top">Untracked</th>
-          <th class="summary_sort sticky-top">Prime</th>
-          <th class="summary_sort sticky-top">Total</th>
+          <th class="summary_sort sticky-top" id="player_sort">Player</th>
+          <th class="summary_sort sticky-top" id="tracked_sort">Tracked</th>
+          <th class="summary_sort sticky-top" id="untracked_sort">Untracked</th>
+          <th class="summary_sort sticky-top" id="prime_sort">Prime</th>
+          <th class="summary_sort sticky-top" id="total_sort">Total</th>
         </tr>
 
         {% for player in players %}
         <tr>
-          <th class="header-left sticky-left">{{player.name}}</th>
+          <td class="header-left sticky-left">{{player.name}}</td>
           <td>{{player.trackedAvg}}</td>
           <td>{{player.untrackedAvg}}</td>
           <td>{{player.primeAvg}}</td>
