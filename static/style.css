@@ -78,4 +78,6 @@
   color: #d5d5d5;
 }
 
-
+.collapse:not(.show) {
+  display: none!important;
+}

@@ -9,7 +9,7 @@ from flask_script import Manager
 from flask_login import LoginManager
 from werkzeug.utils import secure_filename
 import ocr
-from models import db, Player, PlayerAction, OCR, War, Score, Opponent
+from models import db, Player, PlayerAction, OCR, War, Score, Opponent, Alliance
 
 app = Flask(__name__)
 manager = Manager(app)
@@ -39,6 +39,9 @@ def inject_today():
 
 @app.route('/')
 def home_page():
+    # Default alliance.  May want a better way of setting this based on user permissions.
+    alliance = 2
+
     # Templates for converting database entries to text
     templates = {}
     templates['players'] = {}
@@ -47,9 +50,13 @@ def home_page():
 
     filt = []
     if request.args:
+        ralliance = request.args.get('alliance_id')
         opp = request.args.get('war_opponent')
         start_day = request.args.get('start_day')
         end_day = request.args.get('end_day')
+
+        if ralliance:
+            alliance = int(ralliance)
 
         if opp:
             filt.append(getattr(War, 'opponent_id') == int(opp))
@@ -62,9 +69,12 @@ def home_page():
         start_day = end_day - timedelta(days=21)
         filt = [War.date.between(start_day, end_day)]
 
+    filt.append(getattr(War, 'alliance_id') == alliance)
+    templates['alliance'] = alliance
     templates['start_day'] = start_day
     templates['end_day'] = end_day
 
+    alliances = Alliance.query.all()
     wars = War.query.order_by(War.date.desc()).filter(*filt).all()
     players = Player.query.order_by(Player.name).join(Score).join(War).filter(*filt).all()
 
@@ -173,7 +183,7 @@ def home_page():
         player.trackedAvg = round(trackedAvg)
         player.primeAvg = round(primeAvg)
 
-    return render_template('index.html', players=players, wars=wars, templates=templates)
+    return render_template('index.html', alliances=alliances, players=players, wars=wars, templates=templates)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
 def player_editor():
@@ -260,12 +270,17 @@ def player_editor():
 
 @app.route('/war_editor', methods=['GET', 'POST'])
 def war_editor():
+    alliance_id = 2
+    alliances = Alliance.query.all()
 
     if request.method == 'GET':
         if request.args:
             war_id = int(request.args.get('war_id'))
             war = War.query.get(war_id)
+            alliance_id = war.alliance_id
             players = war.players
+            ids = (player.id for player in players)
+            missing_players = Player.query.order_by(Player.name).filter(Player.active, ~Player.id.in_(ids)).all()
         else:
             war = War()
             players = Player.query.order_by(Player.name).filter(Player.active).all()
@@ -287,6 +302,7 @@ def war_editor():
             newopp.name = fwar['opponent'].strip()
             war.opponent = newopp
 
+        war.alliance_id = fwar['alliance_id']
         war.league = fwar['league']
         war.tracked = fwar['tracked']
 
@@ -347,6 +363,18 @@ def war_editor():
         else:
             for fplayer in fwar['players']:
                 if fplayer:
+                    # TODO It doesn't look like checkboxes work on the first submit?!
+                    newscore = Score()
+                    if fplayer['score']:
+                        newscore.score = int(fplayer['score'].strip())
+                    else:
+                        newscore.score = None
+                    newscore.player = Player.query.get(fplayer['id'])
+                    war.scores.append(newscore)
+
+        for fplayer in fwar['missing_players']:
+            if fplayer:
+                if fplayer['score'] or 'excused' in fplayer or 'attempts_left' in fplayer or 'no_attempts' in fplayer:
                     newscore = Score()
                     if fplayer['score']:
                         newscore.score = int(fplayer['score'].strip())
@@ -359,7 +387,7 @@ def war_editor():
         db.session.commit()
         return make_response(jsonify({"message": "War submitted"}), 200)
 
-    return render_template('war_editor.html', war=war, players=players)
+    return render_template('war_editor.html', alliance_id=alliance_id, alliances=alliances, war=war, players=players, missing_players=missing_players)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -431,6 +459,7 @@ def importScores():
                         player.active = False
 
                         newaction = PlayerAction()
+                        newaction.alliance_id = 2
                         newaction.date = '2020-01-17'
                         newaction.action = 3
                         player.actions.append(newaction)
@@ -462,6 +491,7 @@ def importScores():
                 elif league == 'Caminus':
                     newwar.league = 6
 
+                newwar.alliance_id = 2
                 newwar.date = row[2]
                 newwar.opp_score = int(row[3].replace(',', ''))
 

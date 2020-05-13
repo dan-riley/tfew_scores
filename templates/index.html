@@ -17,11 +17,11 @@
     <script type="text/javascript" src="{{url_for('static', filename='common.js')}}"></script>
     <script type="text/javascript" src="{{url_for('static', filename='main.js')}}"></script>
 
-    <title>TFW2005 Player Tracker</title>
+    <title>TFEW Player Tracker</title>
   </head>
   <body>
     <div class="container">
-      <h1>TFW2005 TFEW Player Tracker</h1>
+      <h1>TFEW Player Tracker</h1>
       <a href="/war_editor">New War</a>
       <br />
       <a href="/upload">Process scores</a>
@@ -32,6 +32,19 @@
       <form method="GET">
         <div class="d-flex">
           <input class="btn btn-primary" type="submit" name="submit" value="Update Table">
+          <div class="col-auto">
+            Alliance:
+          </div>
+          <div class="col-auto">
+            <select class="custom-select" name="alliance_id">
+              <option></option>
+              {% for alliance in alliances %}
+              <option value="{{alliance.id}}"
+              {% if templates['alliance'] == alliance.id %} selected {% endif %}>{{alliance.name}}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
           <div class="col-auto">
             Date Range:
           </div>

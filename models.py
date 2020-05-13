@@ -51,6 +51,7 @@ class PlayerAction(db.Model):
     __tablename__ = 'player_actions'
     dummy_id = db.Column(db.Integer(), primary_key=True)
     player_id = db.Column(db.Integer(), db.ForeignKey('players.id'))
+    alliance_id = db.Column(db.Integer(), db.ForeignKey('alliances.id'))
     date = db.Column(db.Date(), nullable=False)
     action = db.Column(db.Integer(), nullable=False)
 
@@ -66,6 +67,7 @@ class War(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     date = db.Column(db.Date(), nullable=False)
     league = db.Column(db.Integer(), nullable=False)
+    alliance_id = db.Column(db.Integer(), db.ForeignKey('alliances.id'))
     opponent_id = db.Column(db.Integer(), db.ForeignKey('opponents.id'))
     tracked = db.Column(db.Integer())
     our_score = db.Column(db.Integer())
@@ -75,12 +77,20 @@ class War(db.Model):
     b3 = db.Column(db.Integer(), db.ForeignKey('players.id'))
     b4 = db.Column(db.Integer(), db.ForeignKey('players.id'))
     b5 = db.Column(db.Integer(), db.ForeignKey('players.id'))
+    alliance = db.relationship('Alliance', backref='war')
     opponent = db.relationship('Opponent', backref='war')
     scores = db.relationship('Score', back_populates='war')
     players = db.relationship('Player', secondary='scores', order_by='Player.name')
     #players = association_proxy('scores', 'players')
 
+
 class Opponent(db.Model):
     __tablename__ = 'opponents'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+
+
+class Alliance(db.Model):
+    __tablename__ = 'alliances'
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
