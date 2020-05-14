@@ -79,7 +79,7 @@ class War(db.Model):
     b5 = db.Column(db.Integer(), db.ForeignKey('players.id'))
     alliance = db.relationship('Alliance', backref='war')
     opponent = db.relationship('Opponent', backref='war')
-    scores = db.relationship('Score', back_populates='war')
+    scores = db.relationship('Score', back_populates='war', cascade='delete, delete-orphan')
     players = db.relationship('Player', secondary='scores', order_by='Player.name')
     #players = association_proxy('scores', 'players')
 

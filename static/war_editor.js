@@ -1,9 +1,22 @@
 var WarEditor = (function() {
 
-  var alert_wrapper;
+  var alert_wrapper, players;
 
   document.addEventListener('DOMContentLoaded', function(event) {
     alert_wrapper = document.getElementById('alert_wrapper');
+    players = document.querySelectorAll("input[name^=players][name*=score]");
+
+    for (var i=0; i < players.length; i++) {
+      players[i].addEventListener('blur', function() {
+        var total = 0;
+        for (var i=0; i < players.length; i++) {
+          if (parseInt(players[i].value))
+            total += parseInt(players[i].value)
+        }
+
+        document.getElementsByName('our_score')[0].value = total;
+      });
+    }
 
     document.getElementById('submit').addEventListener('click', function() {
       var request = new XMLHttpRequest();

@@ -202,12 +202,11 @@
           {% if missing_players %}
           <tr>
             <td>
-              <!-- <a class="btn btn&#45;primary" data&#45;toggle="collapse" href=".missingPlayers" role="button" aria&#45;expanded="false" aria&#45;controls="missingPlayers"> -->
-              <!--   Add Missing Players -->
-              <!-- </a> -->
               <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".missingPlayers" aria-expanded="false" aria-controls="missingPlayers">Add Missing Players</button>
             </td>
           </tr>
+          {% else %}
+          <input type="hidden" name="missing_players[]" value="">
           {% endif %}
 
           {% for player in missing_players %}
@@ -244,6 +243,7 @@
           {% endfor %}
         </table>
         <input class="btn btn-primary" type="button" id="submit" value="Submit">
+        <a href="/delete_war?war_id={{war.id}}" class="btn btn-danger">Delete War</a>
       </form>
       <div id="alert_wrapper"></div>
       <div class="row">&nbsp;</div>

@@ -4,7 +4,7 @@ import json
 import csv
 import pytz
 import operator
-from flask import Flask, render_template, request, send_file, jsonify, make_response
+from flask import Flask, render_template, request, send_file, jsonify, make_response, redirect
 from flask_script import Manager
 from flask_login import LoginManager
 from werkzeug.utils import secure_filename
@@ -18,7 +18,7 @@ login = LoginManager(app)
 UPLOAD_FOLDER = os.path.join(app.root_path, 'upload')
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'mp4', 'mov'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://tfew_scores:tfw2005scores@localhost/tfew_scores'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://***REMOVED***'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -284,6 +284,7 @@ def war_editor():
         else:
             war = War()
             players = Player.query.order_by(Player.name).filter(Player.active).all()
+            missing_players = []
 
     elif request.method == 'POST':
         fwar = request.get_json()
@@ -363,18 +364,23 @@ def war_editor():
         else:
             for fplayer in fwar['players']:
                 if fplayer:
-                    # TODO It doesn't look like checkboxes work on the first submit?!
-                    newscore = Score()
-                    if fplayer['score']:
-                        newscore.score = int(fplayer['score'].strip())
-                    else:
-                        newscore.score = None
-                    newscore.player = Player.query.get(fplayer['id'])
-                    war.scores.append(newscore)
+                    if (fplayer['score'] or 'excused' in fplayer or
+                                            'attempts_left' in fplayer or
+                                            'no_attempts' in fplayer):
+                        # TODO It doesn't look like checkboxes work on the first submit?!
+                        newscore = Score()
+                        if fplayer['score']:
+                            newscore.score = int(fplayer['score'].strip())
+                        else:
+                            newscore.score = None
+                        newscore.player = Player.query.get(fplayer['id'])
+                        war.scores.append(newscore)
 
         for fplayer in fwar['missing_players']:
             if fplayer:
-                if fplayer['score'] or 'excused' in fplayer or 'attempts_left' in fplayer or 'no_attempts' in fplayer:
+                if (fplayer['score'] or 'excused' in fplayer or
+                                        'attempts_left' in fplayer or
+                                        'no_attempts' in fplayer):
                     newscore = Score()
                     if fplayer['score']:
                         newscore.score = int(fplayer['score'].strip())
@@ -388,6 +394,17 @@ def war_editor():
         return make_response(jsonify({"message": "War submitted"}), 200)
 
     return render_template('war_editor.html', alliance_id=alliance_id, alliances=alliances, war=war, players=players, missing_players=missing_players)
+
+@app.route('/delete_war', methods=['GET'])
+def delete_war():
+    if request.method == 'GET':
+        if request.args:
+            war_id = int(request.args.get('war_id'))
+            war = War.query.get(war_id)
+            db.session.delete(war)
+            db.session.commit()
+
+    return redirect('/')
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
