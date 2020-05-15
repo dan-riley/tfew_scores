@@ -6,6 +6,11 @@ var WarEditor = (function() {
     alert_wrapper = document.getElementById('alert_wrapper');
     players = document.querySelectorAll("input[name^=players][name*=score]");
 
+    // Initialize autocomplete
+    var acdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
+    autocomplete(document.getElementsByName('opponent')[0], acdata);
+
+    // Setup auto-totaler for our score
     for (var i=0; i < players.length; i++) {
       players[i].addEventListener('blur', function() {
         var total = 0;

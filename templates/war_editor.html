@@ -42,8 +42,9 @@
           <tr>
             <th>Opponent</th>
             <td>
-              <!-- TODO make this an autocomplete -->
-              <input class="form-control" type="text" name="opponent" value="{{war.opponent.name}}">
+              <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{ opponents|tojson }}'>
+                <input class="form-control" type="text" name="opponent" value="{{war.opponent.name}}" autocomplete="off">
+              </div>
             </td>
           </tr>
           <tr>

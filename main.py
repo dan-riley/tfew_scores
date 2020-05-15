@@ -272,6 +272,7 @@ def player_editor():
 def war_editor():
     alliance_id = 2
     alliances = Alliance.query.all()
+    opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
 
     if request.method == 'GET':
         if request.args:
@@ -393,7 +394,7 @@ def war_editor():
         db.session.commit()
         return make_response(jsonify({"message": "War submitted"}), 200)
 
-    return render_template('war_editor.html', alliance_id=alliance_id, alliances=alliances, war=war, players=players, missing_players=missing_players)
+    return render_template('war_editor.html', alliance_id=alliance_id, alliances=alliances, opponents=opponents, war=war, players=players, missing_players=missing_players)
 
 @app.route('/delete_war', methods=['GET'])
 def delete_war():
