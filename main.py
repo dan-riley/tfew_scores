@@ -215,6 +215,8 @@ def player_editor():
             if (str(lastAction.date) != fplayer['lastDate'] and
                     str(lastAction.action) != fplayer['lastAction']):
                 newAction = PlayerAction()
+                # Temporary fix for multi-alliance.  Need to fix.
+                newAction.alliance_id = 2
                 newAction.player_id = player.id
                 newAction.date = fplayer['lastDate']
                 newAction.action = fplayer['lastAction']
@@ -253,6 +255,8 @@ def player_editor():
             newplayer.active = True
 
             newaction = PlayerAction()
+            # Temporary fix for multi-alliance.  Need to fix.
+            newaction.alliance_id = 2
             newaction.date = fplayers['newActionDate']
             newaction.action = fplayers['newAction']
             newplayer.actions.append(newaction)
