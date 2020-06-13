@@ -78,6 +78,22 @@
   color: #d5d5d5;
 }
 
+.notInAlliance {
+  background-color: #c5c5c5;
+}
+
+.noAttempt {
+  background-color: #c14040;
+}
+
+.attemptsLeft {
+  background-color: #d8900d;
+}
+
+.excused {
+  background-color: #4a9a4a;
+}
+
 .collapse:not(.show) {
   display: none!important;
 }

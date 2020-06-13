@@ -164,7 +164,16 @@
           <td>{{player.totalAvg}}</td>
           {% for war in wars %}
           {% set score = player.scoresRange[war.id].score %}
-          <td class="{{war.trackedClass}}">{{score if score != None}}</td>
+          {% set noAttempt = player.scoresRange[war.id].no_attempts %}
+          {% set attemptsLeft = player.scoresRange[war.id].attempts_left %}
+          {% set excused = player.scoresRange[war.id].excused %}
+          {% set notInAlliance = False %}
+          {% if score is not defined %}
+            {% set notInAlliance = True %}
+          {% endif %}
+            <td class="{{war.trackedClass}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
+            {{score if score != None}}
+          </td>
           {% endfor %}
         </tr>
         {% endfor %}
