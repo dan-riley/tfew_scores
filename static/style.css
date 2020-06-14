@@ -17,6 +17,42 @@
   font-size: 0.8em;
 }
 
+#history_table {
+  text-align: left;
+  font-size: 0.8em;
+}
+
+#history_table th {
+  text-align: center;
+  background: white;
+}
+
+#spark_table {
+  text-align: left;
+  font-size: 0.8em;
+}
+
+#spark_table th {
+  text-align: center;
+  background: white;
+}
+
+.table-responsive {
+  overflow-x: visible;
+}
+
+.left {
+  text-align: left;
+}
+
+.right {
+  text-align: right;
+}
+
+.center {
+  text-align: center;
+}
+
 .sticky-left {
   position: -webkit-sticky;
   position: sticky;
@@ -108,7 +144,7 @@
   border: 1px solid #d4d4d4;
   border-bottom: none;
   border-top: none;
-  z-index: 99;
+  z-index: 1050;
   top: 100%;
   left: 0;
   right: 0;

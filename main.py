@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import json
 import csv
 import pytz
@@ -33,6 +33,13 @@ def getIDbyName(table, name):
     else:
         return False
 
+def getNamebyID(table, id):
+    result = db.session.query(table).filter(table.id == id).first()
+    if result:
+        return result.name
+    else:
+        return False
+
 @app.context_processor
 def inject_today():
     return {'today': datetime.now(pytz.timezone('US/Central')).date()}
@@ -47,19 +54,26 @@ def home_page():
     templates['players'] = {}
     templates['leagues'] = {8: 'Prime', 7: 'Cybertron', 6: 'Caminus'}
     templates['tracked'] = {0: 'No', 1: 'Yes', 2: 'Optional'}
+    opponent = ''
 
     filt = []
     if request.args:
         ralliance = request.args.get('alliance_id')
-        opp = request.args.get('war_opponent')
+        opp_id = request.args.get('opponent_id')
+        opponent = request.args.get('opponent')
         start_day = request.args.get('start_day')
         end_day = request.args.get('end_day')
 
         if ralliance:
             alliance = int(ralliance)
 
-        if opp:
-            filt.append(getattr(War, 'opponent_id') == int(opp))
+        if opponent:
+            opp_id = getIDbyName(Opponent, opponent)
+
+        if opp_id:
+            filt.append(getattr(War, 'opponent_id') == int(opp_id))
+            if not opponent:
+                opponent = getNamebyID(Opponent, int(opp_id))
 
         if start_day:
             filt.append(War.date.between(start_day, end_day))
@@ -69,14 +83,17 @@ def home_page():
         start_day = end_day - timedelta(days=21)
         filt = [War.date.between(start_day, end_day)]
 
-    filt.append(getattr(War, 'alliance_id') == alliance)
+    if alliance != 9999:
+        filt.append(getattr(War, 'alliance_id') == alliance)
     templates['alliance'] = alliance
+    templates['opponent'] = opponent
     templates['start_day'] = start_day
     templates['end_day'] = end_day
 
     alliances = Alliance.query.all()
     wars = War.query.order_by(War.date.desc()).filter(*filt).all()
     players = Player.query.order_by(Player.name).join(Score).join(War).filter(*filt).all()
+    opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
 
     # Set the classes for formatting
     for war in wars:
@@ -183,7 +200,152 @@ def home_page():
         player.trackedAvg = round(trackedAvg)
         player.primeAvg = round(primeAvg)
 
-    return render_template('index.html', alliances=alliances, players=players, wars=wars, templates=templates)
+    return render_template('index.html', alliances=alliances, opponents=opponents, players=players, wars=wars, templates=templates)
+
+class MonthlyTotal:
+    """ Helper class for tracking totals in history """
+    def __init__(self):
+        self.month = 0
+        self.year = 0
+        self.prime_wins = 0
+        self.prime_losses = 0
+        self.prime_average = 0
+        self.cyber_wins = 0
+        self.cyber_losses = 0
+        self.cyber_average = 0
+        self.spark = 0
+
+@app.route('/history')
+def history():
+    # Default alliance.  May want a better way of setting this based on user permissions.
+    alliance = 2
+
+    # Templates for converting database entries to text
+    templates = {}
+    templates['players'] = {}
+    templates['leagues'] = {8: 'Prime', 7: 'Cybertron', 6: 'Caminus'}
+    templates['tracked'] = {0: 'No', 1: 'Yes', 2: 'Optional'}
+    opponent = ''
+
+    filt = []
+    end_day = None
+    start_day = None
+
+    if request.args:
+        ralliance = request.args.get('alliance_id')
+        opp_id = request.args.get('opponent_id')
+        opponent = request.args.get('opponent')
+        start_day = request.args.get('start_day')
+        end_day = request.args.get('end_day')
+
+        if ralliance:
+            alliance = int(ralliance)
+
+        if opponent:
+            opp_id = getIDbyName(Opponent, opponent)
+
+        if opp_id:
+            filt.append(getattr(War, 'opponent_id') == int(opp_id))
+            if not opponent:
+                opponent = getNamebyID(Opponent, int(opp_id))
+
+        if start_day:
+            filt.append(War.date.between(start_day, end_day))
+
+    if alliance != 9999:
+        filt.append(getattr(War, 'alliance_id') == alliance)
+    templates['alliance'] = alliance
+    templates['opponent'] = opponent
+    templates['start_day'] = start_day
+    templates['end_day'] = end_day
+
+    alliances = Alliance.query.all()
+    wars = War.query.order_by(War.date.desc()).filter(*filt).all()
+    opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
+
+    totals = {}
+    for war in wars:
+        # Setup totals object
+        year = war.date.year
+        month = war.date.month
+        if year not in totals:
+            totals[year] = {}
+        if month not in totals[year]:
+            totals[year][month] = MonthlyTotal()
+            totals[year][month].month = datetime.strftime(war.date, '%b')
+            totals[year][month].year = datetime.strftime(war.date, '%y')
+
+        # Add up wins, losses and total averages
+        wins = 0
+        losses = 0
+        average = 0
+
+        if war.our_score > war.opp_score:
+            war.winClass = 'win'
+            wins = 1
+        else:
+            war.winClass = 'loss'
+            losses = 1
+
+        average = war.our_score
+
+        if not war.tracked:
+            war.trackedClass = 'untracked'
+        elif war.tracked == 1:
+            war.trackedClass = 'tracked'
+        else:
+            war.trackedClass = 'optional'
+
+        # Setup triple spark times
+        if date(2020, 3, 24) < war.date < date(2020, 5, 13):
+            multiplier = 3
+        else:
+            multiplier = 1
+
+        # Add to the totals depending on league
+        total = totals[year][month]
+        if war.league == 8:
+            total.prime_wins += wins
+            total.prime_losses += losses
+            total.prime_average += average
+            if wins:
+                total.spark += 30000 * multiplier
+            else:
+                total.spark += 10000 * multiplier
+        elif war.league == 7:
+            total.cyber_wins += wins
+            total.cyber_losses += losses
+            total.cyber_average += average
+            if wins:
+                total.spark += 15000 * multiplier
+
+    # Get the overall totals, and finish averages
+    overall = MonthlyTotal()
+    for year in totals:
+        for month in totals[year]:
+            total = totals[year][month]
+            overall.prime_wins += total.prime_wins
+            overall.prime_losses += total.prime_losses
+            overall.prime_average += total.prime_average
+            overall.cyber_wins += total.cyber_wins
+            overall.cyber_losses += total.cyber_losses
+            overall.cyber_average += total.cyber_average
+            overall.spark += total.spark
+
+            total_prime_wars = total.prime_wins + total.prime_losses
+            total_cyber_wars = total.cyber_wins + total.cyber_losses
+            if total_prime_wars:
+                total.prime_average = round(total.prime_average / total_prime_wars)
+            if total_cyber_wars:
+                total.cyber_average = round(total.cyber_average / total_cyber_wars)
+
+    overall_prime_wars = overall.prime_wins + overall.prime_losses
+    overall_cyber_wars = overall.cyber_wins + overall.cyber_losses
+
+    overall.prime_average = round(overall.prime_average / overall_prime_wars)
+    overall.cyber_average = round(overall.cyber_average / overall_cyber_wars)
+
+    return render_template('history.html', alliances=alliances, wars=wars, templates=templates, opponents=opponents, overall=overall, totals=totals)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
 def player_editor():

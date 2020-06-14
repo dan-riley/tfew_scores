@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.7, shrink-to-fit=no">
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous">
+    </script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="{{url_for('static', filename='jquery.serialize-object.min.js')}}"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
+    <script type="text/javascript" src="{{url_for('static', filename='common.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='history.js')}}"></script>
+
+    <title>TFEW History</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1><a href="/history">TFEW History</a></h1>
+      <a href="/">Home</a>
+      <br />
+
+      <form method="GET">
+        <div class="d-flex">
+          <input class="btn btn-primary" type="submit" name="submit" value="Update Table">
+          <div class="col-auto">
+            Alliance:
+          </div>
+          <div class="col-auto">
+            <select class="custom-select" name="alliance_id">
+              <option></option>
+              <option value="9999" {% if templates['alliance'] == 9999 %} selected {%endif %}>All
+              </option>
+              {% for alliance in alliances %}
+              <option value="{{alliance.id}}"
+              {% if templates['alliance'] == alliance.id %} selected {% endif %}>{{alliance.name}}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-auto">
+            Opponent:
+          </div>
+          <div class="col-auto">
+            <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{ opponents|tojson }}'>
+              <input class="form-control" type="text" name="opponent" value="{{templates['opponent']}}" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="col-auto">
+            Date Range:
+          </div>
+          <div class="col-auto">
+            <input class="form-control" type="date" name="start_day" value="{{templates['start_day']}}">
+          </div>
+          <div class="col-auto">
+            <input class="form-control" type="date" name="end_day" value="{{templates['end_day']}}">
+          </div>
+        </div>
+      </form>
+
+      <div class="col-md-6 table-responsive float-sm-none float-md-right">
+        <table id="spark_table" class="table table-sm table-bordered">
+          <tr>
+            <th class="sticky-top">Month</th>
+            <th class="sticky-top">Prime Record</th>
+            <th class="sticky-top">Prime Average</th>
+            <th class="sticky-top">Cybertron Record</th>
+            <th class="sticky-top">Cybertron Average</th>
+            <th class="sticky-top">Spark Earned</th>
+          </tr>
+          <tr>
+            <th>Overall</th>
+            <th>{{overall.prime_wins}}-{{overall.prime_losses}}</th>
+            <th>{{overall.prime_average}}</th>
+            <th>{{overall.cyber_wins}}-{{overall.cyber_losses}}</th>
+            <th>{{overall.cyber_average}}</th>
+            <th>{{'{:,}'.format(overall.spark)}}</th>
+          </tr>
+          {% for year in totals %}
+              {% for month in totals[year] %}
+                  {% set total = totals[year][month] %}
+          <tr>
+            <td class="center text-nowrap">{{total.month}} {{total.year}}</td>
+            <td class="center">{{total.prime_wins}}-{{total.prime_losses}}</td>
+            <td class="center">{{total.prime_average}}</td>
+            <td class="center">{{total.cyber_wins}}-{{total.cyber_losses}}</td>
+            <td class="center">{{total.cyber_average}}</td>
+            <td class="center">{{'{:,}'.format(total.spark)}}</td>
+          </tr>
+              {% endfor %}
+          {% endfor %}
+        </table>
+      </div>
+
+      <div class="col-md-6 table-responsive float-sm-none float-md-left">
+        <table id="history_table" class="table table-sm table-bordered">
+          <tr>
+            <th class="sticky-top">Date</th>
+            <th class="sticky-top">Opponent</th>
+            <th class="sticky-top">League</th>
+            <th class="sticky-top">Our Points</th>
+            <th class="sticky-top">Opp Points</th>
+          </tr>
+
+          {% for war in wars %}
+          <tr>
+            <td class="center {{war.winClass}} {{war.trackedClass}}">
+              <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
+            </td>
+            <td class="left {{war.winClass}} {{war.trackedClass}}">
+              <a href="/history?alliance_id={{templates['alliance']}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
+            </td>
+            <td class="left {{war.winClass}} {{war.trackedClass}}">
+              {{templates['leagues'][war.league]}}
+            </td>
+            <td class="center {{war.winClass}} {{war.trackedClass}}">
+              {{war.our_score}}
+            </td>
+            <td class="center {{war.winClass}} {{war.trackedClass}}">
+              {{war.opp_score}}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

@@ -10,6 +10,10 @@ var Main = (function() {
   var lastSort = 0;
 
   document.addEventListener('DOMContentLoaded', function(event) {
+    // Initialize autocomplete
+    var acdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
+    autocomplete(document.getElementsByName('opponent')[0], acdata);
+
     summary_table = document.getElementById('summary_table');
     addSortListeners();
   });
