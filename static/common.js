@@ -16,6 +16,27 @@ function compareValues(key, order = 'asc') {
   };
 }
 
+function compareValuesFlask(a, b, order) {
+  const comparison = a.localeCompare(b, undefined, {numeric: true});
+  return ((order === 'desc') ? (comparison * -1) : comparison)
+}
+
+function sortTable(table, colnum, order, skip=1) {
+  let rows = Array.from(table.querySelectorAll('tr'));
+  rows = rows.slice(skip);
+
+  let qs = `td:nth-child(${colnum})`;
+
+  rows.sort((r1, r2) => {
+    let t1 = r1.querySelector(qs);
+    let t2 = r2.querySelector(qs);
+
+    return compareValuesFlask(t1.textContent, t2.textContent, order);
+  });
+
+  rows.forEach(row => table.appendChild(row));
+}
+
 // Autocomplete, based on https://www.w3schools.com/howto/howto_js_autocomplete.asp
 function autocomplete(myinput, items) {
   var currentFocus;

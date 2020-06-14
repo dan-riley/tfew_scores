@@ -17,6 +17,15 @@
   font-size: 0.8em;
 }
 
+.player_table {
+  text-align: center;
+  font-size: 0.8em;
+}
+
+#player_table th {
+  background: white;
+}
+
 #history_table {
   text-align: left;
   font-size: 0.8em;
@@ -96,8 +105,11 @@
   background-color: #fafaca;
 }
 
-.win {
+.min-width {
   min-width: 7em;
+}
+
+.win {
   background-color: #4a9a4a;
 }
 
@@ -106,7 +118,6 @@
 }
 
 .loss {
-  min-width: 7em;
   background-color: #c14040;
 }
 

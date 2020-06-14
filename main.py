@@ -33,8 +33,8 @@ def getIDbyName(table, name):
     else:
         return False
 
-def getNamebyID(table, id):
-    result = db.session.query(table).filter(table.id == id).first()
+def getNamebyID(table, search_id):
+    result = db.session.query(table).filter(table.id == search_id).first()
     if result:
         return result.name
     else:
@@ -44,16 +44,105 @@ def getNamebyID(table, id):
 def inject_today():
     return {'today': datetime.now(pytz.timezone('US/Central')).date()}
 
+def buildAverages(player, wars):
+    totalScore = 0
+    totalCount = 0
+    totalMin = 300
+    untrackedScore = 0
+    untrackedCount = 0
+    untrackedMin = 300
+    trackedScore = 0
+    trackedCount = 0
+    trackedMin = 300
+    primeScore = 0
+    primeCount = 0
+    primeMin = 300
+    player.scoresRange = {}
+
+    # Get the scores and initial averages for this player
+    for war in wars:
+        score = player.score(war.id)
+        player.scoresRange[war.id] = score
+
+        if score and score.score is not None and not score.excused:
+            totalScore += score.score
+            totalCount += 1
+            if score.score < totalMin:
+                totalMin = score.score
+
+            if war.tracked == 0:
+                untrackedScore += score.score
+                untrackedCount += 1
+                if score.score < untrackedMin:
+                    untrackedMin = score.score
+            elif war.tracked == 1:
+                trackedScore += score.score
+                trackedCount += 1
+                if score.score < trackedMin:
+                    trackedMin = score.score
+
+            if war.league == 8 and war.tracked != 2:
+                primeScore += score.score
+                primeCount += 1
+                if score.score < primeMin:
+                    primeMin = score.score
+
+    # Remove the minimum scores if we have enough
+    if totalCount > 5:
+        totalScore -= totalMin
+        totalCount -= 1
+
+    if untrackedCount > 5:
+        untrackedScore -= untrackedMin
+        untrackedCount -= 1
+
+    if trackedCount > 5:
+        trackedScore -= trackedMin
+        trackedCount -= 1
+
+    if primeCount > 5:
+        primeScore -= primeMin
+        primeCount -= 1
+
+    # Get the initial averages without optional wars
+    totalAvg = totalScore / totalCount if totalCount else totalScore
+    untrackedAvg = untrackedScore / untrackedCount if untrackedCount else untrackedScore
+    trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
+    primeAvg = primeScore / primeCount if primeCount else primeScore
+
+    # Go back and add in optional scores
+    for war in wars:
+        if war.tracked == 2:
+            score = player.scoresRange[war.id]
+            if score and score.score is not None and not score.excused:
+                if score.score > trackedAvg:
+                    trackedScore += score.score
+                    trackedCount += 1
+
+                if war.league == 8 and score.score > primeAvg:
+                    primeScore += score.score
+                    primeCount += 1
+
+    # Recalculate the averages with the optional scores added
+    trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
+    primeAvg = primeScore / primeCount if primeCount else primeScore
+
+    # Save the final averages, rounded for display
+    player.totalAvg = round(totalAvg)
+    player.untrackedAvg = round(untrackedAvg)
+    player.trackedAvg = round(trackedAvg)
+    player.primeAvg = round(primeAvg)
+
+# Common templates for converting database entries to text
+templates = {}
+templates['players'] = {}
+templates['leagues'] = {8: 'Prime', 7: 'Cybertron', 6: 'Caminus'}
+templates['tracked'] = {0: 'No', 1: 'Yes', 2: 'Optional'}
+
 @app.route('/')
 def home_page():
     # Default alliance.  May want a better way of setting this based on user permissions.
     alliance = 2
-
-    # Templates for converting database entries to text
-    templates = {}
-    templates['players'] = {}
-    templates['leagues'] = {8: 'Prime', 7: 'Cybertron', 6: 'Caminus'}
-    templates['tracked'] = {0: 'No', 1: 'Yes', 2: 'Optional'}
     opponent = ''
 
     filt = []
@@ -112,93 +201,7 @@ def home_page():
     # Build the player names index for base names and get averages
     for player in players:
         templates['players'][player.id] = player.name
-
-        totalScore = 0
-        totalCount = 0
-        totalMin = 300
-        untrackedScore = 0
-        untrackedCount = 0
-        untrackedMin = 300
-        trackedScore = 0
-        trackedCount = 0
-        trackedMin = 300
-        primeScore = 0
-        primeCount = 0
-        primeMin = 300
-        player.scoresRange = {}
-        # Get the scores and initial averages for this player
-        for war in wars:
-            score = player.score(war.id)
-            player.scoresRange[war.id] = score
-
-            if score and score.score is not None and not score.excused:
-                totalScore += score.score
-                totalCount += 1
-                if score.score < totalMin:
-                    totalMin = score.score
-
-                if war.tracked == 0:
-                    untrackedScore += score.score
-                    untrackedCount += 1
-                    if score.score < untrackedMin:
-                        untrackedMin = score.score
-                elif war.tracked == 1:
-                    trackedScore += score.score
-                    trackedCount += 1
-                    if score.score < trackedMin:
-                        trackedMin = score.score
-
-                if war.league == 8 and war.tracked != 2:
-                    primeScore += score.score
-                    primeCount += 1
-                    if score.score < primeMin:
-                        primeMin = score.score
-
-        # Remove the minimum scores if we have enough
-        if totalCount > 5:
-            totalScore -= totalMin
-            totalCount -= 1
-
-        if untrackedCount > 5:
-            untrackedScore -= untrackedMin
-            untrackedCount -= 1
-
-        if trackedCount > 5:
-            trackedScore -= trackedMin
-            trackedCount -= 1
-
-        if primeCount > 5:
-            primeScore -= primeMin
-            primeCount -= 1
-
-        # Get the initial averages without optional wars
-        totalAvg = totalScore / totalCount if totalCount else totalScore
-        untrackedAvg = untrackedScore / untrackedCount if untrackedCount else untrackedScore
-        trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
-        primeAvg = primeScore / primeCount if primeCount else primeScore
-
-        # Go back and add in optional scores
-        for war in wars:
-            if war.tracked == 2:
-                score = player.scoresRange[war.id]
-                if score and score.score is not None and not score.excused:
-                    if score.score > trackedAvg:
-                        trackedScore += score.score
-                        trackedCount += 1
-
-                    if war.league == 8 and score.score > primeAvg:
-                        primeScore += score.score
-                        primeCount += 1
-
-        # Recalculate the averages with the optional scores added
-        trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
-        primeAvg = primeScore / primeCount if primeCount else primeScore
-
-        # Save the final averages, rounded for display
-        player.totalAvg = round(totalAvg)
-        player.untrackedAvg = round(untrackedAvg)
-        player.trackedAvg = round(trackedAvg)
-        player.primeAvg = round(primeAvg)
+        buildAverages(player, wars)
 
     return render_template('index.html', alliances=alliances, opponents=opponents, players=players, wars=wars, templates=templates)
 
@@ -219,12 +222,6 @@ class MonthlyTotal:
 def history():
     # Default alliance.  May want a better way of setting this based on user permissions.
     alliance = 2
-
-    # Templates for converting database entries to text
-    templates = {}
-    templates['players'] = {}
-    templates['leagues'] = {8: 'Prime', 7: 'Cybertron', 6: 'Caminus'}
-    templates['tracked'] = {0: 'No', 1: 'Yes', 2: 'Optional'}
     opponent = ''
 
     filt = []
@@ -346,6 +343,75 @@ def history():
     overall.cyber_average = round(overall.cyber_average / overall_cyber_wars)
 
     return render_template('history.html', alliances=alliances, wars=wars, templates=templates, opponents=opponents, overall=overall, totals=totals)
+
+@app.route('/player')
+def player_view():
+    # Default alliance.  May want a better way of setting this based on user permissions.
+    alliance = 2
+    opponent = ''
+
+    filt = []
+    end_day = None
+    start_day = None
+
+    if request.args:
+        rplayer = request.args.get('player_id')
+        ralliance = request.args.get('alliance_id')
+        opp_id = request.args.get('opponent_id')
+        opponent = request.args.get('opponent')
+        start_day = request.args.get('start_day')
+        end_day = request.args.get('end_day')
+
+        if rplayer:
+            player_id = int(rplayer)
+            filt.append(getattr(Player, 'id') == player_id)
+
+        if ralliance:
+            alliance = int(ralliance)
+
+        if opponent:
+            opp_id = getIDbyName(Opponent, opponent)
+        elif opponent == None:
+            opponent = ''
+
+        if opp_id:
+            filt.append(getattr(War, 'opponent_id') == int(opp_id))
+            if not opponent:
+                opponent = getNamebyID(Opponent, int(opp_id))
+
+        if start_day:
+            filt.append(War.date.between(start_day, end_day))
+
+    if alliance != 9999:
+        filt.append(getattr(War, 'alliance_id') == alliance)
+    templates['alliance'] = alliance
+    templates['opponent'] = opponent
+    templates['start_day'] = start_day
+    templates['end_day'] = end_day
+
+    alliances = Alliance.query.all()
+    wars = War.query.join(Score).join(Player).order_by(War.date.desc()).filter(*filt).all()
+    players = db.session.query(Player).order_by(Player.name).all()
+    opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
+
+    # Set the classes for formatting
+    for war in wars:
+        if war.our_score > war.opp_score:
+            war.winClass = 'win'
+        else:
+            war.winClass = 'loss'
+
+        if not war.tracked:
+            war.trackedClass = 'untracked'
+        elif war.tracked == 1:
+            war.trackedClass = 'tracked'
+        else:
+            war.trackedClass = 'optional'
+
+    player = db.session.query(Player).get(player_id)
+    buildAverages(player, wars)
+
+    return render_template('player.html', player=player, alliances=alliances, opponents=opponents, players=players, wars=wars, templates=templates)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
 def player_editor():
