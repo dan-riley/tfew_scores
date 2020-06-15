@@ -176,3 +176,7 @@
   background-color: DodgerBlue !important;
   color: #ffffff;
 }
+
+#chart_Score {
+  height: 20em;
+}

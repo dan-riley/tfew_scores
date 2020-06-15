@@ -12,10 +12,12 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
     <script type="text/javascript" src="{{url_for('static', filename='jquery.serialize-object.min.js')}}"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
     <script type="text/javascript" src="{{url_for('static', filename='common.js')}}"></script>
     <script type="text/javascript" src="{{url_for('static', filename='player.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='chart.js')}}"></script>
 
     <title>TFEW Player Tracker</title>
   </head>
@@ -66,73 +68,76 @@
       </form>
 
       <br />
-      <div class="col-6">
-          <table class="player_table table table-sm table-bordered">
-            <tr>
-              <th>Player</th>
-              <th>Tracked</th>
-              <th>Untracked</th>
-              <th>Prime</th>
-              <th>Total</th>
-            </tr>
 
-            <tr>
-              <th>{{player.name}}</th>
-              <th>{{player.trackedAvg}}</th>
-              <th>{{player.untrackedAvg}}</th>
-              <th>{{player.primeAvg}}</th>
-              <th>{{player.totalAvg}}</th>
-            </tr>
-          </table>
+      <div id="chart_Score"></div>
+
+      <div class="col-6">
+        <table class="player_table table table-sm table-bordered">
+          <tr>
+            <th>Player</th>
+            <th>Tracked</th>
+            <th>Untracked</th>
+            <th>Prime</th>
+            <th>Total</th>
+          </tr>
+
+          <tr>
+            <th>{{player.name}}</th>
+            <th>{{player.trackedAvg}}</th>
+            <th>{{player.untrackedAvg}}</th>
+            <th>{{player.primeAvg}}</th>
+            <th>{{player.totalAvg}}</th>
+          </tr>
+        </table>
       </div>
 
       <div class="col-6">
-          <table id="player_table" class="player_table table table-sm table-bordered">
-            <tr>
-              <th class="player_sort sticky-top min-width" id="date_sort">Date</th>
-              <th class="player_sort sticky-top" id="opponent_sort">Opponent</th>
-              <th class="player_sort sticky-top" id="league_sort">League</th>
-              <th class="player_sort sticky-top min-width" id="points_sort">Total Points</th>
-              <th class="player_sort sticky-top" id="base_sort">Base</th>
-              <th class="player_sort sticky-top" id="score_sort">Score</th>
-            </tr>
-            {% for war in wars %}
-            <tr>
-              <td class="min-width {{war.winClass}} {{war.trackedClass}}">
-                <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
-              </td>
-              <td class="left {{war.winClass}} {{war.trackedClass}}">
-                <a href="/player?player_id={{player.id}}&alliance_id={{templates['alliance']}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
-              </td>
-              <td class="{{war.winClass}} {{war.trackedClass}}">
-                {{templates['leagues'][war.league]}}
-              </td>
-              <td class="{{war.winClass}} {{war.trackedClass}}">
-                {{war.our_score}}-{{war.opp_score}}
-              </td>
-              <td class="{{war.winClass}} {{war.trackedClass}}">
-                {{ 'B1' if war.b1 == player.id }}
-                {{ 'B2' if war.b2 == player.id }}
-                {{ 'B3' if war.b3 == player.id }}
-                {{ 'B4' if war.b4 == player.id }}
-                {{ 'B5' if war.b5 == player.id }}
-              </td>
+        <table id="player_table" class="player_table table table-sm table-bordered">
+          <tr>
+            <th class="player_sort sticky-top min-width" id="date_sort">Date</th>
+            <th class="player_sort sticky-top" id="opponent_sort">Opponent</th>
+            <th class="player_sort sticky-top" id="league_sort">League</th>
+            <th class="player_sort sticky-top min-width" id="points_sort">Total Points</th>
+            <th class="player_sort sticky-top" id="base_sort">Base</th>
+            <th class="player_sort sticky-top" id="score_sort">Score</th>
+          </tr>
+          {% for war in wars %}
+          <tr>
+            <td class="min-width {{war.winClass}} {{war.trackedClass}}">
+              <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
+            </td>
+            <td class="left {{war.winClass}} {{war.trackedClass}}">
+              <a href="/player?player_id={{player.id}}&alliance_id={{templates['alliance']}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
+            </td>
+            <td class="{{war.winClass}} {{war.trackedClass}}">
+              {{templates['leagues'][war.league]}}
+            </td>
+            <td class="{{war.winClass}} {{war.trackedClass}}">
+              {{war.our_score}}-{{war.opp_score}}
+            </td>
+            <td class="{{war.winClass}} {{war.trackedClass}}">
+              {{ 'B1' if war.b1 == player.id }}
+              {{ 'B2' if war.b2 == player.id }}
+              {{ 'B3' if war.b3 == player.id }}
+              {{ 'B4' if war.b4 == player.id }}
+              {{ 'B5' if war.b5 == player.id }}
+            </td>
 
-              {% set score = player.scoresRange[war.id].score %}
-              {% set noAttempt = player.scoresRange[war.id].no_attempts %}
-              {% set attemptsLeft = player.scoresRange[war.id].attempts_left %}
-              {% set excused = player.scoresRange[war.id].excused %}
-              {% set notInAlliance = False %}
-              {% if score is not defined %}
-                {% set notInAlliance = True %}
-              {% endif %}
-              <td class="{{war.trackedClass}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
-                {{score if score != None}}
-              </td>
-              {% endfor %}
-            </tr>
-          </table>
-        </div>
+            {% set score = player.scoresRange[war.id].score %}
+            {% set noAttempt = player.scoresRange[war.id].no_attempts %}
+            {% set attemptsLeft = player.scoresRange[war.id].attempts_left %}
+            {% set excused = player.scoresRange[war.id].excused %}
+            {% set notInAlliance = False %}
+            {% if score is not defined %}
+              {% set notInAlliance = True %}
+            {% endif %}
+            <td class="{{war.trackedClass}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
+              {{score if score != None}}
+            </td>
+            {% endfor %}
+          </tr>
+        </table>
+      </div>
     </div>
   </body>
 </html>

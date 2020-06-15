@@ -1,4 +1,4 @@
-var Main = (function() {
+var Player = (function() {
 
   var player_table;
   var dateOrder;
@@ -9,6 +9,26 @@ var Main = (function() {
   var scoreOrder;
   var lastSort = 0;
 
+  var ScoreOptions = {
+    title: 'Player Scores',
+    interpolateNulls: true,
+    trendlines: {
+      0: {
+        title: 'Total Trend',
+        type: 'polynomial',
+        degree: 3,
+        visibleInLegend: false,
+      },
+      1: {
+        title: 'Prime Trend',
+        type: 'polynomial',
+        degree: 3,
+        visibleInLegend: false,
+      }
+    }
+
+  };
+
   document.addEventListener('DOMContentLoaded', function(event) {
     // Initialize autocomplete
     var acdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
@@ -16,6 +36,8 @@ var Main = (function() {
 
     player_table = document.getElementById('player_table');
     addSortListeners();
+
+    buildChart('chart_Score', 'getScoreData', ScoreOptions, 'line');
   });
 
   function addSortListeners() {
@@ -26,6 +48,7 @@ var Main = (function() {
         dateOrder = 'asc';
       lastSort = 1;
       sortTable(player_table, lastSort, dateOrder)
+      buildChart('chart_Score', 'getScoreData', ScoreOptions, 'line');
     });
 
     document.getElementById('opponent_sort').addEventListener('click', function() {
@@ -44,6 +67,7 @@ var Main = (function() {
         leagueOrder = 'desc';
       lastSort = 3;
       sortTable(player_table, lastSort, leagueOrder)
+      buildChart('chart_Score', 'getScoreData', ScoreOptions, 'line');
     });
 
     document.getElementById('points_sort').addEventListener('click', function() {
@@ -74,3 +98,25 @@ var Main = (function() {
     });
   }
 })();
+
+function getScoreData() {
+  var data = new google.visualization.DataTable();
+  var results = document.getElementById('player_table');
+  Array.prototype.forEach.call(results.rows, function (row) {
+    var tableColumns = [];
+
+    if (row.rowIndex == 0) {
+      data.addColumn('date', 'Date');
+      data.addColumn('number', 'Total');
+      data.addColumn('number', 'Prime');
+    } else {
+      var prime = null;
+      if (row.cells[2].innerText == 'Prime')
+        prime = parseInt(row.cells[5].innerText);
+
+      data.addRow([new Date(row.cells[0].innerText + ' 00:00'), parseInt(row.cells[5].innerText), prime]);
+    }
+  });
+
+  return data;
+}
