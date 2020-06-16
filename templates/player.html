@@ -23,24 +23,24 @@
   </head>
   <body>
     <div class="container">
-      <h1><a href="/player?player_id={{player.id}}">TFEW Player Viewer</a></h1>
+      <h1><a href="/player?player_id={{t.player.id}}">TFEW Player Viewer</a></h1>
       <a href="/">Home</a>
 
       <form method="GET">
         <div class="d-flex">
           <input class="btn btn-primary" type="submit" name="submit" value="Update Table">
-          <input type="hidden" name="player_id" value="{{player.id}}">
+          <input type="hidden" name="player_id" value="{{t.player.id}}">
           <div class="col-auto">
             Alliance:
           </div>
           <div class="col-auto">
             <select class="custom-select" name="alliance_id">
               <option></option>
-              <option value="9999" {% if templates['alliance'] == 9999 %} selected {%endif %}>All
+              <option value="9999" {% if t.alliance == 9999 %} selected {%endif %}>All
               </option>
-              {% for alliance in alliances %}
+              {% for alliance in t.alliances %}
               <option value="{{alliance.id}}"
-              {% if templates['alliance'] == alliance.id %} selected {% endif %}>{{alliance.name}}
+              {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
               </option>
               {% endfor %}
             </select>
@@ -50,8 +50,8 @@
             Opponent:
           </div>
           <div class="col-auto">
-            <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{ opponents|tojson }}'>
-              <input class="form-control" type="text" name="opponent" value="{{templates['opponent']}}" autocomplete="off">
+            <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponents|tojson}}'>
+              <input class="form-control" type="text" name="opponent" value="{{t.opponent}}" autocomplete="off">
             </div>
           </div>
 
@@ -59,10 +59,10 @@
             Date Range:
           </div>
           <div class="col-auto">
-            <input class="form-control" type="date" name="start_day" value="{{templates['start_day']}}">
+            <input class="form-control" type="date" name="start_day" value="{{t.start_day}}">
           </div>
           <div class="col-auto">
-            <input class="form-control" type="date" name="end_day" value="{{templates['end_day']}}">
+            <input class="form-control" type="date" name="end_day" value="{{t.end_day}}">
           </div>
         </div>
       </form>
@@ -82,11 +82,11 @@
           </tr>
 
           <tr>
-            <th>{{player.name}}</th>
-            <th>{{player.trackedAvg}}</th>
-            <th>{{player.untrackedAvg}}</th>
-            <th>{{player.primeAvg}}</th>
-            <th>{{player.totalAvg}}</th>
+            <th>{{t.player.name}}</th>
+            <th>{{t.player.trackedAvg}}</th>
+            <th>{{t.player.untrackedAvg}}</th>
+            <th>{{t.player.primeAvg}}</th>
+            <th>{{t.player.totalAvg}}</th>
           </tr>
         </table>
       </div>
@@ -101,37 +101,37 @@
             <th class="player_sort sticky-top" id="base_sort">Base</th>
             <th class="player_sort sticky-top" id="score_sort">Score</th>
           </tr>
-          {% for war in wars %}
+          {% for war in t.wars %}
           <tr>
-            <td class="min-width {{war.winClass}} {{war.trackedClass}}">
+            <td class="min-width {{war.winClass()}} {{war.trackedClass()}}">
               <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
             </td>
-            <td class="left {{war.winClass}} {{war.trackedClass}}">
-              <a href="/player?player_id={{player.id}}&alliance_id={{templates['alliance']}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
+            <td class="left {{war.winClass()}} {{war.trackedClass()}}">
+              <a href="/player?player_id={{t.player.id}}&alliance_id={{t.alliance}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
             </td>
-            <td class="{{war.winClass}} {{war.trackedClass}}">
-              {{templates['leagues'][war.league]}}
+            <td class="{{war.winClass()}} {{war.trackedClass()}}">
+              {{war.leagueText()}}
             </td>
-            <td class="{{war.winClass}} {{war.trackedClass}}">
+            <td class="{{war.winClass()}} {{war.trackedClass()}}">
               {{war.our_score}}-{{war.opp_score}}
             </td>
-            <td class="{{war.winClass}} {{war.trackedClass}}">
-              {{ 'B1' if war.b1 == player.id }}
-              {{ 'B2' if war.b2 == player.id }}
-              {{ 'B3' if war.b3 == player.id }}
-              {{ 'B4' if war.b4 == player.id }}
-              {{ 'B5' if war.b5 == player.id }}
+            <td class="{{war.winClass()}} {{war.trackedClass()}}">
+              {{ 'B1' if war.b1 == t.player.id }}
+              {{ 'B2' if war.b2 == t.player.id }}
+              {{ 'B3' if war.b3 == t.player.id }}
+              {{ 'B4' if war.b4 == t.player.id }}
+              {{ 'B5' if war.b5 == t.player.id }}
             </td>
 
-            {% set score = player.scoresRange[war.id].score %}
-            {% set noAttempt = player.scoresRange[war.id].no_attempts %}
-            {% set attemptsLeft = player.scoresRange[war.id].attempts_left %}
-            {% set excused = player.scoresRange[war.id].excused %}
+            {% set score = t.player.scoresRange[war.id].score %}
+            {% set noAttempt = t.player.scoresRange[war.id].no_attempts %}
+            {% set attemptsLeft = t.player.scoresRange[war.id].attempts_left %}
+            {% set excused = t.player.scoresRange[war.id].excused %}
             {% set notInAlliance = False %}
             {% if score is not defined %}
               {% set notInAlliance = True %}
             {% endif %}
-            <td class="{{war.trackedClass}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
+            <td class="{{war.trackedClass()}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
               {{score if score != None}}
             </td>
             {% endfor %}

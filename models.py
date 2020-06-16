@@ -77,11 +77,50 @@ class War(db.Model):
     b3 = db.Column(db.Integer(), db.ForeignKey('players.id'))
     b4 = db.Column(db.Integer(), db.ForeignKey('players.id'))
     b5 = db.Column(db.Integer(), db.ForeignKey('players.id'))
+    b1p = db.relationship('Player', foreign_keys='War.b1')
+    b2p = db.relationship('Player', foreign_keys='War.b2')
+    b3p = db.relationship('Player', foreign_keys='War.b3')
+    b4p = db.relationship('Player', foreign_keys='War.b4')
+    b5p = db.relationship('Player', foreign_keys='War.b5')
     alliance = db.relationship('Alliance', backref='war')
     opponent = db.relationship('Opponent', backref='war')
     scores = db.relationship('Score', back_populates='war', cascade='delete, delete-orphan')
     players = db.relationship('Player', secondary='scores', order_by='Player.name')
     #players = association_proxy('scores', 'players')
+
+    def winClass(self):
+        if self.our_score > self.opp_score:
+            r = 'win'
+        else:
+            r = 'loss'
+        return r
+
+    def trackedClass(self):
+        if not self.tracked:
+            r = 'untracked'
+        elif self.tracked == 1:
+            r = 'tracked'
+        else:
+            r = 'untracked'
+        return r
+
+    def trackedText(self):
+        if not self.tracked:
+            r = 'No'
+        elif self.tracked == 1:
+            r = 'Yes'
+        else:
+            r = 'Optional'
+        return r
+
+    def leagueText(self):
+        if self.league == 8:
+            r = 'Prime'
+        elif self.league == 7:
+            r = 'Cybertron'
+        elif self.league == 6:
+            r = 'Caminus'
+        return r
 
 
 class Opponent(db.Model):

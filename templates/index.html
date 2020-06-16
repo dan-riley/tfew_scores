@@ -40,11 +40,11 @@
           <div class="col-auto">
             <select class="custom-select" name="alliance_id">
               <option></option>
-              <option value="9999" {% if templates['alliance'] == 9999 %} selected {%endif %}>All
+              <option value="9999" {% if t.alliance == 9999 %} selected {%endif %}>All
               </option>
-              {% for alliance in alliances %}
+              {% for alliance in t.alliances %}
               <option value="{{alliance.id}}"
-              {% if templates['alliance'] == alliance.id %} selected {% endif %}>{{alliance.name}}
+              {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
               </option>
               {% endfor %}
             </select>
@@ -54,8 +54,8 @@
             Opponent:
           </div>
           <div class="col-auto">
-            <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{ opponents|tojson }}'>
-              <input class="form-control" type="text" name="opponent" value="{{templates['opponent']}}" autocomplete="off">
+            <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponents|tojson}}'>
+              <input class="form-control" type="text" name="opponent" value="{{t.opponent}}" autocomplete="off">
             </div>
           </div>
 
@@ -63,10 +63,10 @@
             Date Range:
           </div>
           <div class="col-auto">
-            <input class="form-control" type="date" name="start_day" value="{{templates['start_day']}}">
+            <input class="form-control" type="date" name="start_day" value="{{t.start_day}}">
           </div>
           <div class="col-auto">
-            <input class="form-control" type="date" name="end_day" value="{{templates['end_day']}}">
+            <input class="form-control" type="date" name="end_day" value="{{t.end_day}}">
           </div>
         </div>
       </form>
@@ -74,89 +74,89 @@
       <table id="summary_table" class="table table-sm table-bordered">
         <tr>
           <th class="header-right" colspan="5">Date</th>
-          {% for war in wars %}
-          <td class="sticky-top min-width {{war.winClass}} {{war.trackedClass}}">
+          {% for war in t.wars %}
+          <td class="sticky-top min-width {{war.winClass()}} {{war.trackedClass()}}">
             <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Opponent</th>
-          {% for war in wars %}
-          <td class="sticky-top-2 {{war.winClass}} {{war.trackedClass}}">
-            <a href="/?alliance_id={{templates['alliance']}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
+          {% for war in t.wars %}
+          <td class="sticky-top-2 {{war.winClass()}} {{war.trackedClass()}}">
+            <a href="/?alliance_id={{t.alliance}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">League</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
-            {{templates['leagues'][war.league]}}
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
+            {{war.leagueText()}}
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Tracked</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
-            {{templates['tracked'][war.tracked]}}
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
+            {{war.trackedText()}}
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Our Points</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
             {{war.our_score}}
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Opponent Points</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
             {{war.opp_score}}
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Base 1</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
-            {{templates['players'][war.b1]}}
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
+            {{war.b1p.name}}
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Base 2</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
-            {{templates['players'][war.b2]}}
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
+            {{war.b2p.name}}
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Base 3</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
-            {{templates['players'][war.b3]}}
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
+            {{war.b3p.name}}
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Base 4</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
-            {{templates['players'][war.b4]}}
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
+            {{war.b4p.name}}
           </td>
           {% endfor %}
         </tr>
         <tr>
           <th class="header-right" colspan="5">Base 5</th>
-          {% for war in wars %}
-          <td class="{{war.winClass}} {{war.trackedClass}}">
-            {{templates['players'][war.b5]}}
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}}">
+            {{war.b5p.name}}
           </td>
           {% endfor %}
         </tr>
@@ -169,14 +169,14 @@
           <th class="summary_sort sticky-top" id="total_sort">Total</th>
         </tr>
 
-        {% for player in players %}
+        {% for player in t.players %}
         <tr>
           <td class="header-left sticky-left"><a href="/player?player_id={{player.id}}">{{player.name}}</a></td>
           <td>{{player.trackedAvg}}</td>
           <td>{{player.untrackedAvg}}</td>
           <td>{{player.primeAvg}}</td>
           <td>{{player.totalAvg}}</td>
-          {% for war in wars %}
+          {% for war in t.wars %}
           {% set score = player.scoresRange[war.id].score %}
           {% set noAttempt = player.scoresRange[war.id].no_attempts %}
           {% set attemptsLeft = player.scoresRange[war.id].attempts_left %}
@@ -185,7 +185,7 @@
           {% if score is not defined %}
             {% set notInAlliance = True %}
           {% endif %}
-            <td class="{{war.trackedClass}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
+            <td class="{{war.trackedClass()}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
             {{score if score != None}}
           </td>
           {% endfor %}

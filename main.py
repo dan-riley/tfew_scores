@@ -1,15 +1,15 @@
 import os
-from datetime import datetime, timedelta, date
+from datetime import datetime
 import json
 import csv
 import pytz
-import operator
 from flask import Flask, render_template, request, send_file, jsonify, make_response, redirect
 from flask_script import Manager
 from flask_login import LoginManager
 from werkzeug.utils import secure_filename
 import ocr
 from models import db, Player, PlayerAction, OCR, War, Score, Opponent, Alliance
+import tfew
 
 app = Flask(__name__)
 manager = Manager(app)
@@ -23,395 +23,67 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
+# Initialize our class that holds data for easier access
+t = tfew.TFEW()
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def getIDbyName(table, name):
-    result = db.session.query(table).filter(table.name == name.strip()).first()
-    if result:
-        return result.id
-    else:
-        return False
-
-def getNamebyID(table, search_id):
-    result = db.session.query(table).filter(table.id == search_id).first()
-    if result:
-        return result.name
-    else:
-        return False
 
 @app.context_processor
 def inject_today():
     return {'today': datetime.now(pytz.timezone('US/Central')).date()}
 
-def buildAverages(player, wars):
-    totalScore = 0
-    totalCount = 0
-    totalMin = 300
-    untrackedScore = 0
-    untrackedCount = 0
-    untrackedMin = 300
-    trackedScore = 0
-    trackedCount = 0
-    trackedMin = 300
-    primeScore = 0
-    primeCount = 0
-    primeMin = 300
-    player.scoresRange = {}
-
-    # Get the scores and initial averages for this player
-    for war in wars:
-        score = player.score(war.id)
-        player.scoresRange[war.id] = score
-
-        if score and score.score is not None and not score.excused:
-            totalScore += score.score
-            totalCount += 1
-            if score.score < totalMin:
-                totalMin = score.score
-
-            if war.tracked == 0:
-                untrackedScore += score.score
-                untrackedCount += 1
-                if score.score < untrackedMin:
-                    untrackedMin = score.score
-            elif war.tracked == 1:
-                trackedScore += score.score
-                trackedCount += 1
-                if score.score < trackedMin:
-                    trackedMin = score.score
-
-            if war.league == 8 and war.tracked != 2:
-                primeScore += score.score
-                primeCount += 1
-                if score.score < primeMin:
-                    primeMin = score.score
-
-    # Remove the minimum scores if we have enough
-    if totalCount > 5:
-        totalScore -= totalMin
-        totalCount -= 1
-
-    if untrackedCount > 5:
-        untrackedScore -= untrackedMin
-        untrackedCount -= 1
-
-    if trackedCount > 5:
-        trackedScore -= trackedMin
-        trackedCount -= 1
-
-    if primeCount > 5:
-        primeScore -= primeMin
-        primeCount -= 1
-
-    # Get the initial averages without optional wars
-    totalAvg = totalScore / totalCount if totalCount else totalScore
-    untrackedAvg = untrackedScore / untrackedCount if untrackedCount else untrackedScore
-    trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
-    primeAvg = primeScore / primeCount if primeCount else primeScore
-
-    # Go back and add in optional scores
-    for war in wars:
-        if war.tracked == 2:
-            score = player.scoresRange[war.id]
-            if score and score.score is not None and not score.excused:
-                if score.score > trackedAvg:
-                    trackedScore += score.score
-                    trackedCount += 1
-
-                if war.league == 8 and score.score > primeAvg:
-                    primeScore += score.score
-                    primeCount += 1
-
-    # Recalculate the averages with the optional scores added
-    trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
-    primeAvg = primeScore / primeCount if primeCount else primeScore
-
-    # Save the final averages, rounded for display
-    player.totalAvg = round(totalAvg)
-    player.untrackedAvg = round(untrackedAvg)
-    player.trackedAvg = round(trackedAvg)
-    player.primeAvg = round(primeAvg)
-
-# Common templates for converting database entries to text
-templates = {}
-templates['players'] = {}
-templates['leagues'] = {8: 'Prime', 7: 'Cybertron', 6: 'Caminus'}
-templates['tracked'] = {0: 'No', 1: 'Yes', 2: 'Optional'}
-
 @app.route('/')
 def home_page():
-    # Default alliance.  May want a better way of setting this based on user permissions.
-    alliance = 2
-    opponent = ''
+    # Set all of the parameters based on URL params, with a default date window
+    t.setRequests(request, 21)
 
-    filt = []
-    if request.args:
-        ralliance = request.args.get('alliance_id')
-        opp_id = request.args.get('opponent_id')
-        opponent = request.args.get('opponent')
-        start_day = request.args.get('start_day')
-        end_day = request.args.get('end_day')
+    # Load lists for the template
+    t.setAlliances()
+    t.setOpponents()
+    # Pull the data we need from the database
+    t.setWars()
+    t.setPlayersByWar()
 
-        if ralliance:
-            alliance = int(ralliance)
+    # Build the player averages
+    for player in t.players:
+        t.buildAverages(player)
 
-        if opponent:
-            opp_id = getIDbyName(Opponent, opponent)
-
-        if opp_id:
-            filt.append(getattr(War, 'opponent_id') == int(opp_id))
-            if not opponent:
-                opponent = getNamebyID(Opponent, int(opp_id))
-
-        if start_day:
-            filt.append(War.date.between(start_day, end_day))
-
-    if not filt:
-        end_day = datetime.now(pytz.timezone('US/Central')).date()
-        start_day = end_day - timedelta(days=21)
-        filt = [War.date.between(start_day, end_day)]
-
-    if alliance != 9999:
-        filt.append(getattr(War, 'alliance_id') == alliance)
-    templates['alliance'] = alliance
-    templates['opponent'] = opponent
-    templates['start_day'] = start_day
-    templates['end_day'] = end_day
-
-    alliances = Alliance.query.all()
-    wars = War.query.order_by(War.date.desc()).filter(*filt).all()
-    players = Player.query.order_by(Player.name).join(Score).join(War).filter(*filt).all()
-    opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
-
-    # Set the classes for formatting
-    for war in wars:
-        if war.our_score > war.opp_score:
-            war.winClass = 'win'
-        else:
-            war.winClass = 'loss'
-
-        if not war.tracked:
-            war.trackedClass = 'untracked'
-        elif war.tracked == 1:
-            war.trackedClass = 'tracked'
-        else:
-            war.trackedClass = 'optional'
-
-    # Build the player names index for base names and get averages
-    for player in players:
-        templates['players'][player.id] = player.name
-        buildAverages(player, wars)
-
-    return render_template('index.html', alliances=alliances, opponents=opponents, players=players, wars=wars, templates=templates)
-
-class MonthlyTotal:
-    """ Helper class for tracking totals in history """
-    def __init__(self):
-        self.month = 0
-        self.year = 0
-        self.prime_wins = 0
-        self.prime_losses = 0
-        self.prime_average = 0
-        self.cyber_wins = 0
-        self.cyber_losses = 0
-        self.cyber_average = 0
-        self.spark = 0
+    return render_template('index.html', t=t)
 
 @app.route('/history')
 def history():
-    # Default alliance.  May want a better way of setting this based on user permissions.
-    alliance = 2
-    opponent = ''
+    # Set all of the parameters based on URL params
+    t.setRequests(request)
 
-    filt = []
-    end_day = None
-    start_day = None
+    # Load lists for the template
+    t.setAlliances()
+    t.setOpponents()
+    # Pull the data we need from the database
+    t.setWars()
 
-    if request.args:
-        ralliance = request.args.get('alliance_id')
-        opp_id = request.args.get('opponent_id')
-        opponent = request.args.get('opponent')
-        start_day = request.args.get('start_day')
-        end_day = request.args.get('end_day')
+    # Process data
+    totals, overall = t.getHistory()
 
-        if ralliance:
-            alliance = int(ralliance)
-
-        if opponent:
-            opp_id = getIDbyName(Opponent, opponent)
-
-        if opp_id:
-            filt.append(getattr(War, 'opponent_id') == int(opp_id))
-            if not opponent:
-                opponent = getNamebyID(Opponent, int(opp_id))
-
-        if start_day:
-            filt.append(War.date.between(start_day, end_day))
-
-    if alliance != 9999:
-        filt.append(getattr(War, 'alliance_id') == alliance)
-    templates['alliance'] = alliance
-    templates['opponent'] = opponent
-    templates['start_day'] = start_day
-    templates['end_day'] = end_day
-
-    alliances = Alliance.query.all()
-    wars = War.query.order_by(War.date.desc()).filter(*filt).all()
-    opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
-
-    totals = {}
-    for war in wars:
-        # Setup totals object
-        year = war.date.year
-        month = war.date.month
-        if year not in totals:
-            totals[year] = {}
-        if month not in totals[year]:
-            totals[year][month] = MonthlyTotal()
-            totals[year][month].month = datetime.strftime(war.date, '%b')
-            totals[year][month].year = datetime.strftime(war.date, '%y')
-
-        # Add up wins, losses and total averages
-        wins = 0
-        losses = 0
-        average = 0
-
-        if war.our_score > war.opp_score:
-            war.winClass = 'win'
-            wins = 1
-        else:
-            war.winClass = 'loss'
-            losses = 1
-
-        average = war.our_score
-
-        if not war.tracked:
-            war.trackedClass = 'untracked'
-        elif war.tracked == 1:
-            war.trackedClass = 'tracked'
-        else:
-            war.trackedClass = 'optional'
-
-        # Setup triple spark times
-        if date(2020, 3, 24) < war.date < date(2020, 5, 13):
-            multiplier = 3
-        else:
-            multiplier = 1
-
-        # Add to the totals depending on league
-        total = totals[year][month]
-        if war.league == 8:
-            total.prime_wins += wins
-            total.prime_losses += losses
-            total.prime_average += average
-            if wins:
-                total.spark += 30000 * multiplier
-            else:
-                total.spark += 10000 * multiplier
-        elif war.league == 7:
-            total.cyber_wins += wins
-            total.cyber_losses += losses
-            total.cyber_average += average
-            if wins:
-                total.spark += 15000 * multiplier
-
-    # Get the overall totals, and finish averages
-    overall = MonthlyTotal()
-    for year in totals:
-        for month in totals[year]:
-            total = totals[year][month]
-            overall.prime_wins += total.prime_wins
-            overall.prime_losses += total.prime_losses
-            overall.prime_average += total.prime_average
-            overall.cyber_wins += total.cyber_wins
-            overall.cyber_losses += total.cyber_losses
-            overall.cyber_average += total.cyber_average
-            overall.spark += total.spark
-
-            total_prime_wars = total.prime_wins + total.prime_losses
-            total_cyber_wars = total.cyber_wins + total.cyber_losses
-            if total_prime_wars:
-                total.prime_average = round(total.prime_average / total_prime_wars)
-            if total_cyber_wars:
-                total.cyber_average = round(total.cyber_average / total_cyber_wars)
-
-    overall_prime_wars = overall.prime_wins + overall.prime_losses
-    overall_cyber_wars = overall.cyber_wins + overall.cyber_losses
-
-    overall.prime_average = round(overall.prime_average / overall_prime_wars)
-    overall.cyber_average = round(overall.cyber_average / overall_cyber_wars)
-
-    return render_template('history.html', alliances=alliances, wars=wars, templates=templates, opponents=opponents, overall=overall, totals=totals)
+    return render_template('history.html', t=t, overall=overall, totals=totals)
 
 @app.route('/player')
 def player_view():
-    # Default alliance.  May want a better way of setting this based on user permissions.
-    alliance = 2
-    opponent = ''
+    # Set all of the parameters based on URL params
+    t.setRequests(request)
 
-    filt = []
-    end_day = None
-    start_day = None
+    # Load lists for the template
+    t.setAlliances()
+    t.setOpponents()
+    t.setPlayers()
+    # Pull the data we need from the database
+    t.setWarsByPlayer()
+    t.setPlayer()
 
-    if request.args:
-        rplayer = request.args.get('player_id')
-        ralliance = request.args.get('alliance_id')
-        opp_id = request.args.get('opponent_id')
-        opponent = request.args.get('opponent')
-        start_day = request.args.get('start_day')
-        end_day = request.args.get('end_day')
+    # Process data
+    t.buildAverages(t.player)
 
-        if rplayer:
-            player_id = int(rplayer)
-            filt.append(getattr(Player, 'id') == player_id)
-
-        if ralliance:
-            alliance = int(ralliance)
-
-        if opponent:
-            opp_id = getIDbyName(Opponent, opponent)
-        elif opponent == None:
-            opponent = ''
-
-        if opp_id:
-            filt.append(getattr(War, 'opponent_id') == int(opp_id))
-            if not opponent:
-                opponent = getNamebyID(Opponent, int(opp_id))
-
-        if start_day:
-            filt.append(War.date.between(start_day, end_day))
-
-    if alliance != 9999:
-        filt.append(getattr(War, 'alliance_id') == alliance)
-    templates['alliance'] = alliance
-    templates['opponent'] = opponent
-    templates['start_day'] = start_day
-    templates['end_day'] = end_day
-
-    alliances = Alliance.query.all()
-    wars = War.query.join(Score).join(Player).order_by(War.date.desc()).filter(*filt).all()
-    players = db.session.query(Player).order_by(Player.name).all()
-    opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
-
-    # Set the classes for formatting
-    for war in wars:
-        if war.our_score > war.opp_score:
-            war.winClass = 'win'
-        else:
-            war.winClass = 'loss'
-
-        if not war.tracked:
-            war.trackedClass = 'untracked'
-        elif war.tracked == 1:
-            war.trackedClass = 'tracked'
-        else:
-            war.trackedClass = 'optional'
-
-    player = db.session.query(Player).get(player_id)
-    buildAverages(player, wars)
-
-    return render_template('player.html', player=player, alliances=alliances, opponents=opponents, players=players, wars=wars, templates=templates)
+    return render_template('player.html', t=t)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
 def player_editor():
@@ -528,7 +200,7 @@ def war_editor():
         else:
             war = War()
 
-        opponent = getIDbyName(Opponent, fwar['opponent'])
+        opponent = tfew.getIDbyName(Opponent, fwar['opponent'])
         if opponent:
             war.opponent_id = opponent
         else:
@@ -678,19 +350,6 @@ def downloadFile():
     path = os.path.join(app.root_path, 'output.csv')
     return send_file(path, as_attachment=True)
 
-def getIDbyNameCSV(table, name):
-    name = name.split('-')
-    name = name[0]
-
-    if name.strip() == 'Tomcat14':
-        name = 'Preacher'
-
-    result = db.session.query(table).filter(table.name == name.strip()).first()
-    if result:
-        return result.id
-    else:
-        return ''
-
 @app.route('/import_scores')
 def importScores():
     with open(os.path.join(app.root_path, 'data/jan2_scores.csv'), 'r') as f:
@@ -725,7 +384,7 @@ def importScores():
                 count += 1
             else:
                 newwar = War()
-                opponent = getIDbyNameCSV(Opponent, row[0])
+                opponent = tfew.getIDbyNameCSV(Opponent, row[0])
                 if opponent != '':
                     newwar.opponent_id = opponent
                 else:
@@ -745,19 +404,19 @@ def importScores():
                 newwar.date = row[2]
                 newwar.opp_score = int(row[3].replace(',', ''))
 
-                b1 = getIDbyNameCSV(Player, row[6])
+                b1 = tfew.getIDbyNameCSV(Player, row[6])
                 if b1:
                     newwar.b1 = b1
-                b2 = getIDbyNameCSV(Player, row[7])
+                b2 = tfew.getIDbyNameCSV(Player, row[7])
                 if b2:
                     newwar.b2 = b2
-                b3 = getIDbyNameCSV(Player, row[8])
+                b3 = tfew.getIDbyNameCSV(Player, row[8])
                 if b3:
                     newwar.b3 = b3
-                b4 = getIDbyNameCSV(Player, row[9])
+                b4 = tfew.getIDbyNameCSV(Player, row[9])
                 if b4:
                     newwar.b4 = b4
-                b5 = getIDbyNameCSV(Player, row[10])
+                b5 = tfew.getIDbyNameCSV(Player, row[10])
                 if b5:
                     newwar.b5 = b5
 
