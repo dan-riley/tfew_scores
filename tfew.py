@@ -1,14 +1,18 @@
 from datetime import datetime, timedelta, date
 import pytz
-from models import db, Alliance, Player, War, Score, Opponent
+from models import db, Alliance, Player, PlayerAction, OCR, War, Score, Opponent
 
 class TFEW():
     """ Holds global information for the app """
 
     def __init__(self):
+        # Version control to force reload of static files
+        self.version = 'v0.90'
+        # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
-        self.player_id = 0
+        self.player_id = 218
         self.player = None
+        self.war = None
         self.opponent = ''
         self.start_day = None
         self.end_day = None
@@ -48,7 +52,7 @@ class TFEW():
 
             if self.start_day or self.end_day:
                 self.filt.append(War.date.between(self.start_day, self.end_day))
-      
+
         if dateWindow and not self.filt:
             self.end_day = datetime.now(pytz.timezone('US/Central')).date()
             self.start_day = self.end_day - timedelta(days=dateWindow)
@@ -57,6 +61,21 @@ class TFEW():
         if self.alliance != 9999:
             self.filt.append(getattr(War, 'alliance_id') == self.alliance)
 
+    def setRequestsWarEditor(self, request):
+        if request.args:
+            war_id = int(request.args.get('war_id'))
+            war = War.query.get(war_id)
+            self.alliance = war.alliance_id
+            self.players = war.players
+            ids = (player.id for player in self.players)
+            missing_players = Player.query.order_by(Player.name).filter(Player.active, ~Player.id.in_(ids)).all()
+        else:
+            war = War()
+            self.setPlayersActive()
+            missing_players = []
+
+        return war, missing_players
+
     def setAlliances(self):
         self.alliances = Alliance.query.all()
 
@@ -64,10 +83,13 @@ class TFEW():
         self.opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
 
     def setPlayers(self):
-        self.players = db.session.query(Player).order_by(Player.name).all()
+        self.players = Player.query.order_by(Player.name).all()
+
+    def setPlayersActive(self):
+        self.players = Player.query.order_by(Player.name).filter(Player.active).all()
 
     def setPlayer(self):
-        self.player = db.session.query(Player).get(self.player_id)
+        self.player = Player.query.get(self.player_id)
 
     def setWars(self):
         self.wars = War.query.order_by(War.date.desc()).filter(*self.filt).all()
@@ -166,6 +188,194 @@ class TFEW():
         player.untrackedAvg = round(untrackedAvg)
         player.trackedAvg = round(trackedAvg)
         player.primeAvg = round(primeAvg)
+
+    def updatePlayers(self, fplayers):
+        for player in self.players:
+            changed = False
+            fplayer = fplayers['players'][player.id]
+
+            # Edit the name
+            if player.name != fplayer['name']:
+                player.name = fplayer['name']
+                changed = True
+
+            # Set the active state
+            if 'active' in fplayer:
+                if not player.active:
+                    player.active = True
+                    changed = True
+            else:
+                if player.active:
+                    player.active = False
+                    changed = True
+
+            # Edit the last action or add new last action
+            lastAction = player.actions[-1]
+            if (str(lastAction.date) != fplayer['lastDate'] and
+                    str(lastAction.action) != fplayer['lastAction']):
+                newAction = PlayerAction()
+                # Temporary fix for multi-alliance.  Need to fix.
+                newAction.alliance_id = 2
+                newAction.player_id = player.id
+                newAction.date = fplayer['lastDate']
+                newAction.action = fplayer['lastAction']
+                db.session.add(newAction)
+                changed = True
+            elif (str(lastAction.date) != fplayer['lastDate'] and
+                  str(lastAction.action) == fplayer['lastAction']):
+                lastAction.date = fplayer['lastDate']
+                changed = True
+            elif (str(lastAction.action) != fplayer['lastAction'] and
+                  str(lastAction.date) == fplayer['lastDate']):
+                lastAction.action = fplayer['lastAction']
+                changed = True
+
+            # Edit the OCR strings
+            i = 0
+            for pocr in player.ocr:
+                if pocr.ocr_string != fplayer['ocr'][i]:
+                    pocr.ocr_string = fplayer['ocr'][i]
+                    changed = True
+                i += 1
+
+            if fplayer['newocr']:
+                newocr = OCR()
+                newocr.player_id = player.id
+                newocr.ocr_string = fplayer['newocr']
+                db.session.add(newocr)
+                changed = True
+
+            if changed:
+                db.session.add(player)
+
+        if fplayers['newName']:
+            newplayer = Player()
+            newplayer.name = fplayers['newName']
+            newplayer.active = True
+
+            newaction = PlayerAction()
+            # Temporary fix for multi-alliance.  Need to fix.
+            newaction.alliance_id = 2
+            newaction.date = fplayers['newActionDate']
+            newaction.action = fplayers['newAction']
+            newplayer.actions.append(newaction)
+
+            newocr = OCR()
+            newocr.ocr_string = fplayers['newName'].upper()
+            newplayer.ocr.append(newocr)
+
+            db.session.add(newplayer)
+
+        db.session.commit()
+
+    def updateWar(self, fwar):
+        # Get the war from the database, or create a new one
+        if fwar['war_id'] != 'None':
+            war = War.query.get(fwar['war_id'])
+        else:
+            war = War()
+
+        opponent = getIDbyName(Opponent, fwar['opponent'])
+        if opponent:
+            war.opponent_id = opponent
+        else:
+            newopp = Opponent()
+            newopp.name = fwar['opponent'].strip()
+            war.opponent = newopp
+
+        war.alliance_id = fwar['alliance_id']
+        war.league = fwar['league']
+        war.tracked = fwar['tracked']
+
+        war.date = fwar['date']
+        war.opp_score = fwar['opp_score']
+        war.our_score = fwar['our_score']
+
+        if fwar['b1']:
+            war.b1 = fwar['b1']
+        else:
+            war.b1 = None
+        if fwar['b2']:
+            war.b2 = fwar['b2']
+        else:
+            war.b2 = None
+        if fwar['b3']:
+            war.b3 = fwar['b3']
+        else:
+            war.b3 = None
+        if fwar['b4']:
+            war.b4 = fwar['b4']
+        else:
+            war.b4 = None
+        if fwar['b5']:
+            war.b5 = fwar['b5']
+        else:
+            war.b5 = None
+
+        if war.scores:
+            for score in war.scores:
+                fplayer = fwar['players'][score.player_id]
+                if fplayer['score']:
+                    score.score = int(fplayer['score'].strip())
+                else:
+                    score.score = None
+
+                # Get all of the checkboxes
+                if 'excused' in fplayer:
+                    if not score.excused:
+                        score.excused = True
+                else:
+                    if score.excused:
+                        score.excused = False
+
+                if 'attempts_left' in fplayer:
+                    if not score.attempts_left:
+                        score.attempts_left = True
+                else:
+                    if score.attempts_left:
+                        score.attempts_left = False
+
+                if 'no_attempts' in fplayer:
+                    if not score.no_attempts:
+                        score.no_attempts = True
+                else:
+                    if score.no_attempts:
+                        score.no_attempts = False
+        else:
+            for fplayer in fwar['players']:
+                if fplayer:
+                    if (fplayer['score'] or 'excused' in fplayer or
+                                            'attempts_left' in fplayer or
+                                            'no_attempts' in fplayer):
+                        # TODO It doesn't look like checkboxes work on the first submit?!
+                        newscore = Score()
+                        if fplayer['score']:
+                            newscore.score = int(fplayer['score'].strip())
+                        else:
+                            newscore.score = None
+                        newscore.player = Player.query.get(fplayer['id'])
+                        war.scores.append(newscore)
+
+        for fplayer in fwar['missing_players']:
+            if fplayer:
+                if (fplayer['score'] or 'excused' in fplayer or
+                                        'attempts_left' in fplayer or
+                                        'no_attempts' in fplayer):
+                    newscore = Score()
+                    if fplayer['score']:
+                        newscore.score = int(fplayer['score'].strip())
+                    else:
+                        newscore.score = None
+                    newscore.player = Player.query.get(fplayer['id'])
+                    war.scores.append(newscore)
+
+        db.session.add(war)
+        db.session.commit()
+
+    def deleteWar(self, war_id):
+        war = War.query.get(war_id)
+        db.session.delete(war)
+        db.session.commit()
 
     def getHistory(self):
         totals = {}

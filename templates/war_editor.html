@@ -1,28 +1,16 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends 'base.html' %}
 
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='war_editor.js')+v}}"></script>
+{% endblock %}
 
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous">
-    </script>
+{% block title %}War Editor{% endblock %}
+{% block header %}TFEW War Editor{% endblock %}
+{% block nav_war_editor %}active{% endblock %}
 
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+{% block update_form %}{% endblock %}
 
-    <script type="text/javascript" src="{{url_for('static', filename='jquery.serialize-object.min.js')}}"></script>
-
-    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
-    <script type="text/javascript" src="{{url_for('static', filename='common.js')}}"></script>
-    <script type="text/javascript" src="{{url_for('static', filename='war_editor.js')}}"></script>
-
-    <title>War Editor</title>
-  </head>
-  <body>
-    <div class="container">
-      <a href="/">Home</a><br />
-      <h1>TFEW War Editor</h1>
+{% block content %}
       <form method="POST">
         <input type="hidden" name="war_id" value="{{war.id}}">
         <table class="table table-sm w-auto">
@@ -31,9 +19,9 @@
             <td>
               <select class="custom-select" name="alliance_id">
                 <option></option>
-                {% for alliance in alliances %}
+                {% for alliance in t.alliances %}
                 <option value="{{alliance.id}}"
-                {% if alliance_id == alliance.id %} selected {% endif %}>{{alliance.name}}
+                {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
                 </option>
                 {% endfor %}
               </select>
@@ -42,7 +30,7 @@
           <tr>
             <th>Opponent</th>
             <td>
-              <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{ opponents|tojson }}'>
+              <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponents|tojson}}'>
                 <input class="form-control" type="text" name="opponent" value="{{war.opponent.name}}" autocomplete="off">
               </div>
             </td>
@@ -100,7 +88,7 @@
             <td>
               <select class="custom-select" name="b1">
                 <option></option>
-                {% for player in players %}
+                {% for player in t.players %}
                 <option value="{{player.id}}"
                 {% if war.b1 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -112,7 +100,7 @@
             <td>
               <select class="custom-select" name="b2">
                 <option></option>
-                {% for player in players %}
+                {% for player in t.players %}
                 <option value="{{player.id}}"
                 {% if war.b2 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -124,7 +112,7 @@
             <td>
               <select class="custom-select" name="b3">
                 <option></option>
-                {% for player in players %}
+                {% for player in t.players %}
                 <option value="{{player.id}}"
                 {% if war.b3 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -136,7 +124,7 @@
             <td>
               <select class="custom-select" name="b4">
                 <option></option>
-                {% for player in players %}
+                {% for player in t.players %}
                 <option value="{{player.id}}"
                 {% if war.b4 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -148,7 +136,7 @@
             <td>
               <select class="custom-select" name="b5">
                 <option></option>
-                {% for player in players %}
+                {% for player in t.players %}
                 <option value="{{player.id}}"
                 {% if war.b5 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -167,7 +155,7 @@
             </tr>
           </thead>
 
-          {% for player in players %}
+          {% for player in t.players %}
           <tr class="d-flex">
             <td class="col-5">
               <input type="hidden" name="players[{{player.id}}][id]" value="{{player.id}}">
@@ -248,6 +236,4 @@
       </form>
       <div id="alert_wrapper"></div>
       <div class="row">&nbsp;</div>
-    </div>
-  </body>
-</html>
+{% endblock %}

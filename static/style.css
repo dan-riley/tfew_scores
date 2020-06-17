@@ -1,3 +1,7 @@
+body {
+  padding-top: 65px;
+}
+
 #scores_table td {
   padding: 0;
 }
@@ -69,10 +73,14 @@
   background: white;
 }
 
+.sticky-top {
+  top: 56px;
+}
+
 .sticky-top-2 {
   position: -webkit-sticky;
   position: sticky;
-  top: 2.3em;
+  top: 84px;
   z-index: 1020;
 }
 

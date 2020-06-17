@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.7, shrink-to-fit=no">
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous">
+    </script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="{{url_for('static', filename='jquery.serialize-object.min.js')}}"></script>
+
+    {% set v = '?' + t.version %}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')+v}}">
+    <script type="text/javascript" src="{{url_for('static', filename='common.js')+v}}"></script>
+    {% block loadjs %}{% endblock %}
+
+    <title>{% block title %}TFEW Scoreboard{% endblock %}</title>
+  </head>
+  <body>
+    <nav class="navbar fixed-top navbar-expand navbar-light bg-light">
+      <div class="navbar-collapse" id="menu">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item {% block nav_home %}{% endblock %}">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item {% block nav_war_editor %}{% endblock %}">
+            <a class="nav-link" href="/war_editor">New War</a>
+          </li>
+          <li class="nav-item {% block nav_history %}{% endblock %}">
+            <a class="nav-link" href="/history">War History</a>
+          </li>
+          <li class="nav-item {% block nav_player %}{% endblock %}">
+            <a class="nav-link" href="/player">Player Detail</a>
+          </li>
+          <li class="nav-item {% block nav_player_editor %}{% endblock %}">
+            <a class="nav-link" href="/player_editor">Edit Players</a>
+          </li>
+          <li class="nav-item {% block nav_upload %}{% endblock %}">
+            <a class="nav-link" href="/upload">AI Scores</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1>{% block header %}TFEW Scoreboard{% endblock %}</h1>
+
+      {% block update_form %}
+      <form method="GET">
+        <div class="d-flex">
+          <input class="btn btn-primary" type="submit" name="submit" value="Update Table">
+          <input type="hidden" name="player_id" value="{{t.player.id}}">
+          <div class="col-auto">
+            Alliance:
+          </div>
+          <div class="col-auto">
+            <select class="custom-select" name="alliance_id">
+              <option></option>
+              <option value="9999" {% if t.alliance == 9999 %} selected {% endif %}>All
+              </option>
+              {% for alliance in t.alliances %}
+              <option value="{{alliance.id}}"
+              {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-auto">
+            Opponent:
+          </div>
+          <div class="col-auto">
+            <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponents|tojson}}'>
+              <input class="form-control" type="text" name="opponent" value="{{t.opponent}}" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="col-auto">
+            Date Range:
+          </div>
+          <div class="col-auto">
+            <input class="form-control" type="date" name="start_day" value="{{t.start_day}}">
+          </div>
+          <div class="col-auto">
+            <input class="form-control" type="date" name="end_day" value="{{t.end_day}}">
+          </div>
+        </div>
+      </form>
+      {% endblock %}
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>
