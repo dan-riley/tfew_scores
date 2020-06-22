@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length
 
 class SignupForm(FlaskForm):
+    auth = PasswordField('Enter Code Provided', validators=[DataRequired()])
     name = StringField(
         'TFEW Player Name',
         validators=[DataRequired()]

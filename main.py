@@ -41,6 +41,18 @@ def officer_required(f):
         return f(*args, **kwargs)
     return decorated_view
 
+def self_required(f):
+    # Determine if the logged in user is logged in and the requested player or an officer
+    @wraps(f)
+    def decorated_view(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return login_manager.unauthorized()
+        if not current_user.officer and request.args.get('player_id') and current_user.id != int(request.args.get('player_id')):
+            flash('You must be the requested player or an officer to view that page')
+            return redirect(url_for('home_page'))
+        return f(*args, **kwargs)
+    return decorated_view
+
 @app.context_processor
 def inject_today():
     return {'today': datetime.now(pytz.timezone('US/Central')).date()}
@@ -88,13 +100,13 @@ def signup():
     if form.validate_on_submit():
         user = Player.query.filter_by(name=form.name.data).first()
         # If the user exists and does NOT have a password allow the password setting
-        if user and user.password_hash is None:
+        if user and user.password_hash is None and form.auth.data == app.config['AUTH_CODE']:
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()
             login_user(user)
             return redirect(url_for('home_page'))
-        flash('This is not a user or already has a password set')
+        flash('This is not a user or already has a password set '+form.auth.data+app.config['AUTH_CODE'])
     return render_template('signup.html', t=t, form=form)
 
 @app.route('/')
@@ -142,7 +154,7 @@ def history():
     return render_template('history.html', t=t, overall=overall, totals=totals)
 
 @app.route('/player')
-@login_required
+@self_required
 def player_view():
     # Manually set the player to the logged in user if none requested
     if not request.args:

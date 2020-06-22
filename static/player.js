@@ -81,20 +81,20 @@ var Player = (function() {
 
     document.getElementById('base_sort').addEventListener('click', function() {
       if (lastSort == 5)
-        baseSort = (baseSort == 'asc') ? 'desc' : 'asc';
+        baseOrder = (baseOrder == 'asc') ? 'desc' : 'asc';
       else
-        baseSort = 'desc';
+        baseOrder = 'desc';
       lastSort = 5;
-      sortTable(player_table, lastSort, baseSort)
+      sortTable(player_table, lastSort, baseOrder)
     });
 
     document.getElementById('score_sort').addEventListener('click', function() {
       if (lastSort == 6)
-        scoreSort = (baseSort == 'asc') ? 'desc' : 'asc';
+        scoreOrder = (scoreOrder == 'asc') ? 'desc' : 'asc';
       else
-        scoreSort = 'desc';
+        scoreOrder = 'desc';
       lastSort = 6;
-      sortTable(player_table, lastSort, scoreSort)
+      sortTable(player_table, lastSort, scoreOrder)
     });
   }
 })();

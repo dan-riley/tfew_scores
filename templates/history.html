@@ -46,17 +46,21 @@
       <div class="col-md-6 table-responsive float-sm-none float-md-left">
         <table id="history_table" class="table table-sm table-bordered">
           <tr>
-            <th class="sticky-top">Date</th>
-            <th class="sticky-top">Opponent</th>
-            <th class="sticky-top">League</th>
-            <th class="sticky-top">Our Points</th>
-            <th class="sticky-top">Opp Points</th>
+            <th class="history_sort sticky-top sorted-down" id="date_sort">Date</th>
+            <th class="history_sort sticky-top sorted-none" id="opponent_sort">Opponent</th>
+            <th class="history_sort sticky-top sorted-none" id="league_sort">League</th>
+            <th class="history_sort sticky-top sorted-none" id="our_points_sort">Our Points</th>
+            <th class="history_sort sticky-top sorted-none" id="opp_points_sort">Opp Points</th>
           </tr>
 
           {% for war in t.wars %}
           <tr>
             <td class="center {{war.winClass()}} {{war.trackedClass()}}">
+              {% if current_user.officer %}
               <a href="{{url_for('war_editor', war_id=war.id)}}">{{war.date}}</a>
+              {% else %}
+              {{war.date}}
+              {% endif %}
             </td>
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
               <a href="{{url_for('history', alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>
