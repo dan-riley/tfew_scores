@@ -22,32 +22,51 @@
   </head>
   <body>
     <nav class="navbar fixed-top navbar-expand navbar-light bg-light">
-      <div class="navbar-collapse" id="menu">
+      <div class="navbar-collapse">
         <ul class="navbar-nav mr-auto">
+          {% if current_user.is_authenticated %}
           <li class="nav-item {% block nav_home %}{% endblock %}">
-            <a class="nav-link" href="/">Home</a>
-          </li>
-          <li class="nav-item {% block nav_war_editor %}{% endblock %}">
-            <a class="nav-link" href="/war_editor">New War</a>
+              <a class="nav-link" href="{{url_for('scoreboard')}}">Scoreboard</a>
           </li>
           <li class="nav-item {% block nav_history %}{% endblock %}">
-            <a class="nav-link" href="/history">War History</a>
+            <a class="nav-link" href="{{url_for('history')}}">War History</a>
           </li>
           <li class="nav-item {% block nav_player %}{% endblock %}">
-            <a class="nav-link" href="/player">Player Detail</a>
+            <a class="nav-link" href="{{url_for('player_view')}}">Player Detail</a>
           </li>
+          {% if current_user.officer %}
           <li class="nav-item {% block nav_player_editor %}{% endblock %}">
-            <a class="nav-link" href="/player_editor">Edit Players</a>
+            <a class="nav-link" href="{{url_for('player_editor')}}">Edit Players</a>
+          </li>
+          <li class="nav-item {% block nav_war_editor %}{% endblock %}">
+            <a class="nav-link" href="{{url_for('war_editor')}}">New War</a>
           </li>
           <li class="nav-item {% block nav_upload %}{% endblock %}">
-            <a class="nav-link" href="/upload">AI Scores</a>
+            <a class="nav-link" href="{{url_for('upload')}}">AI Scores</a>
           </li>
+          {% endif %}
+          {% endif %}
+        </ul>
+      </div>
+      <div class="navbar-collapse">
+        <ul class="navbar-nav ml-auto">
+          {% if current_user.is_authenticated %}
+           <li class="nav-item {% block nav_logout %}{% endblock %}">
+            <a class="nav-link" href="{{url_for('logout')}}">Logout</a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </nav>
 
     <div class="container">
       <h1>{% block header %}TFEW Scoreboard{% endblock %}</h1>
+      {% for message in get_flashed_messages() %}
+      <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{message}}
+      </div>
+      {% endfor %}
 
       {% block update_form %}
       <form method="GET">

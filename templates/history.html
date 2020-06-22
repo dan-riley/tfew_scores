@@ -56,10 +56,10 @@
           {% for war in t.wars %}
           <tr>
             <td class="center {{war.winClass()}} {{war.trackedClass()}}">
-              <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
+              <a href="{{url_for('war_editor', war_id=war.id)}}">{{war.date}}</a>
             </td>
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
-              <a href="/history?alliance_id={{t.alliance}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
+              <a href="{{url_for('history', alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>
             </td>
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
               {{war.leagueText()}}

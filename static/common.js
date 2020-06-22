@@ -23,10 +23,24 @@ function compareValuesFlask(a, b, order) {
 
 function sortTable(table, colnum, order, skip=1) {
   let rows = Array.from(table.querySelectorAll('tr'));
+
+  // Set the sort icon on the table header
+  var headers = document.querySelectorAll('[class*=sorted-]');
+  [].forEach.call(headers, function(header) {
+    header.classList.add('sorted-none');
+    header.classList.remove('sorted-up');
+    header.classList.remove('sorted-down');
+  });
+  var sorted = 'sorted-up';
+  if (order == 'desc') sorted = 'sorted-down'
+  let qs = `th:nth-child(${colnum})`;
+  var sorter = rows[skip-1].querySelector(qs);
+  sorter.classList.add(sorted);
+  sorter.classList.remove('sorted-none');
+
   rows = rows.slice(skip);
 
-  let qs = `td:nth-child(${colnum})`;
-
+  qs = `td:nth-child(${colnum})`;
   rows.sort((r1, r2) => {
     let t1 = r1.querySelector(qs);
     let t2 = r2.querySelector(qs);

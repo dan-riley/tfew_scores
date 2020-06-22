@@ -17,6 +17,7 @@
               <th></th>
               <th>Name</th>
               <th>Active</th>
+              <th>Officer</th>
               <th>Last Action</th>
               <th>OCR Strings</th>
               <th colspan="100"></th>
@@ -33,6 +34,16 @@
               <input class="form-control" type="checkbox" name="players[{{player.id}}][active]" value="{{player.id}}"
               {% if player.active %}
                 checked
+              {% endif %}
+              >
+            </td>
+            <td>
+              <input class="form-control" type="checkbox" name="players[{{player.id}}][officer]" value="{{player.id}}"
+              {% if player.officer %}
+                checked
+              {% endif %}
+              {% if not player.password_hash %}
+                disabled
               {% endif %}
               >
             </td>
@@ -89,6 +100,9 @@
             </td>
             <td>
               <input class="form-control" type="checkbox" name="newActive" value="new" checked disabled>
+            </td>
+            <td>
+              <input class="form-control" type="checkbox" name="newOfficer" value="new" disabled>
             </td>
             <td>
               <input class="form-control" type="date" name="newActionDate" value="{{today}}">

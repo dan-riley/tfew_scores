@@ -7,7 +7,7 @@ class TFEW():
 
     def __init__(self):
         # Version control to force reload of static files
-        self.version = 'v0.90'
+        self.version = 'v0.91'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 218
@@ -79,8 +79,11 @@ class TFEW():
     def setAlliances(self):
         self.alliances = Alliance.query.all()
 
-    def setOpponents(self):
+    def setOpponentsList(self):
         self.opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
+
+    def setPlayersList(self):
+        self.players = [player.name for player in Player.query.order_by('name').all()]
 
     def setPlayers(self):
         self.players = Player.query.order_by(Player.name).all()
@@ -209,6 +212,16 @@ class TFEW():
                     player.active = False
                     changed = True
 
+            # Set whether the player is an officer, but only if they've logged in before
+            if 'officer' in fplayer:
+                if not player.officer and player.password_hash:
+                    player.officer = True
+                    changed = True
+            else:
+                if player.officer:
+                    player.officer = False
+                    changed = True
+
             # Edit the last action or add new last action
             lastAction = player.actions[-1]
             if (str(lastAction.date) != fplayer['lastDate'] and
@@ -252,6 +265,10 @@ class TFEW():
             newplayer = Player()
             newplayer.name = fplayers['newName']
             newplayer.active = True
+
+            # For now we require a player to have logged in before giving officer rights
+            # if 'newOfficer' in fplayers:
+            #     newplayer.officer = True
 
             newaction = PlayerAction()
             # Temporary fix for multi-alliance.  Need to fix.

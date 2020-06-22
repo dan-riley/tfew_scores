@@ -3,25 +3,25 @@ from datetime import datetime
 import json
 import csv
 import pytz
-from flask import Flask, render_template, request, send_file, jsonify, make_response, redirect
+from flask import Flask, render_template, flash, request, send_file, jsonify, make_response, redirect, url_for
 from flask_script import Manager
-from flask_login import LoginManager
+from flask_login import LoginManager, login_required, current_user, login_user, logout_user
+from functools import wraps
 from werkzeug.utils import secure_filename
 import ocr
 from models import db, Player, PlayerAction, OCR, War, Score, Opponent
+from forms import LoginForm, SignupForm
 import tfew
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 manager = Manager(app)
-login = LoginManager(app)
+login_manager = LoginManager(app)
 
-UPLOAD_FOLDER = os.path.join(app.root_path, 'upload')
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'mp4', 'mov'])
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://***REMOVED***'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+app.config.from_object('config.Config')
+app.config.from_pyfile('config.py')
 db.init_app(app)
+login_manager.init_app(app)
 
 # Initialize our class that holds data for easier access
 t = tfew.TFEW()
@@ -29,18 +29,91 @@ t = tfew.TFEW()
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def officer_required(f):
+    # Determine if the logged in user is logged in and an officer
+    @wraps(f)
+    def decorated_view(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return login_manager.unauthorized()
+        if not current_user.officer:
+            flash('You must be an officer to view that page')
+            return redirect(url_for('home_page'))
+        return f(*args, **kwargs)
+    return decorated_view
+
 @app.context_processor
 def inject_today():
     return {'today': datetime.now(pytz.timezone('US/Central')).date()}
 
+@login_manager.user_loader
+def load_user(user_id):
+    return Player.query.get(user_id)
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    flash('You must be logged in to view that page')
+    return redirect(url_for('login', next=request.endpoint))
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    # Bypass if user is logged in
+    if current_user.is_authenticated:
+        return redirect(url_for('home_page'))
+
+    form = LoginForm()
+    # Validate login attempt
+    if form.validate_on_submit():
+        user = Player.query.filter_by(name=form.name.data).first()
+        if user and user.check_password(password=form.password.data):
+            login_user(user)
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('home_page'))
+        flash('Invalid username/password combination')
+        return redirect(url_for('login'))
+    return render_template('login.html', t=t, form=form)
+
+@app.route("/logout", methods=["GET"])
+@login_required
+def logout():
+    """Logout the current user."""
+    user = current_user
+    user.authenticated = False
+    logout_user()
+    return redirect(url_for('home_page'))
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    t.setPlayersList()
+    form = SignupForm()
+    if form.validate_on_submit():
+        user = Player.query.filter_by(name=form.name.data).first()
+        # If the user exists and does NOT have a password allow the password setting
+        if user and user.password_hash is None:
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            login_user(user)
+            return redirect(url_for('home_page'))
+        flash('This is not a user or already has a password set')
+    return render_template('signup.html', t=t, form=form)
+
 @app.route('/')
 def home_page():
+    # Default page for a logged in user is the scoreboard.  Otherwise login.
+    if current_user.is_authenticated:
+        return redirect(url_for('scoreboard'))
+
+    return redirect(url_for('login'))
+
+@app.route('/scoreboard')
+@login_required
+def scoreboard():
     # Set all of the parameters based on URL params, with a default date window
     t.setRequests(request, 21)
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponents()
+    t.setOpponentsList()
     # Pull the data we need from the database
     t.setWars()
     t.setPlayersByWar()
@@ -49,16 +122,17 @@ def home_page():
     for player in t.players:
         t.buildAverages(player)
 
-    return render_template('index.html', t=t)
+    return render_template('scoreboard.html', t=t)
 
 @app.route('/history')
+@login_required
 def history():
     # Set all of the parameters based on URL params
     t.setRequests(request)
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponents()
+    t.setOpponentsList()
     # Pull the data we need from the database
     t.setWars()
 
@@ -68,14 +142,20 @@ def history():
     return render_template('history.html', t=t, overall=overall, totals=totals)
 
 @app.route('/player')
+@login_required
 def player_view():
+    # Manually set the player to the logged in user if none requested
+    if not request.args:
+        t.player_id = current_user.id
+        request.args = {'player_id': t.player_id}
+
     # Set all of the parameters based on URL params
     t.setRequests(request)
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponents()
-    t.setPlayers()
+    t.setOpponentsList()
+    t.setPlayersList()
     # Pull the data we need from the database
     t.setWarsByPlayer()
     t.setPlayer()
@@ -86,6 +166,7 @@ def player_view():
     return render_template('player.html', t=t)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
+@officer_required
 def player_editor():
     t.setPlayers()
 
@@ -96,9 +177,10 @@ def player_editor():
     return render_template('player_editor.html', t=t)
 
 @app.route('/war_editor', methods=['GET', 'POST'])
+@officer_required
 def war_editor():
     t.setAlliances()
-    t.setOpponents()
+    t.setOpponentsList()
 
     if request.method == 'GET':
         war, missing_players = t.setRequestsWarEditor(request)
@@ -110,14 +192,16 @@ def war_editor():
     return render_template('war_editor.html', t=t, war=war, missing_players=missing_players)
 
 @app.route('/delete_war', methods=['GET'])
+@officer_required
 def delete_war():
     if request.method == 'GET':
         if request.args:
             t.deleteWar(int(request.args.get('war_id')))
 
-    return redirect('/')
+    return redirect(url_for('home_page'))
 
 @app.route('/upload', methods=['GET', 'POST'])
+@officer_required
 def upload():
     if request.method == 'POST':
         file = request.files['file']
@@ -142,6 +226,7 @@ def upload():
     return render_template('upload.html', t=t)
 
 @app.route('/load_scores', methods=['GET', 'POST'])
+@officer_required
 def loadScores():
     if request.method == 'POST':
         with open(os.path.join(app.root_path, 'scores.json'), 'r') as fo:
@@ -152,11 +237,13 @@ def loadScores():
     return render_template('upload.html')
 
 @app.route('/download')
+@officer_required
 def downloadFile():
     path = os.path.join(app.root_path, 'output.csv')
     return send_file(path, as_attachment=True)
 
 @app.route('/import_scores')
+@officer_required
 def importScores():
     with open(os.path.join(app.root_path, 'data/jan2_scores.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
@@ -253,6 +340,7 @@ def importScores():
     return render_template('import_scores.html')
 
 @app.route('/import_blanks')
+@officer_required
 def importBlanks():
     with open(os.path.join(app.root_path, 'data/jan2_scores.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')

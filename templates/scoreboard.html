@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block loadjs %}
-    <script type="text/javascript" src="{{url_for('static', filename='main.js')+v}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='scoreboard.js')+v}}"></script>
 {% endblock %}
 
 {% block title %}TFEW Scoreboard{% endblock %}
@@ -14,7 +14,7 @@
           <th class="header-right" colspan="5">Date</th>
           {% for war in t.wars %}
           <td class="sticky-top min-width {{war.winClass()}} {{war.trackedClass()}}">
-            <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
+            <a href="{{url_for('war_editor', war_id=war.id)}}">{{war.date}}</a>
           </td>
           {% endfor %}
         </tr>
@@ -22,7 +22,7 @@
           <th class="header-right" colspan="5">Opponent</th>
           {% for war in t.wars %}
           <td class="sticky-top-2 {{war.winClass()}} {{war.trackedClass()}}">
-            <a href="/?alliance_id={{t.alliance}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
+            <a href="{{url_for('scoreboard', alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>
           </td>
           {% endfor %}
         </tr>
@@ -100,16 +100,16 @@
         </tr>
 
         <tr>
-          <th class="summary_sort sticky-top" id="player_sort">Player</th>
-          <th class="summary_sort sticky-top" id="tracked_sort">Tracked</th>
-          <th class="summary_sort sticky-top" id="untracked_sort">Untracked</th>
-          <th class="summary_sort sticky-top" id="prime_sort">Prime</th>
-          <th class="summary_sort sticky-top" id="total_sort">Total</th>
+          <th class="summary_sort sticky-top-left sorted-up" id="player_sort">Player</th>
+          <th class="summary_sort sticky-top sorted-none" id="tracked_sort">Tracked</th>
+          <th class="summary_sort sticky-top sorted-none" id="untracked_sort">Untracked</th>
+          <th class="summary_sort sticky-top sorted-none" id="prime_sort">Prime</th>
+          <th class="summary_sort sticky-top sorted-none" id="total_sort">Total</th>
         </tr>
 
         {% for player in t.players %}
         <tr>
-          <td class="header-left sticky-left"><a href="/player?player_id={{player.id}}">{{player.name}}</a></td>
+          <td class="header-left sticky-left"><a href="{{url_for('player_view', player_id=player.id)}}">{{player.name}}</a></td>
           <td>{{player.trackedAvg}}</td>
           <td>{{player.untrackedAvg}}</td>
           <td>{{player.primeAvg}}</td>

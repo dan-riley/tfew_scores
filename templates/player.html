@@ -37,20 +37,20 @@
       <div class="col-6">
         <table id="player_table" class="player_table table table-sm table-bordered">
           <tr>
-            <th class="player_sort sticky-top min-width" id="date_sort">Date</th>
-            <th class="player_sort sticky-top" id="opponent_sort">Opponent</th>
-            <th class="player_sort sticky-top" id="league_sort">League</th>
-            <th class="player_sort sticky-top min-width" id="points_sort">Total Points</th>
-            <th class="player_sort sticky-top" id="base_sort">Base</th>
-            <th class="player_sort sticky-top" id="score_sort">Score</th>
+            <th class="player_sort sticky-top min-width sorted-down" id="date_sort">Date</th>
+            <th class="player_sort sticky-top sorted-none" id="opponent_sort">Opponent</th>
+            <th class="player_sort sticky-top sorted-none" id="league_sort">League</th>
+            <th class="player_sort sticky-top min-width sorted-none" id="points_sort">Total Points</th>
+            <th class="player_sort sticky-top sorted-none" id="base_sort">Base</th>
+            <th class="player_sort sticky-top sorted-none" id="score_sort">Score</th>
           </tr>
           {% for war in t.wars %}
           <tr>
             <td class="min-width {{war.winClass()}} {{war.trackedClass()}}">
-              <a href="/war_editor?war_id={{war.id}}">{{war.date}}</a>
+              <a href="{{url_for('war_editor', war_id=war.id)}}">{{war.date}}</a>
             </td>
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
-              <a href="/player?player_id={{t.player.id}}&alliance_id={{t.alliance}}&opponent_id={{war.opponent_id}}">{{war.opponent.name}}</a>
+              <a href="{{url_for('player_view', player_id=t.player.id, alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>
             </td>
             <td class="{{war.winClass()}} {{war.trackedClass()}}">
               {{war.leagueText()}}
