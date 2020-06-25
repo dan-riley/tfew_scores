@@ -7,6 +7,10 @@ body {
   padding-top: 65px;
 }
 
+.table td, .table th {
+  vertical-align: middle;
+}
+
 #scores_table td {
   padding: 0;
 }
@@ -82,14 +86,14 @@ body {
 .sticky-top-left {
   position: -webkit-sticky;
   position: sticky;
-  top: 56px;
+  top: 55px;
   left: 0px;
   background: white;
   z-index: 1025;
 }
 
 .sticky-top {
-  top: 56px;
+  top: 55px;
 }
 
 .sticky-top-2 {
@@ -97,6 +101,12 @@ body {
   position: sticky;
   top: 84px;
   z-index: 1020;
+}
+
+.sticky-bottom {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
 }
 
 .header-left {
@@ -220,7 +230,7 @@ body {
 .sorted-none:before,
 .sorted-none:after,
 .sorted-down:after,
-.sorted-up:after{
+.sorted-up:after {
   border: 4px solid transparent;
   content: ' ';
   display: block;
@@ -241,12 +251,30 @@ body {
   margin-top: 1px;
 }
 
-.sorted-down:after{
+.sorted-down:after {
   margin-top: 1px;
   border-top-color: black;
 }
 
-.sorted-up:after{
+.sorted-up:after {
   margin-top: -9px;
   border-bottom-color: black;
+}
+
+.update-label {
+  margin-bottom: 0px;
+  font-size: 0.8em;
+}
+
+.edit-score {
+  max-width: 7em;
+}
+
+@media (max-width: 610px) {
+  .nav-link {
+    font-size: 0.7rem;
+  }
+  .sticky-top, .sticky-top-left {
+    top: 48px;
+  }
 }

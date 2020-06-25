@@ -7,17 +7,20 @@ class TFEW():
 
     def __init__(self):
         # Version control to force reload of static files
-        self.version = 'v0.91'
+        self.version = 'v0.92'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 218
         self.player = None
         self.war = None
-        self.opponent = ''
+        self.playerName = ''
+        self.opponentName = ''
         self.start_day = None
         self.end_day = None
 
         self.alliances = []
+        self.opponentsList = []
+        self.playersList = []
         self.opponents = []
         self.players = []
         self.wars = []
@@ -26,29 +29,37 @@ class TFEW():
     def setRequests(self, request, dateWindow=0):
         self.filt = []
         if request.args:
-            rplayer = request.args.get('player_id')
+            player_id = request.args.get('player_id')
+            self.playerName = request.args.get('player')
             ralliance = request.args.get('alliance_id')
             opp_id = request.args.get('opponent_id')
-            self.opponent = request.args.get('opponent')
+            self.opponentName = request.args.get('opponent')
             self.start_day = request.args.get('start_day')
             self.end_day = request.args.get('end_day')
-
-            if rplayer:
-                self.player_id = int(rplayer)
-                self.filt.append(getattr(Player, 'id') == self.player_id)
 
             if ralliance:
                 self.alliance = int(ralliance)
 
-            if self.opponent:
-                opp_id = getIDbyName(Opponent, self.opponent)
-            elif self.opponent is None:
-                self.opponent = ''
+            if self.playerName:
+                player_id = getIDbyName(Player, self.playerName)
+            elif self.playerName is None:
+                self.playerName = ''
+
+            if player_id:
+                self.player_id = int(player_id)
+                self.filt.append(getattr(Player, 'id') == self.player_id)
+                if not self.opponentName:
+                    self.playerName = getNamebyID(Player, int(player_id))
+
+            if self.opponentName:
+                opp_id = getIDbyName(Opponent, self.opponentName)
+            elif self.opponentName is None:
+                self.opponentName = ''
 
             if opp_id:
                 self.filt.append(getattr(War, 'opponent_id') == int(opp_id))
-                if not self.opponent:
-                    self.opponent = getNamebyID(Opponent, int(opp_id))
+                if not self.opponentName:
+                    self.opponentName = getNamebyID(Opponent, int(opp_id))
 
             if self.start_day or self.end_day:
                 self.filt.append(War.date.between(self.start_day, self.end_day))
@@ -80,10 +91,10 @@ class TFEW():
         self.alliances = Alliance.query.all()
 
     def setOpponentsList(self):
-        self.opponents = [opp.name for opp in Opponent.query.order_by('name').all()]
+        self.opponentsList = [opp.name for opp in Opponent.query.order_by('name').all()]
 
     def setPlayersList(self):
-        self.players = [player.name for player in Player.query.order_by('name').all()]
+        self.playersList = [player.name for player in Player.query.order_by('name').all()]
 
     def setPlayers(self):
         self.players = Player.query.order_by(Player.name).all()

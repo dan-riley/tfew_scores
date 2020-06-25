@@ -7,8 +7,8 @@ var WarEditor = (function() {
     players = document.querySelectorAll("input[name^=players][name*=score]");
 
     // Initialize autocomplete
-    var acdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
-    autocomplete(document.getElementsByName('opponent')[0], acdata);
+    var oppdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
+    autocomplete(document.getElementsByName('opponent')[0], oppdata);
 
     // Setup auto-totaler for our score
     for (var i=0; i < players.length; i++) {

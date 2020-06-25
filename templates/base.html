@@ -70,13 +70,9 @@
 
       {% block update_form %}
       <form method="GET">
-        <div class="d-flex">
-          <input class="btn btn-primary" type="submit" name="submit" value="Update Table">
-          <input type="hidden" name="player_id" value="{{t.player.id}}">
+        <div class="form-row">
           <div class="col-auto">
-            Alliance:
-          </div>
-          <div class="col-auto">
+            <label for="alliance_id" class="update-label">Alliance</label>
             <select class="custom-select" name="alliance_id">
               <option></option>
               <option value="9999" {% if t.alliance == 9999 %} selected {% endif %}>All
@@ -89,23 +85,40 @@
             </select>
           </div>
 
+          {% if t.playersList and current_user.officer %}
           <div class="col-auto">
-            Opponent:
+            <div id="playersAuto" class="autocomplete" data-autocomplete='{{t.playersList|tojson}}'>
+              <label for="player" class="update-label">Player</label>
+              <input class="form-control" type="text" name="player" value="{{t.playerName}}" autocomplete="off">
+            </div>
           </div>
+          {% endif %}
+
           <div class="col-auto">
-            <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponents|tojson}}'>
-              <input class="form-control" type="text" name="opponent" value="{{t.opponent}}" autocomplete="off">
+            <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponentsList|tojson}}'>
+              <label for="opponent" class="update-label">Opponent</label>
+              <input class="form-control" type="text" name="opponent" value="{{t.opponentName}}" autocomplete="off">
             </div>
           </div>
 
           <div class="col-auto">
-            Date Range:
+            <div class="form-row">
+              <div class="col-auto">
+                <label for="start_day" class="update-label">Date Start</label>
+                <input class="form-control" type="date" name="start_day" value="{{t.start_day}}">
+              </div>
+
+              <div class="col-auto">
+                <label for="end_day" class="update-label">Date End</label>
+                <input class="form-control" type="date" name="end_day" value="{{t.end_day}}">
+              </div>
+            </div>
           </div>
+        </div>
+        <div class="row">
           <div class="col-auto">
-            <input class="form-control" type="date" name="start_day" value="{{t.start_day}}">
-          </div>
-          <div class="col-auto">
-            <input class="form-control" type="date" name="end_day" value="{{t.end_day}}">
+            <input class="btn btn-primary" type="submit" name="submit" value="Refresh">
+            <input type="hidden" name="player_id" value="{{t.player.id}}">
           </div>
         </div>
       </form>

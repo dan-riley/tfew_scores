@@ -146,39 +146,39 @@
         </table>
         <table class="table table-sm w-auto">
           <thead>
-            <tr class="d-flex text-center">
-              <th class="col-5">Player</th>
-              <th class="col-3">Score</th>
-              <th class="col-3">Excused</th>
-              <th class="col-3">Attempts Remaining</th>
-              <th class="col-3">No Attempts</th>
+            <tr class="text-center">
+              <th>Player</th>
+              <th>Score</th>
+              <th>Excused</th>
+              <th>Attempts Remaining</th>
+              <th>No Attempts</th>
             </tr>
           </thead>
 
           {% for player in t.players %}
-          <tr class="d-flex">
-            <td class="col-5">
+          <tr>
+            <td>
               <input type="hidden" name="players[{{player.id}}][id]" value="{{player.id}}">
               {{player.name}}
             </td>
-            <td class="col-3">
-              <input class="form-control" type="number" name="players[{{player.id}}][score]" value="{{player.score(war.id).score}}">
+            <td>
+              <input class="form-control edit-score" type="number" name="players[{{player.id}}][score]" value="{{player.score(war.id).score}}">
             </td>
-            <td class="col-3">
+            <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][excused]" value="{{player.id}}"
               {% if player.score(war.id).excused %}
                 checked
               {% endif %}
               >
             </td>
-            <td class="col-3">
+            <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][attempts_left]" value="{{player.id}}"
               {% if player.score(war.id).attempts_left %}
                 checked
               {% endif %}
               >
             </td>
-            <td class="col-3">
+            <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][no_attempts]" value="{{player.id}}"
               {% if player.score(war.id).no_attempts %}
                 checked
@@ -199,29 +199,29 @@
           {% endif %}
 
           {% for player in missing_players %}
-          <tr class="d-flex collapse missingPlayers">
-            <td class="col-5">
+          <tr class="collapse missingPlayers">
+            <td>
               <input type="hidden" name="missing_players[{{player.id}}][id]" value="{{player.id}}">
               {{player.name}}
             </td>
-            <td class="col-3">
+            <td>
               <input class="form-control" type="number" name="missing_players[{{player.id}}][score]" value="{{player.score(war.id).score}}">
             </td>
-            <td class="col-3">
+            <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][excused]" value="{{player.id}}"
               {% if player.score(war.id).excused %}
                 checked
               {% endif %}
               >
             </td>
-            <td class="col-3">
+            <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][attempts_left]" value="{{player.id}}"
               {% if player.score(war.id).attempts_left %}
                 checked
               {% endif %}
               >
             </td>
-            <td class="col-3">
+            <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][no_attempts]" value="{{player.id}}"
               {% if player.score(war.id).no_attempts %}
                 checked
@@ -231,9 +231,13 @@
           </tr>
           {% endfor %}
         </table>
-        <input class="btn btn-primary" type="button" id="submit" value="Submit">
-        <a href="/delete_war?war_id={{war.id}}" class="btn btn-danger">Delete War</a>
+
+        <div class="sticky-bottom">
+          <input class="btn btn-primary" type="button" id="submit" value="Submit">
+          <a href="/delete_war?war_id={{war.id}}" class="btn btn-danger">Delete War</a>
+          <div id="alert_wrapper"></div>
+        </div>
       </form>
-      <div id="alert_wrapper"></div>
+      <div class="row">&nbsp;</div>
       <div class="row">&nbsp;</div>
 {% endblock %}
