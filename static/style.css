@@ -11,6 +11,11 @@ body {
   vertical-align: middle;
 }
 
+.scoreboard {
+  overflow: auto;
+  height: calc(100vh - 55px);
+}
+
 #scores_table td {
   padding: 0;
 }
@@ -75,6 +80,10 @@ body {
   text-align: center;
 }
 
+.light {
+  background: #efefef;
+}
+
 .sticky-left {
   position: -webkit-sticky;
   position: sticky;
@@ -86,7 +95,7 @@ body {
 .sticky-top-left {
   position: -webkit-sticky;
   position: sticky;
-  top: 55px;
+  top: 0px;
   left: 0px;
   background: white;
   z-index: 1025;
@@ -96,10 +105,17 @@ body {
   top: 55px;
 }
 
+.sticky-top-1 {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0px;
+  z-index: 1020;
+}
+
 .sticky-top-2 {
   position: -webkit-sticky;
   position: sticky;
-  top: 84px;
+  top: 28px;
   z-index: 1020;
 }
 
@@ -270,11 +286,18 @@ body {
   max-width: 7em;
 }
 
+#zoom_reset {
+  margin-left: 6em;
+}
+
 @media (max-width: 610px) {
   .nav-link {
     font-size: 0.7rem;
   }
-  .sticky-top, .sticky-top-left {
+  .sticky-top {
     top: 48px;
+  }
+  .scoreboard {
+    height: calc(100vh - 48px);
   }
 }

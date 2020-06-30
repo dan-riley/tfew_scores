@@ -134,6 +134,8 @@ def scoreboard():
     for player in t.players:
         t.buildAverages(player)
 
+    if t.flash:
+        flash(t.flash)
     return render_template('scoreboard.html', t=t)
 
 @app.route('/history')

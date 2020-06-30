@@ -136,3 +136,14 @@ function autocomplete(myinput, items) {
     closeAllLists(e.target);
   });
 }
+
+function addZoomListeners(el) {
+  el.style.zoom = 1.0;
+  document.getElementById('zoom_reset').addEventListener('click', function() {
+    el.style.zoom = 1.0;
+  });
+
+  document.getElementById('zoom_out').addEventListener('click', function() {
+    el.style.zoom -= 0.05;
+  });
+}

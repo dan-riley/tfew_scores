@@ -15,6 +15,7 @@ var History = (function() {
 
     history_table = document.getElementById('history_table');
     addSortListeners();
+    addZoomListeners(history_table)
   });
 
   function addSortListeners() {

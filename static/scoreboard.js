@@ -17,6 +17,7 @@ var Main = (function() {
 
     summary_table = document.getElementById('summary_table');
     addSortListeners();
+    addZoomListeners(summary_table);
   });
 
   function addSortListeners() {

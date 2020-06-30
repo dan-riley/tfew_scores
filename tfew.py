@@ -7,10 +7,10 @@ class TFEW():
 
     def __init__(self):
         # Version control to force reload of static files
-        self.version = 'v0.92'
+        self.version = 'v0.93'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
-        self.player_id = 218
+        self.player_id = 0
         self.player = None
         self.war = None
         self.playerName = ''
@@ -25,6 +25,8 @@ class TFEW():
         self.players = []
         self.wars = []
         self.filt = []
+        # Display messages
+        self.flash = None
 
     def setRequests(self, request, dateWindow=0):
         self.filt = []
@@ -63,6 +65,15 @@ class TFEW():
 
             if self.start_day or self.end_day:
                 self.filt.append(War.date.between(self.start_day, self.end_day))
+        else:
+            # Try to clear out data.  Doesn't seem to always work though.
+            self.alliance = 2
+            self.player = None
+            self.player_id = 0
+            self.playerName = ''
+            self.opponentName = ''
+            self.playersList = []
+            self.opponentsList = []
 
         if dateWindow and not self.filt:
             self.end_day = datetime.now(pytz.timezone('US/Central')).date()

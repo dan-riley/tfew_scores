@@ -39,6 +39,7 @@ var Player = (function() {
 
     player_table = document.getElementById('player_table');
     addSortListeners();
+    addZoomListeners(player_table);
 
     buildChart('chart_Score', 'getScoreData', ScoreOptions, 'line');
   });
