@@ -119,6 +119,14 @@
           <div class="col-auto">
             <input class="btn btn-primary" type="submit" name="submit" value="Refresh">
             <input type="hidden" name="player_id" value="{{t.player.id}}">
+            {% block tracked_check %}
+            <input class="form-control update-check" type="checkbox" name="tracked_only">
+            <label for="tracked_only" class="update-label">Tracked Only</label>
+            {% endblock %}
+            {% block active_check %}
+            <input class="form-control update-check" type="checkbox" name="active_only">
+            <label for="active_only" class="update-label">Active Only</label>
+            {% endblock %}
             <input class="btn btn-light btn-sm" type="button" id="zoom_reset" value="Reset Zoom">
             <input class="btn btn-light btn-sm" type="button" id="zoom_out" value="Zoom Out">
           </div>

@@ -15,7 +15,8 @@ var History = (function() {
 
     history_table = document.getElementById('history_table');
     addSortListeners();
-    addZoomListeners(history_table)
+    addZoomListeners(history_table);
+    toggleRows('tracked_only', history_table, 1, 0, '0');
   });
 
   function addSortListeners() {

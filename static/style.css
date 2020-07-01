@@ -282,12 +282,25 @@ body {
   font-size: 0.8em;
 }
 
+.update-check {
+  display: inline;
+  width: 1.5em;
+  vertical-align: middle;
+}
+
+.player-check {
+  display: inline;
+  width: 1.0em;
+  height: 1.0em;
+  vertical-align: sub;
+}
+
 .edit-score {
   max-width: 7em;
 }
 
-#zoom_reset {
-  margin-left: 6em;
+.rank {
+  font-weight: bold;
 }
 
 @media (max-width: 610px) {

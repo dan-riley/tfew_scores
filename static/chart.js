@@ -23,7 +23,11 @@ function buildChart(mydiv, mydataFunction, options, type) {
   google.charts.setOnLoadCallback(drawChart);
 
   function drawChart() {
-    var data = window[mydataFunction]();
+    // Data should be an array with data and enabled columns
+    var dataArray = window[mydataFunction]();
+    var data = new google.visualization.DataView(dataArray[0]);
+    var cols = dataArray[1];
+    data.setColumns(cols);
 
     var div = document.getElementById(mydiv);
     switch (type) {

@@ -7,6 +7,7 @@
 {% block title %}TFEW History{% endblock %}
 {% block header %}TFEW War History{% endblock %}
 {% block nav_history %}active{% endblock %}
+{% block active_check %}{% endblock %}
 
 {% block content %}
       <div class="col-md-5 table-responsive float-sm-none float-md-right">
@@ -61,6 +62,7 @@
               {% else %}
               {{war.date}}
               {% endif %}
+              <input type="hidden" id="{{war.id}}" value="{{war.tracked}}">
             </td>
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
               <a href="{{url_for('history', alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>

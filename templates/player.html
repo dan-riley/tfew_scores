@@ -9,6 +9,8 @@
 {% block title %}Player Detail{% endblock %}
 {% block header %}TFEW Player Detail{% endblock %}
 {% block nav_player %}active{% endblock %}
+{% block tracked_check %}{% endblock %}
+{% block active_check %}{% endblock %}
 
 {% block content %}
       <br />
@@ -21,7 +23,7 @@
             <th>Tracked</th>
             <th>Untracked</th>
             <th>Prime</th>
-            <th>Total</th>
+            <th>All</th>
           </tr>
 
           <tr>
@@ -29,7 +31,37 @@
             <th>{{t.player.trackedAvg}}</th>
             <th>{{t.player.untrackedAvg}}</th>
             <th>{{t.player.primeAvg}}</th>
-            <th>{{t.player.totalAvg}}</th>
+            <th>{{t.player.allAvg}}</th>
+          </tr>
+          <tr>
+            <th>Table</th>
+            <th>
+              <input class="form-control player-check" type="checkbox" name="tracked_table" checked>
+            </th>
+            <th>
+              <input class="form-control player-check" type="checkbox" name="untracked_table" checked>
+            </th>
+            <th>
+              <input class="form-control player-check" type="checkbox" name="prime_table" checked>
+            </th>
+            <th>
+              <input class="form-control player-check" type="checkbox" name="all_table" checked>
+            </th>
+          </tr>
+          <tr>
+            <th>Chart</th>
+            <th>
+              <input class="form-control player-check" type="checkbox" name="tracked_chart" checked>
+            </th>
+            <th>
+              <input class="form-control player-check" type="checkbox" name="untracked_chart">
+            </th>
+            <th>
+              <input class="form-control player-check" type="checkbox" name="prime_chart">
+            </th>
+            <th>
+              <input class="form-control player-check" type="checkbox" name="all_chart" checked>
+            </th>
           </tr>
         </table>
       </div>
@@ -52,6 +84,7 @@
               {% else %}
               {{war.date}}
               {% endif %}
+              <input type="hidden" id="{{war.id}}" value="{{war.tracked}}">
             </td>
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
               <a href="{{url_for('player_view', player_id=t.player.id, alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>

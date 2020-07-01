@@ -48,7 +48,13 @@ function sortTable(table, colnum, order, skip=1) {
     return compareValuesFlask(t1.textContent, t2.textContent, order);
   });
 
-  rows.forEach(row => table.appendChild(row));
+  var rank = 1;
+  rows.forEach(function(row) {
+    if (row.style.display != 'none' && row.firstElementChild.classList.contains('rank')) {
+      row.firstElementChild.innerText = rank++;
+    }
+    table.appendChild(row);
+  });
 }
 
 // Autocomplete, based on https://www.w3schools.com/howto/howto_js_autocomplete.asp
@@ -145,5 +151,51 @@ function addZoomListeners(el) {
 
   document.getElementById('zoom_out').addEventListener('click', function() {
     el.style.zoom -= 0.05;
+  });
+}
+
+function toggleRows(listen, table, skip, col, value) {
+  // Toggle rows on and off, by looking at a hidden input on column=col equal to value
+  document.getElementsByName(listen)[0].addEventListener('change', function() {
+    var check = this;
+    var rows = Array.from(table.querySelectorAll('tr'));
+    rows = rows.slice(skip);
+    rank = 1;
+    rows.forEach(function(row) {
+      if (check.checked) {
+        if (row.children[col].children[1].value == value) {
+          row.style.display = 'none';
+        } else if (row.firstElementChild.classList.contains('rank')) {
+          row.firstElementChild.innerText = rank++;
+        }
+      } else {
+        row.style.display = 'table-row';
+        if (row.firstElementChild.classList.contains('rank')) {
+          row.firstElementChild.innerText = rank++;
+        }
+      }
+      table.appendChild(row);
+    });
+  });
+}
+
+function toggleColumns(listen, table, row, value) {
+  // Toggle columns on and off, by looking at text in row=row equal to value
+  // Uses class in a hidden input in the same cell
+  document.getElementsByName(listen)[0].addEventListener('change', function() {
+    let cols = table.rows[row].children;
+    for (let col of cols) {
+      if (col.innerText.trim() == value) {
+        let className = col.children[0].value;
+        let els = document.getElementsByClassName(className);
+        for (let el of els) {
+          if (this.checked) {
+            el.style.display = 'none';
+          } else {
+            el.style.display = 'table-cell';
+          }
+        }
+      }
+    }
   });
 }

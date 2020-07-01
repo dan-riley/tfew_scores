@@ -7,7 +7,7 @@ class TFEW():
 
     def __init__(self):
         # Version control to force reload of static files
-        self.version = 'v0.93'
+        self.version = 'v0.95'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -126,8 +126,8 @@ class TFEW():
         self.players = Player.query.join(Score).join(War).order_by(Player.name).filter(*self.filt).all()
 
     def buildAverages(self, player):
-        totalScore = 0
-        totalCount = 0
+        allScore = 0
+        allCount = 0
         totalMin = 300
         untrackedScore = 0
         untrackedCount = 0
@@ -146,8 +146,8 @@ class TFEW():
             player.scoresRange[war.id] = score
 
             if score and score.score is not None and not score.excused:
-                totalScore += score.score
-                totalCount += 1
+                allScore += score.score
+                allCount += 1
                 if score.score < totalMin:
                     totalMin = score.score
 
@@ -169,9 +169,9 @@ class TFEW():
                         primeMin = score.score
 
         # Remove the minimum scores if we have enough
-        if totalCount > 5:
-            totalScore -= totalMin
-            totalCount -= 1
+        if allCount > 5:
+            allScore -= totalMin
+            allCount -= 1
 
         if untrackedCount > 5:
             untrackedScore -= untrackedMin
@@ -186,7 +186,7 @@ class TFEW():
             primeCount -= 1
 
         # Get the initial averages without optional wars
-        totalAvg = totalScore / totalCount if totalCount else totalScore
+        allAvg = allScore / allCount if allCount else allScore
         untrackedAvg = untrackedScore / untrackedCount if untrackedCount else untrackedScore
         trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
         primeAvg = primeScore / primeCount if primeCount else primeScore
@@ -209,7 +209,7 @@ class TFEW():
         primeAvg = primeScore / primeCount if primeCount else primeScore
 
         # Save the final averages, rounded for display
-        player.totalAvg = round(totalAvg)
+        player.allAvg = round(allAvg)
         player.untrackedAvg = round(untrackedAvg)
         player.trackedAvg = round(trackedAvg)
         player.primeAvg = round(primeAvg)
