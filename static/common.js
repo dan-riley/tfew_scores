@@ -154,8 +154,9 @@ function addZoomListeners(el) {
   });
 }
 
-function toggleRows(listen, table, skip, col, value) {
+function toggleRows(listen, table, skip, col, value, fnstring='', fnparams=[]) {
   // Toggle rows on and off, by looking at a hidden input on column=col equal to value
+  // fnstring is optional function to run at the end, using array of params in fnparams
   document.getElementsByName(listen)[0].addEventListener('change', function() {
     var check = this;
     var rows = Array.from(table.querySelectorAll('tr'));
@@ -176,6 +177,9 @@ function toggleRows(listen, table, skip, col, value) {
       }
       table.appendChild(row);
     });
+
+    var fn = window[fnstring];
+    if (typeof fn === "function") fn.apply(null, fnparams);
   });
 }
 
@@ -198,4 +202,15 @@ function toggleColumns(listen, table, row, value) {
       }
     }
   });
+}
+
+function checkBox(element) {
+  element.checked = 'checked';
+  triggerEvent(element, 'change');
+}
+
+function triggerEvent(element, eventName) {
+  var event = document.createEvent("HTMLEvents");
+  event.initEvent(eventName, false, true);
+  element.dispatchEvent(event);
 }

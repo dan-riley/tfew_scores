@@ -106,14 +106,17 @@ def signup():
             db.session.commit()
             login_user(user)
             return redirect(url_for('home_page'))
-        flash('This is not a user or already has a password set '+form.auth.data+app.config['AUTH_CODE'])
+        flash('This is not a user or already has a password set')
     return render_template('signup.html', t=t, form=form)
 
 @app.route('/')
 def home_page():
     # Default page for a logged in user is the scoreboard.  Otherwise login.
     if current_user.is_authenticated:
-        return redirect(url_for('scoreboard'))
+        if current_user.officer:
+            return redirect(url_for('scoreboard'))
+        else:
+            return redirect(url_for('player_view'))
 
     return redirect(url_for('login'))
 

@@ -107,12 +107,31 @@
         </tr>
 
         <tr>
+
+          {% if current_user.officer %}
+            {% set player_sort = "sorted-up" %}
+            {% set tracked_sort = "sorted-none" %}
+          {% else %}
+            {% set player_sort = "nosort" %}
+            {% set tracked_sort = "sorted-down" %}
+          {% endif %}
           <th id="rank"></th>
-          <th class="summary_sort sticky-top-left sorted-up" id="player_sort">Player</th>
-          <th class="summary_sort sticky-top-1 sorted-none" id="tracked_sort">Tracked</th>
+          <th class="summary_sort sticky-top-left {{player_sort}}" id="player_sort">Player</th>
+          <th class="summary_sort sticky-top-1 {{tracked_sort}}" id="tracked_sort">Tracked</th>
           <th class="summary_sort sticky-top-1 sorted-none" id="untracked_sort">Untracked</th>
           <th class="summary_sort sticky-top-1 sorted-none" id="prime_sort">Prime</th>
           <th class="summary_sort sticky-top-1 sorted-none" id="all_sort">All</th>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="header-left sticky-left">
+            <div>Average</div>
+            <input type="hidden" id="activeAverage" value="true">
+          </td>
+          <td class="light font-weight-bold" id="avg_tracked"></td>
+          <td class="light font-weight-bold" id="avg_untracked"></td>
+          <td class="light font-weight-bold" id="avg_prime"></td>
+          <td class="light font-weight-bold" id="avg_all"></td>
         </tr>
 
         {% for player in t.players %}
@@ -122,9 +141,9 @@
             {% if current_user.id == player.id or current_user.officer %}
             <a href="{{url_for('player_view', player_id=player.id)}}">{{player.name}}</a>
             {% else %}
-            {{player.name}}
+            <div>&nbsp;</div>
             {% endif %}
-            <input type="hidden" id="{{player.name}}" value="{{player.active}}">
+            <input type="hidden" id="active{{loop.index}}" value="{{player.active}}">
           </td>
           <td class="light">{{player.trackedAvg}}</td>
           <td class="light">{{player.untrackedAvg}}</td>
@@ -139,9 +158,13 @@
           {% if score is not defined %}
             {% set notInAlliance = True %}
           {% endif %}
-            <td class="{{war.trackedClass()}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}} cls{{war.id}}">
+          {% if current_user.id == player.id or current_user.officer %}
+          <td class="{{war.trackedClass()}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}} cls{{war.id}}">
             {{score if score != None}}
           </td>
+          {% else %}
+          <td class="{{war.trackedClass()}} cls{{war.id}}">&nbsp;</td>
+          {% endif %}
           {% endfor %}
         </tr>
         {% endfor %}
