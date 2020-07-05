@@ -179,15 +179,15 @@ body {
 }
 
 .noAttempt {
-  background-color: #c14040;
+  background-color: #c5000059;
 }
 
 .attemptsLeft {
-  background-color: #d8900d;
+  background-color: #d8900d59;
 }
 
 .excused {
-  background-color: #4a9a4a;
+  background-color: #49aa0059;
 }
 
 .error {

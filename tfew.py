@@ -7,7 +7,7 @@ class TFEW():
 
     def __init__(self):
         # Version control to force reload of static files
-        self.version = 'v0.96'
+        self.version = 'v1.00'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0

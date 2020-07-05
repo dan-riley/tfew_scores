@@ -64,7 +64,7 @@ def load_user(user_id):
 @login_manager.unauthorized_handler
 def unauthorized():
     flash('You must be logged in to view that page')
-    return redirect(url_for('login', next=request.endpoint))
+    return redirect(url_for('login', next=url_for(request.endpoint)))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
