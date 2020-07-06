@@ -307,6 +307,34 @@ class TFEW():
 
         db.session.commit()
 
+    def updateScore(self, fplayer, score):
+        if fplayer['score']:
+            score.score = int(fplayer['score'].strip())
+        else:
+            score.score = None
+
+        # Get all of the checkboxes
+        if 'excused' in fplayer:
+            if not score.excused:
+                score.excused = True
+        else:
+            if score.excused:
+                score.excused = False
+
+        if 'attempts_left' in fplayer:
+            if not score.attempts_left:
+                score.attempts_left = True
+        else:
+            if score.attempts_left:
+                score.attempts_left = False
+
+        if 'no_attempts' in fplayer:
+            if not score.no_attempts:
+                score.no_attempts = True
+        else:
+            if score.no_attempts:
+                score.no_attempts = False
+
     def updateWar(self, fwar):
         # Get the war from the database, or create a new one
         if fwar['war_id'] != 'None':
@@ -354,44 +382,15 @@ class TFEW():
         if war.scores:
             for score in war.scores:
                 fplayer = fwar['players'][score.player_id]
-                if fplayer['score']:
-                    score.score = int(fplayer['score'].strip())
-                else:
-                    score.score = None
-
-                # Get all of the checkboxes
-                if 'excused' in fplayer:
-                    if not score.excused:
-                        score.excused = True
-                else:
-                    if score.excused:
-                        score.excused = False
-
-                if 'attempts_left' in fplayer:
-                    if not score.attempts_left:
-                        score.attempts_left = True
-                else:
-                    if score.attempts_left:
-                        score.attempts_left = False
-
-                if 'no_attempts' in fplayer:
-                    if not score.no_attempts:
-                        score.no_attempts = True
-                else:
-                    if score.no_attempts:
-                        score.no_attempts = False
+                self.updateScore(fplayer, score)
         else:
             for fplayer in fwar['players']:
                 if fplayer:
                     if (fplayer['score'] or 'excused' in fplayer or
                                             'attempts_left' in fplayer or
                                             'no_attempts' in fplayer):
-                        # TODO It doesn't look like checkboxes work on the first submit?!
                         newscore = Score()
-                        if fplayer['score']:
-                            newscore.score = int(fplayer['score'].strip())
-                        else:
-                            newscore.score = None
+                        self.updateScore(fplayer, newscore)
                         newscore.player = Player.query.get(fplayer['id'])
                         war.scores.append(newscore)
 
@@ -401,10 +400,7 @@ class TFEW():
                                         'attempts_left' in fplayer or
                                         'no_attempts' in fplayer):
                     newscore = Score()
-                    if fplayer['score']:
-                        newscore.score = int(fplayer['score'].strip())
-                    else:
-                        newscore.score = None
+                    self.updateScore(fplayer, newscore)
                     newscore.player = Player.query.get(fplayer['id'])
                     war.scores.append(newscore)
 

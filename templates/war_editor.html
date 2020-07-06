@@ -30,7 +30,7 @@
           <tr>
             <th>Opponent</th>
             <td>
-              <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponents|tojson}}'>
+              <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponentsList|tojson}}'>
                 <input class="form-control" type="text" name="opponent" value="{{war.opponent.name}}" autocomplete="off">
               </div>
             </td>
@@ -88,7 +88,7 @@
             <td>
               <select class="custom-select" name="b1">
                 <option></option>
-                {% for player in t.players %}
+                {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
                 {% if war.b1 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -100,7 +100,7 @@
             <td>
               <select class="custom-select" name="b2">
                 <option></option>
-                {% for player in t.players %}
+                {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
                 {% if war.b2 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -112,7 +112,7 @@
             <td>
               <select class="custom-select" name="b3">
                 <option></option>
-                {% for player in t.players %}
+                {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
                 {% if war.b3 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -124,7 +124,7 @@
             <td>
               <select class="custom-select" name="b4">
                 <option></option>
-                {% for player in t.players %}
+                {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
                 {% if war.b4 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
@@ -136,7 +136,7 @@
             <td>
               <select class="custom-select" name="b5">
                 <option></option>
-                {% for player in t.players %}
+                {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
                 {% if war.b5 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
