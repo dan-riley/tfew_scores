@@ -106,7 +106,13 @@ def signup():
             db.session.commit()
             login_user(user)
             return redirect(url_for('home_page'))
-        flash('This is not a user or already has a password set')
+        if not user:
+            flash('This is not a user')
+        elif user and not user.password_hash is None:
+            flash('This user already has a password')
+        elif form.auth.data != app.config['AUTH_CODE']:
+            flash('Incorrect Auth Code')
+
     return render_template('signup.html', t=t, form=form)
 
 @app.route('/')
