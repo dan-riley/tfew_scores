@@ -82,7 +82,7 @@
               {% if current_user.officer %}
               <a href="{{url_for('war_editor', war_id=war.id)}}">{{war.date}}</a>
               {% else %}
-              {{war.date}}
+              <div>{{war.date}}</div>
               {% endif %}
               <input type="hidden" id="{{war.id}}" value="{{war.tracked}}">
             </td>

@@ -47,8 +47,10 @@ var Player = (function() {
 
   document.addEventListener('DOMContentLoaded', function(event) {
     // Initialize autocomplete
-    var pldata = JSON.parse(document.getElementById("playersAuto").dataset.autocomplete);
-    autocomplete(document.getElementsByName('player')[0], pldata);
+    if (document.getElementById("playersAuto")) {
+      var pldata = JSON.parse(document.getElementById("playersAuto").dataset.autocomplete);
+      autocomplete(document.getElementsByName('player')[0], pldata);
+    }
 
     var oppdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
     autocomplete(document.getElementsByName('opponent')[0], oppdata);
