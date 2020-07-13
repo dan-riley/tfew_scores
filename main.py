@@ -8,6 +8,7 @@ from flask_script import Manager
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from functools import wraps
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import MultiDict
 import ocr
 from models import db, Player, PlayerAction, OCR, War, Score, Opponent
 from forms import LoginForm, SignupForm
@@ -170,7 +171,7 @@ def player_view():
     # Manually set the player to the logged in user if none requested
     if not request.args:
         t.player_id = current_user.id
-        request.args = {'player_id': t.player_id}
+        request.args = MultiDict([('player_id', t.player_id)])
 
     # Set all of the parameters based on URL params
     t.setRequests(request)
