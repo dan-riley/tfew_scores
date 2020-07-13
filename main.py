@@ -134,7 +134,7 @@ def scoreboard():
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponentsList()
+    t.setOpponents()
     # Pull the data we need from the database
     t.setWars()
     t.setPlayersByWar()
@@ -155,7 +155,7 @@ def history():
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponentsList()
+    t.setOpponents()
     # Pull the data we need from the database
     t.setWars()
 
@@ -177,7 +177,7 @@ def player_view():
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponentsList()
+    t.setOpponents()
     t.setPlayersList()
     # Pull the data we need from the database
     t.setWarsByPlayer()

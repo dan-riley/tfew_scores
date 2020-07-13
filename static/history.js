@@ -9,10 +9,6 @@ var History = (function() {
   var lastSort = 0;
 
   document.addEventListener('DOMContentLoaded', function(event) {
-    // Initialize autocomplete
-    var acdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
-    autocomplete(document.getElementsByName('opponent')[0], acdata);
-
     history_table = document.getElementById('history_table');
     addSortListeners();
     addZoomListeners(history_table);

@@ -277,6 +277,16 @@ body {
   border-bottom-color: black;
 }
 
+.bootstrap-select:not(.input-group-btn) {
+  display: block;
+  z-index: 1028;
+}
+
+.custom-multiselect {
+  background: white;
+  border: 1px solid #ced4da;
+}
+
 .update-label {
   margin-bottom: 0px;
   font-size: 0.8em;

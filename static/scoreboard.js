@@ -11,10 +11,6 @@ var Main = (function() {
   var skip = 12;
 
   document.addEventListener('DOMContentLoaded', function(event) {
-    // Initialize autocomplete
-    var acdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
-    autocomplete(document.getElementsByName('opponent')[0], acdata);
-
     summary_table = document.getElementById('summary_table');
     // Initialize listeners
     addSortListeners();

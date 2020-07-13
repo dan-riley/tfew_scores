@@ -52,9 +52,6 @@ var Player = (function() {
       autocomplete(document.getElementsByName('player')[0], pldata);
     }
 
-    var oppdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
-    autocomplete(document.getElementsByName('opponent')[0], oppdata);
-
     player_table = document.getElementById('player_table');
     addSortListeners();
     addZoomListeners(player_table);
