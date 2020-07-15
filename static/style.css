@@ -277,6 +277,25 @@ body {
   border-bottom-color: black;
 }
 
+.col-expand:after,
+.col-collapse:after {
+  border: 4px solid transparent;
+  content: ' ';
+  display: block;
+  height: 0;
+  width: 0;
+}
+
+.col-expand:after {
+  border-left-color: black;
+  margin-left: 8px;
+}
+
+.col-collapse:after {
+  border-right-color: black;
+  margin-left: 2px;
+}
+
 .bootstrap-select:not(.input-group-btn) {
   display: block;
   z-index: 1028;

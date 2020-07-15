@@ -18,6 +18,10 @@ var Main = (function() {
     // Setup the listeners to toggle rows and columns off
     toggleRows('active_only', summary_table, skip, 1, 'False', 'getAverages', [summary_table, skip]);
     toggleColumns('tracked_only', summary_table, 3, 'No');
+    // Listen for toggling the optional averages
+    toggleAverages(summary_table);
+    triggerEvent(document.getElementById('col-toggle'), 'click');
+
     // Set Active Only by default
     checkBox(document.getElementsByName('active_only')[0]);
 
@@ -70,22 +74,62 @@ var Main = (function() {
       sortTable(summary_table, lastSort, primeOrder, skip)
     });
 
-    document.getElementById('all_sort').addEventListener('click', function() {
+    document.getElementById('cyber_sort').addEventListener('click', function() {
       if (lastSort == 6)
+        cyberOrder = (cyberOrder == 'asc') ? 'desc' : 'asc';
+      else
+        cyberOrder = 'desc';
+      lastSort = 6;
+      sortTable(summary_table, lastSort, cyberOrder, skip)
+    });
+
+    document.getElementById('all_sort').addEventListener('click', function() {
+      if (lastSort == 7)
         allOrder = (allOrder == 'asc') ? 'desc' : 'asc';
       else
         allOrder = 'desc';
-      lastSort = 6;
+      lastSort = 7;
       sortTable(summary_table, lastSort, allOrder, skip)
     });
   }
 
+  function toggleAverages(table) {
+    document.getElementById('col-toggle').addEventListener('click', function() {
+      var display, colSpan;
+      // Set whether to show or hide
+      if (this.classList.contains('col-expand')) {
+        this.classList.add('col-collapse');
+        this.classList.remove('col-expand');
+        display = 'table-cell';
+        colSpan = 7;
+      } else {
+        this.classList.add('col-expand');
+        this.classList.remove('col-collapse');
+        display = 'none';
+        colSpan = 4;
+      }
+
+      var rows = Array.from(table.querySelectorAll('tr'));
+      // Set the colspan for the first few rows
+      for (var i = 0; i < skip-1; i++) {
+        rows[i].children[0].colSpan = colSpan;
+      }
+      // Set the display for remaining rows
+      rows = rows.slice(skip-1);
+      rows.forEach(function(row) {
+        for (var i = 3; i < 6; i++) {
+          row.children[i].style.display = display;
+        }
+      });
+    });
+  }
 })();
 
 function getAverages(table, skip) {
   tracked = 0;
   untracked = 0;
   prime = 0;
+  cyber = 0;
   all = 0;
   count = 0;
   var rows = Array.from(table.querySelectorAll('tr'));
@@ -95,7 +139,8 @@ function getAverages(table, skip) {
       tracked += parseInt(row.children[2].innerText);
       untracked += parseInt(row.children[3].innerText);
       prime += parseInt(row.children[4].innerText);
-      all += parseInt(row.children[5].innerText);
+      cyber += parseInt(row.children[5].innerText);
+      all += parseInt(row.children[6].innerText);
       count += 1;
     }
   });
@@ -103,5 +148,6 @@ function getAverages(table, skip) {
   document.getElementById('avg_tracked').innerText = Math.round(tracked / count);
   document.getElementById('avg_untracked').innerText = Math.round(untracked / count);
   document.getElementById('avg_prime').innerText = Math.round(prime / count);
+  document.getElementById('avg_cyber').innerText = Math.round(cyber / count);
   document.getElementById('avg_all').innerText = Math.round(all / count);
 }

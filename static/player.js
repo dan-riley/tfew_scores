@@ -1,6 +1,7 @@
 var trackedChart = true;
 var untrackedChart = false;
 var primeChart = false;
+var cyberChart = false;
 var allChart = true;
 
 var Player = (function() {
@@ -38,6 +39,12 @@ var Player = (function() {
       },
       3: {
         title: 'Prime Trend',
+        type: 'polynomial',
+        degree: 3,
+        visibleInLegend: false,
+      },
+      4: {
+        title: 'Cybertron Trend',
         type: 'polynomial',
         degree: 3,
         visibleInLegend: false,
@@ -123,6 +130,7 @@ var Player = (function() {
     var trackedTable = document.getElementsByName('tracked_table')[0];
     var untrackedTable = document.getElementsByName('untracked_table')[0];
     var primeTable = document.getElementsByName('prime_table')[0];
+    var cyberTable = document.getElementsByName('cyber_table')[0];
     var allTable = document.getElementsByName('all_table')[0];
 
     var rows = Array.from(player_table.querySelectorAll('tr'));
@@ -144,6 +152,11 @@ var Player = (function() {
       }
       if (primeTable.checked) {
         if (row.children[2].innerText.trim() == 'Prime') {
+          row.style.display = 'table-row';
+        }
+      }
+      if (cyberTable.checked) {
+        if (row.children[2].innerText.trim() == 'Cybertron') {
           row.style.display = 'table-row';
         }
       }
@@ -171,12 +184,19 @@ var Player = (function() {
       }
       togglePlayerRows();
     });
+    document.getElementsByName('cyber_table')[0].addEventListener('change', function() {
+      if (!this.checked) {
+        document.getElementsByName('all_table')[0].checked = this.checked;
+      }
+      togglePlayerRows();
+    });
     document.getElementsByName('all_table')[0].addEventListener('change', function() {
       // If enabled then make all enabled
       if (this.checked) {
         document.getElementsByName('tracked_table')[0].checked = this.checked;
         document.getElementsByName('untracked_table')[0].checked = this.checked;
         document.getElementsByName('prime_table')[0].checked = this.checked;
+        document.getElementsByName('cyber_table')[0].checked = this.checked;
       }
       togglePlayerRows();
     });
@@ -194,6 +214,10 @@ var Player = (function() {
     });
     document.getElementsByName('prime_chart')[0].addEventListener('change', function() {
       primeChart = this.checked;
+      buildChart('chart_Score', 'getScoreData', ScoreOptions, 'line');
+    });
+    document.getElementsByName('cyber_chart')[0].addEventListener('change', function() {
+      cyberChart = this.checked;
       buildChart('chart_Score', 'getScoreData', ScoreOptions, 'line');
     });
     document.getElementsByName('all_chart')[0].addEventListener('change', function() {
@@ -216,6 +240,7 @@ function getScoreData() {
       data.addColumn('number', 'Tracked');
       data.addColumn('number', 'Untracked');
       data.addColumn('number', 'Prime');
+      data.addColumn('number', 'Cybertron');
     } else {
       // Need null values for dates to exclude from each category
       var score = parseInt(row.cells[5].innerText);
@@ -229,9 +254,12 @@ function getScoreData() {
       var prime = null;
       if (row.cells[2].innerText == 'Prime')
         prime = score;
+      var cyber = null;
+      if (row.cells[2].innerText == 'Cybertron')
+        cyber = score;
 
       date = new Date(row.cells[0].innerText + ' 00:00');
-      data.addRow([date, score, tracked, untracked, prime]);
+      data.addRow([date, score, tracked, untracked, prime, cyber]);
     }
   });
 
@@ -242,6 +270,7 @@ function getScoreData() {
   if (trackedChart) cols.push(2);
   if (untrackedChart) cols.push(3);
   if (primeChart) cols.push(4);
+  if (cyberChart) cols.push(5);
 
   return [data, cols];
 }
