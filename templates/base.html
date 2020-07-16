@@ -93,9 +93,11 @@
               <option value="9999" {% if t.alliance == 9999 %} selected {% endif %}>All
               </option>
               {% for alliance in t.alliances %}
+                {% if alliance.active %}
               <option value="{{alliance.id}}"
               {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
               </option>
+                {% endif %}
               {% endfor %}
             </select>
           </div>
@@ -112,7 +114,7 @@
           <div class="col-auto">
             <label for="opponent" class="update-label">Opponent</label>
             <select class="selectpicker" name="opponent_id" data-style="custom-multiselect" data-live-search="true" data-actions-box="true" multiple>
-              {% for opponent in t.opponents %}
+              {% for opponent in t.alliances %}
               <option value="{{opponent.id}}"
               {% if opponent.id in t.opp_ids %} selected {% endif %}>{{opponent.name}}
               </option>

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 import pytz
-from models import db, Alliance, Player, PlayerAction, OCR, War, Score, Opponent
+from models import db, Alliance, Player, PlayerAction, OCR, War, Score
 
 class TFEW():
     """ Holds global information for the app """
@@ -18,9 +18,8 @@ class TFEW():
         self.end_day = None
 
         self.alliances = []
-        self.opponentsList = []
+        self.alliancesList = []
         self.playersList = []
-        self.opponents = []
         self.opp_ids = []
         self.players = []
         self.wars = []
@@ -65,7 +64,7 @@ class TFEW():
             self.opp_ids = []
             self.playerName = ''
             self.playersList = []
-            self.opponentsList = []
+            self.alliancesList = []
 
         if dateWindow and not self.filt:
             self.end_day = datetime.now(pytz.timezone('US/Central')).date()
@@ -91,13 +90,10 @@ class TFEW():
         return war, missing_players
 
     def setAlliances(self):
-        self.alliances = Alliance.query.all()
+        self.alliances = Alliance.query.order_by(Alliance.name).all()
 
-    def setOpponentsList(self):
-        self.opponentsList = [opp.name for opp in Opponent.query.order_by('name').all()]
-
-    def setOpponents(self):
-        self.opponents = Opponent.query.order_by(Opponent.name).all()
+    def setAlliancesList(self):
+        self.alliancesList = [alli.name for alli in Alliance.query.order_by('name').all()]
 
     def setPlayersList(self):
         self.playersList = [player.name for player in Player.query.order_by('name').all()]
@@ -352,11 +348,11 @@ class TFEW():
         else:
             war = War()
 
-        opponent = getIDbyName(Opponent, fwar['opponent'])
+        opponent = getIDbyName(Alliance, fwar['opponent'])
         if opponent:
             war.opponent_id = opponent
         else:
-            newopp = Opponent()
+            newopp = Alliance()
             newopp.name = fwar['opponent'].strip()
             war.opponent = newopp
 

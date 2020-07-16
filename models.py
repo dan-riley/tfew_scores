@@ -71,7 +71,7 @@ class War(db.Model):
     date = db.Column(db.Date(), nullable=False)
     league = db.Column(db.Integer(), nullable=False)
     alliance_id = db.Column(db.Integer(), db.ForeignKey('alliances.id'))
-    opponent_id = db.Column(db.Integer(), db.ForeignKey('opponents.id'))
+    opponent_id = db.Column(db.Integer(), db.ForeignKey('alliances.id'))
     tracked = db.Column(db.Integer())
     our_score = db.Column(db.Integer())
     opp_score = db.Column(db.Integer())
@@ -85,8 +85,8 @@ class War(db.Model):
     b3p = db.relationship('Player', foreign_keys='War.b3')
     b4p = db.relationship('Player', foreign_keys='War.b4')
     b5p = db.relationship('Player', foreign_keys='War.b5')
-    alliance = db.relationship('Alliance', backref='war')
-    opponent = db.relationship('Opponent', backref='war')
+    alliance = db.relationship('Alliance', foreign_keys='War.alliance_id')
+    opponent = db.relationship('Alliance', foreign_keys='War.opponent_id')
     scores = db.relationship('Score', back_populates='war', cascade='delete, delete-orphan')
     players = db.relationship('Player', secondary='scores', order_by='Player.name')
     #players = association_proxy('scores', 'players')
@@ -126,13 +126,8 @@ class War(db.Model):
         return r
 
 
-class Opponent(db.Model):
-    __tablename__ = 'opponents'
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-
-
 class Alliance(db.Model):
     __tablename__ = 'alliances'
     id = db.Column(db.Integer(), primary_key=True)
+    active = db.Column(db.Boolean())
     name = db.Column(db.String(255), nullable=False)

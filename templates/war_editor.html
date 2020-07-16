@@ -20,9 +20,11 @@
               <select class="custom-select" name="alliance_id">
                 <option></option>
                 {% for alliance in t.alliances %}
+                    {% if alliance.active %}
                 <option value="{{alliance.id}}"
                 {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
                 </option>
+                    {% endif %}
                 {% endfor %}
               </select>
             </td>
@@ -30,7 +32,7 @@
           <tr>
             <th>Opponent</th>
             <td>
-              <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.opponentsList|tojson}}'>
+              <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.alliancesList|tojson}}'>
                 <input class="form-control" type="text" name="opponent" value="{{war.opponent.name}}" autocomplete="off">
               </div>
             </td>

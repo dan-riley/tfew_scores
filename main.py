@@ -10,7 +10,7 @@ from functools import wraps
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import MultiDict
 import ocr
-from models import db, Player, PlayerAction, OCR, War, Score, Opponent
+from models import db, Player, PlayerAction, OCR, War, Score, Alliance
 from forms import LoginForm, SignupForm
 import tfew
 
@@ -135,7 +135,6 @@ def scoreboard():
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponents()
     # Pull the data we need from the database
     t.setWars()
     t.setPlayersByWar()
@@ -156,7 +155,6 @@ def history():
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponents()
     # Pull the data we need from the database
     t.setWars()
 
@@ -178,7 +176,6 @@ def player_view():
 
     # Load lists for the template
     t.setAlliances()
-    t.setOpponents()
     t.setPlayersList()
     # Pull the data we need from the database
     t.setWarsByPlayer()
@@ -204,7 +201,7 @@ def player_editor():
 @officer_required
 def war_editor():
     t.setAlliances()
-    t.setOpponentsList()
+    t.setAlliancesList()
 
     if request.method == 'GET':
         war, missing_players = t.setRequestsWarEditor(request)
@@ -301,11 +298,11 @@ def importScores():
                 count += 1
             else:
                 newwar = War()
-                opponent = tfew.getIDbyNameCSV(Opponent, row[0])
+                opponent = tfew.getIDbyNameCSV(Alliance, row[0])
                 if opponent != '':
                     newwar.opponent_id = opponent
                 else:
-                    newopp = Opponent()
+                    newopp = Alliance()
                     newopp.name = row[0].strip()
                     newwar.opponent = newopp
 
