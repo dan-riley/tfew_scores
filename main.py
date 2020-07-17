@@ -189,6 +189,7 @@ def player_view():
 @app.route('/player_editor', methods=['GET', 'POST'])
 @officer_required
 def player_editor():
+    t.setAlliances()
     t.setPlayers()
 
     if request.method == 'POST':
@@ -393,6 +394,56 @@ def importBlanks():
                     db.session.add(war)
 
     db.session.commit()
+    return render_template('import_scores.html')
+
+@app.route('/migrate_players')
+@officer_required
+def migratePlayers():
+    t.setPlayers()
+    html = []
+    for player in t.players:
+        if player.alliance_id == 1:
+            player.alliance_id = 2
+
+    for player in t.players:
+        for action in player.actions:
+            if action.alliance_id == 1:
+                alliance = 'TFW'
+                aid = 1
+                below_aid = 30
+                above_aid = 80
+            elif action.alliance_id == 2:
+                alliance = 'S7'
+                aid = 2
+                below_aid = 3
+                above_aid = 'error'
+
+            if action.action == 0:
+                newaction = aid
+            elif action.action == 1:
+                newaction = aid
+            elif action.action == 2:
+                newaction = aid
+            elif action.action == 3:
+                newaction = aid
+            elif action.action == 4:
+                newaction = above_aid
+            elif action.action == 5:
+                newaction = below_aid
+            elif action.action == 6:
+                newaction = 0
+
+            if not player.alliance_id:
+                html.append(alliance + ' ' + player.name + ' ' + str(action.date) + ' ' + str(action.action) + ' ' + str(newaction))
+                if newaction not in (0, 1, 2):
+                    html.append('setting alliance to ' + str(newaction))
+                    player.alliance_id = newaction
+
+            action.alliance_id = newaction
+            db.session.add(player)
+
+    db.session.commit()
+
     return render_template('import_scores.html')
 
 if __name__ == "__main__":

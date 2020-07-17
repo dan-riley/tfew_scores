@@ -7,7 +7,7 @@ class TFEW():
 
     def __init__(self):
         # Version control to force reload of static files
-        self.version = 'v1.03'
+        self.version = 'v1.04'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -81,7 +81,7 @@ class TFEW():
             self.alliance = war.alliance_id
             self.players = war.players
             ids = (player.id for player in self.players)
-            missing_players = Player.query.order_by(Player.name).filter(Player.active, ~Player.id.in_(ids)).all()
+            missing_players = Player.query.order_by(Player.name).filter(Player.alliance_id == self.alliance, ~Player.id.in_(ids)).all()
         else:
             war = War()
             self.setPlayersActive()
@@ -102,7 +102,7 @@ class TFEW():
         self.players = Player.query.order_by(Player.name).all()
 
     def setPlayersActive(self):
-        self.players = Player.query.order_by(Player.name).filter(Player.active).all()
+        self.players = Player.query.order_by(Player.name).filter(Player.alliance_id == self.alliance).all()
 
     def setPlayer(self):
         self.player = Player.query.get(self.player_id)
@@ -230,16 +230,6 @@ class TFEW():
                 player.name = fplayer['name']
                 changed = True
 
-            # Set the active state
-            if 'active' in fplayer:
-                if not player.active:
-                    player.active = True
-                    changed = True
-            else:
-                if player.active:
-                    player.active = False
-                    changed = True
-
             # Set whether the player is an officer, but only if they've logged in before
             if 'officer' in fplayer:
                 if not player.officer and player.password_hash:
@@ -253,22 +243,22 @@ class TFEW():
             # Edit the last action or add new last action
             lastAction = player.actions[-1]
             if (str(lastAction.date) != fplayer['lastDate'] and
-                    str(lastAction.action) != fplayer['lastAction']):
+                    str(lastAction.alliance_id) != fplayer['lastAction']):
                 newAction = PlayerAction()
-                # Temporary fix for multi-alliance.  Need to fix.
-                newAction.alliance_id = 2
                 newAction.player_id = player.id
                 newAction.date = fplayer['lastDate']
-                newAction.action = fplayer['lastAction']
+                newAction.alliance_id = fplayer['lastAction']
+                player.alliance_id = fplayer['lastAction']
                 db.session.add(newAction)
                 changed = True
             elif (str(lastAction.date) != fplayer['lastDate'] and
-                  str(lastAction.action) == fplayer['lastAction']):
+                  str(lastAction.alliance_id) == fplayer['lastAction']):
                 lastAction.date = fplayer['lastDate']
                 changed = True
-            elif (str(lastAction.action) != fplayer['lastAction'] and
+            elif (str(lastAction.alliance_id) != fplayer['lastAction'] and
                   str(lastAction.date) == fplayer['lastDate']):
-                lastAction.action = fplayer['lastAction']
+                lastAction.alliance_id = fplayer['lastAction']
+                player.alliance_id = fplayer['lastAction']
                 changed = True
 
             # Edit the OCR strings
@@ -292,17 +282,15 @@ class TFEW():
         if fplayers['newName']:
             newplayer = Player()
             newplayer.name = fplayers['newName']
-            newplayer.active = True
 
             # For now we require a player to have logged in before giving officer rights
             # if 'newOfficer' in fplayers:
             #     newplayer.officer = True
 
             newaction = PlayerAction()
-            # Temporary fix for multi-alliance.  Need to fix.
-            newaction.alliance_id = 2
             newaction.date = fplayers['newActionDate']
-            newaction.action = fplayers['newAction']
+            newaction.alliance_id = fplayers['newAction']
+            newplayer.alliance_id = fplayers['newAction']
             newplayer.actions.append(newaction)
 
             newocr = OCR()

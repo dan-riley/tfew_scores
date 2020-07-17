@@ -165,6 +165,17 @@ var Player = (function() {
   }
 
   function addTableToggles() {
+    document.getElementById('alliance_history_toggle').addEventListener('click', function() {
+      var div = document.getElementById('alliance_history');
+      if (div.style.display == 'none') {
+        div.style.display = 'block';
+        this.innerHTML = 'Alliance History -'
+      } else {
+        div.style.display = 'none';
+        this.innerHTML = 'Alliance History +<br /><br />'
+      }
+    });
+
     // Set the checkmarks depending on other checkmarks, then rebuild the table
     document.getElementsByName('tracked_table')[0].addEventListener('change', function() {
       if (!this.checked) {

@@ -145,7 +145,7 @@
             {% else %}
             <div>&nbsp;</div>
             {% endif %}
-            <input type="hidden" id="active{{loop.index}}" value="{{player.active}}">
+            <input type="hidden" id="active{{loop.index}}" value="{{player.alliance_id == t.alliance}}">
           </td>
           <td class="light">{{player.trackedAvg}}</td>
           <td class="light">{{player.untrackedAvg}}</td>

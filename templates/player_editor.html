@@ -16,7 +16,6 @@
             <tr>
               <th></th>
               <th>Name</th>
-              <th>Active</th>
               <th>Officer</th>
               <th>Last Action</th>
               <th>OCR Strings</th>
@@ -31,13 +30,6 @@
               <input class="form-control" type="text" name="players[{{player.id}}][name]" value="{{player.name}}">
             </td>
             <td>
-              <input class="form-control" type="checkbox" name="players[{{player.id}}][active]" value="{{player.id}}"
-              {% if player.active %}
-                checked
-              {% endif %}
-              >
-            </td>
-            <td>
               <input class="form-control" type="checkbox" name="players[{{player.id}}][officer]" value="{{player.id}}"
               {% if player.officer %}
                 checked
@@ -50,22 +42,13 @@
             <td>
               <input class="form-control" type="date" name="players[{{player.id}}][lastDate]" value="{{player.actions[-1].date}}">
               <select class="custom-select" name="players[{{player.id}}][lastAction]">
-                <option disabled>Joined-------</option>
-                <option value="0"
-                {% if player.actions[-1].action == 0 %} selected {% endif %}>TFW OG</option>
-                <option value="1"
-                {% if player.actions[-1].action == 1 %} selected {% endif %}>Promoted to TFW</option>
-                <option value="2"
-                {% if player.actions[-1].action == 2 %} selected {% endif %}>Demoted to TFW</option>
-                <option value="3"
-                {% if player.actions[-1].action == 3 %} selected {% endif %}>Joined family</option>
-                <option disabled>Left---------</option>
-                <option value="4"
-                {% if player.actions[-1].action == 4 %} selected {% endif %}>Promoted from TFW</option>
-                <option value="5"
-                {% if player.actions[-1].action == 5 %} selected {% endif %}>Demoted from TFW</option>
-                <option value="6"
-                {% if player.actions[-1].action == 6 %} selected {% endif %}>Left family</option>
+                {% for alliance in t.alliances %}
+                  {% if alliance.active or alliance.id == player.actions[-1].alliance_id or alliance.id == 0 %}
+                <option value="{{alliance.id}}"
+                {% if player.actions[-1].alliance_id == alliance.id %} selected {% endif %}>{{alliance.name}}
+                </option>
+                  {% endif %}
+                {% endfor %}
               </select>
             </td>
             {% for ocr in player.ocr %}
@@ -99,17 +82,18 @@
               <input class="form-control" type="text" name="newName" value="">
             </td>
             <td>
-              <input class="form-control" type="checkbox" name="newActive" value="new" checked disabled>
-            </td>
-            <td>
               <input class="form-control" type="checkbox" name="newOfficer" value="new" disabled>
             </td>
             <td>
               <input class="form-control" type="date" name="newActionDate" value="{{today}}">
               <select class="custom-select" name="newAction">
-                <option value="1" selected>Promoted to TFW</option>
-                <option value="2">Demoted to TFW</option>
-                <option value="3">Joined family</option>
+                {% for alliance in t.alliances %}
+                  {% if alliance.active or alliance.id == 0 %}
+                <option value="{{alliance.id}}"
+                {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
+                </option>
+                  {% endif %}
+                {% endfor %}
               </select>
             </td>
             <td colspan="100"></td>

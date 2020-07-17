@@ -16,6 +16,26 @@
       <br />
       <div id="chart_Score"></div>
 
+      <div class="col-6" id="alliance_history_toggle">
+        Alliance History +<br /><br />
+      </div>
+
+      <div class="col-6 col-md-3" id="alliance_history" style="display: none;">
+        <table class="player_table table table-sm table-bordered">
+          <tr>
+            <th>Date</th>
+            <th>Alliance</th>
+          </tr>
+
+          {% for action in t.player.actions %}
+          <tr>
+            <td>{{action.date}}</td>
+            <td>{{action.alliance.name}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+
       <div class="col-6">
         <table class="player_table table table-sm table-bordered">
           <tr>

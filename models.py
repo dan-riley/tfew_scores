@@ -20,7 +20,7 @@ class Player(UserMixin, db.Model):
     __tablename__ = 'players'
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    active = db.Column(db.Boolean())
+    alliance_id = db.Column(db.Integer(), db.ForeignKey('alliances.id'))
     officer = db.Column(db.Boolean(), default=0)
     password_hash = db.Column(db.String(128))
 
@@ -28,17 +28,18 @@ class Player(UserMixin, db.Model):
     wars = db.relationship('War', secondary='scores')
     ocr = db.relationship('OCR', backref='player')
     actions = db.relationship('PlayerAction', order_by='PlayerAction.date', backref='player')
+    alliance = db.relationship('Alliance', foreign_keys='Player.alliance_id')
 
     def score(self, war_id):
         return Score.query.filter(Score.player_id == self.id, Score.war_id == war_id).first()
 
-    def active_day(self, day):
-        active = False
-        for action in self.actions: # pylint: disable=not-an-iterable
-            if action.date <= day:
-                active = bool(action.action < 4)
-
-        return active
+    # def active_day(self, day):
+    #     active = False
+    #     for action in self.actions: # pylint: disable=not-an-iterable
+    #         if action.date <= day:
+    #             active = bool(action.action < 4)
+    #
+    #     return active
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -56,7 +57,8 @@ class PlayerAction(db.Model):
     player_id = db.Column(db.Integer(), db.ForeignKey('players.id'))
     alliance_id = db.Column(db.Integer(), db.ForeignKey('alliances.id'))
     date = db.Column(db.Date(), nullable=False)
-    action = db.Column(db.Integer(), nullable=False)
+    # action = db.Column(db.Integer(), db.ForeignKey('alliances.id'), nullable=False)
+    alliance = db.relationship('Alliance', foreign_keys='PlayerAction.alliance_id')
 
 
 class OCR(db.Model):
