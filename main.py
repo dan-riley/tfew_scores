@@ -396,42 +396,73 @@ def importBlanks():
     db.session.commit()
     return render_template('import_scores.html')
 
-@app.route('/migrate_players')
+@app.route('/adjust_actions')
 @officer_required
-def migratePlayers():
-    t.setPlayers()
+def adjustActions():
     html = []
-    for player in t.players:
-        if player.actions[-1].alliance_id == 1:
-            newaction = PlayerAction()
-            newaction.date = datetime.fromisoformat('2020-02-01').date()
+    players = Player.query.order_by(Player.name).all()
+    wars = War.query.order_by(War.date).all()
 
-            if player.alliance_id == 2 or player.alliance_id == 3:
-                html.append(str(player.id) + ' ' + player.name + ' ' + str(player.actions[-1].date) + ' ' + str(player.alliance_id))
-                newaction.alliance_id = 2
-            else:
-                html.append(str(player.id) + ' ' + player.name + ' ' + str(player.actions[-1].date) + ' ' + str(player.alliance_id))
-                newaction.alliance_id = player.alliance_id
+    actions = 1
+    while actions > 0:
+        actions = 0
+        # Add join action if war has score but player not in alliance
+        for war in wars:
+            for player in war.players:
+                if not player.active_day(war.date, war.alliance_id):
+                    ht = str(player.id) + ' ' + player.name + ' '
+                    ht += str(war.date) + ' ' + str(war.id)
+                    html.append(ht)
+                    html.append('adding join action ' + str(war.date))
+                    newaction = PlayerAction()
+                    newaction.date = war.date
+                    newaction.alliance_id = war.alliance_id
+                    player.actions.append(newaction)
+                    actions += 1
+                db.session.add(player)
 
-            player.actions.append(newaction)
-            db.session.add(player)
+        html.append(' ')
+        html.append(' ')
+        html.append(' ')
 
-            # elif player.alliance_id and player.alliance_id == 2:
-            #     html.append(player.name + ' ' + str(player.actions[-1].date) + ' right')
-        # elif player.actions[-1].alliance_id != 2:
-        #     if player.alliance_id != player.actions[-1].alliance_id:
-        #         html.append(player.name + ' ' + str(player.actions[-1].date) + ' check')
-    # wars = War.query.order_by(War.date).all()
-    # for war in wars:
-    #     for player in war.players:
-    #         if not player.active_day(war.date, war.alliance_id):
-    #             html.append(str(player.id) + ' ' + player.name + ' ' + str(war.date) + ' wrong alliance')
+        # Adjust existing start date or remove from allaince
+        for war in wars:
+            for player in players:
+                if player.active_day(war.date, war.alliance_id) and player not in war.players:
+                    ht = str(player.id) + ' ' + player.name + ' '
+                    ht += str(war.date) + ' ' + str(war.id)
+                    html.append(ht)
+                    start_adjust = False
+                    # Adjust date if already in alliance but date is too early
+                    for action in player.actions:
+                        if (action.alliance_id == war.alliance_id and
+                                player.wars[0].date > action.date):
+                            ht = 'adjusted from '
+                            ht += str(action.date) + ' to ' + str(player.wars[0].date) + ' '
+                            ht += str(action.alliance_id) + ' ' + str(war.alliance_id)
+                            html.append(ht)
+                            action.date = player.wars[0].date
+                            start_adjust = True
+                            actions += 1
+                            break
 
-            # db.session.add(player)
+                    # Otherwise they must have left, so remove from alliance
+                    if not start_adjust:
+                        html.append('adding left action ' + str(war.date))
+                        newaction = PlayerAction()
+                        newaction.date = war.date
+                        newaction.alliance_id = war.alliance_id + 1
+                        player.actions.append(newaction)
+                        actions += 1
+                db.session.add(player)
+
+        html.append(' ')
+        html.append(' ')
+        html.append(' ')
 
     db.session.commit()
 
-    return render_template('import_scores.html', html=html)
+    return render_template('utility.html', html=html)
 
 if __name__ == "__main__":
     manager.run()

@@ -20,10 +20,11 @@
   </head>
   <body>
     <div class="container">
-      <h1>TFEW Score Importer</h1>
-      <a href="/upload">Process scores</a>
-      <br />
-      <a href="/player_editor">Edit Players</a>
+      <h1>TFEW Utility Page</h1>
+      {% for ht in html %}
+        {{ht}}
+        <br />
+      {% endfor %}
     </div>
   </body>
 </html>
