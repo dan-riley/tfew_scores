@@ -402,49 +402,36 @@ def migratePlayers():
     t.setPlayers()
     html = []
     for player in t.players:
-        if player.alliance_id == 1:
-            player.alliance_id = 2
+        if player.actions[-1].alliance_id == 1:
+            newaction = PlayerAction()
+            newaction.date = datetime.fromisoformat('2020-02-01').date()
 
-    for player in t.players:
-        for action in player.actions:
-            if action.alliance_id == 1:
-                alliance = 'TFW'
-                aid = 1
-                below_aid = 30
-                above_aid = 80
-            elif action.alliance_id == 2:
-                alliance = 'S7'
-                aid = 2
-                below_aid = 3
-                above_aid = 'error'
+            if player.alliance_id == 2 or player.alliance_id == 3:
+                html.append(str(player.id) + ' ' + player.name + ' ' + str(player.actions[-1].date) + ' ' + str(player.alliance_id))
+                newaction.alliance_id = 2
+            else:
+                html.append(str(player.id) + ' ' + player.name + ' ' + str(player.actions[-1].date) + ' ' + str(player.alliance_id))
+                newaction.alliance_id = player.alliance_id
 
-            if action.action == 0:
-                newaction = aid
-            elif action.action == 1:
-                newaction = aid
-            elif action.action == 2:
-                newaction = aid
-            elif action.action == 3:
-                newaction = aid
-            elif action.action == 4:
-                newaction = above_aid
-            elif action.action == 5:
-                newaction = below_aid
-            elif action.action == 6:
-                newaction = 0
-
-            if not player.alliance_id:
-                html.append(alliance + ' ' + player.name + ' ' + str(action.date) + ' ' + str(action.action) + ' ' + str(newaction))
-                if newaction not in (0, 1, 2):
-                    html.append('setting alliance to ' + str(newaction))
-                    player.alliance_id = newaction
-
-            action.alliance_id = newaction
+            player.actions.append(newaction)
             db.session.add(player)
+
+            # elif player.alliance_id and player.alliance_id == 2:
+            #     html.append(player.name + ' ' + str(player.actions[-1].date) + ' right')
+        # elif player.actions[-1].alliance_id != 2:
+        #     if player.alliance_id != player.actions[-1].alliance_id:
+        #         html.append(player.name + ' ' + str(player.actions[-1].date) + ' check')
+    # wars = War.query.order_by(War.date).all()
+    # for war in wars:
+    #     for player in war.players:
+    #         if not player.active_day(war.date, war.alliance_id):
+    #             html.append(str(player.id) + ' ' + player.name + ' ' + str(war.date) + ' wrong alliance')
+
+            # db.session.add(player)
 
     db.session.commit()
 
-    return render_template('import_scores.html')
+    return render_template('import_scores.html', html=html)
 
 if __name__ == "__main__":
     manager.run()
