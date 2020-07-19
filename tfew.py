@@ -79,12 +79,12 @@ class TFEW():
             war_id = int(request.args.get('war_id'))
             war = War.query.get(war_id)
             self.alliance = war.alliance_id
+            self.setPlayersActive(war.date, war.alliance_id)
+            missing_players = [player for player in self.players if player not in war.players]
             self.players = war.players
-            ids = (player.id for player in self.players)
-            missing_players = Player.query.order_by(Player.name).filter(Player.alliance_id == self.alliance, ~Player.id.in_(ids)).all()
         else:
             war = War()
-            self.setPlayersActive()
+            self.setPlayersActive(war.date, self.alliance)
             missing_players = []
 
         return war, missing_players
@@ -101,8 +101,14 @@ class TFEW():
     def setPlayers(self):
         self.players = Player.query.order_by(Player.name).all()
 
-    def setPlayersActive(self):
-        self.players = Player.query.order_by(Player.name).filter(Player.alliance_id == self.alliance).all()
+    def setPlayersActive(self, day, alliance_id):
+        if not day:
+            day = datetime.now(pytz.timezone('US/Central')).date()
+        self.players = []
+        players = Player.query.order_by(Player.name).all()
+        for player in players:
+            if player.active_day(day, alliance_id):
+                self.players.append(player)
 
     def setPlayer(self):
         self.player = Player.query.get(self.player_id)
