@@ -8,7 +8,6 @@ from flask_script import Manager
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from functools import wraps
 from werkzeug.utils import secure_filename
-from werkzeug.datastructures import MultiDict
 import ocr
 from models import db, Player, PlayerAction, OCR, War, Score, Alliance
 from forms import LoginForm, SignupForm
@@ -25,7 +24,7 @@ db.init_app(app)
 login_manager.init_app(app)
 
 # Initialize our class that holds data for easier access
-t = tfew.TFEW()
+t = tfew.TFEW(current_user)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -131,7 +130,7 @@ def home_page():
 @login_required
 def scoreboard():
     # Set all of the parameters based on URL params, with a default date window
-    t.setRequests(request, 21)
+    t.setRequests(request, dateWindow=28)
 
     # Load lists for the template
     t.setAlliances()
@@ -166,13 +165,8 @@ def history():
 @app.route('/player')
 @self_required
 def player_view():
-    # Manually set the player to the logged in user if none requested
-    if not request.args:
-        t.player_id = current_user.id
-        request.args = MultiDict([('player_id', t.player_id)])
-
     # Set all of the parameters based on URL params
-    t.setRequests(request)
+    t.setRequests(request, True)
 
     # Load lists for the template
     t.setAlliances()

@@ -5,9 +5,10 @@ from models import db, Alliance, Player, PlayerAction, OCR, War, Score
 class TFEW():
     """ Holds global information for the app """
 
-    def __init__(self):
+    def __init__(self, user):
+        self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.04'
+        self.version = 'v1.05'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -27,7 +28,7 @@ class TFEW():
         # Display messages
         self.flash = None
 
-    def setRequests(self, request, dateWindow=0):
+    def setRequests(self, request, defPlayer=False, dateWindow=0):
         self.filt = []
         if request.args:
             player_id = request.args.get('player_id')
@@ -46,10 +47,7 @@ class TFEW():
                 self.playerName = ''
 
             if player_id:
-                self.player_id = int(player_id)
-                self.filt.append(getattr(Player, 'id') == self.player_id)
-                if not self.playerName:
-                    self.playerName = getNamebyID(Player, int(player_id))
+                self.setPlayerArg(player_id)
 
             if self.opp_ids:
                 self.filt.append(War.opponent_id.in_(self.opp_ids))
@@ -57,12 +55,15 @@ class TFEW():
             if self.start_day or self.end_day:
                 self.filt.append(War.date.between(self.start_day, self.end_day))
         else:
-            # Try to clear out data.  Doesn't seem to always work though.
-            self.alliance = 2
+            # Set to logged in user's alliance, and player id if requested
+            self.alliance = self.user.alliance_id
+            if defPlayer:
+                self.setPlayerArg(self.user.id)
+            else:
+                self.player_id = 0
+                self.playerName = ''
             self.player = None
-            self.player_id = 0
             self.opp_ids = []
-            self.playerName = ''
             self.playersList = []
             self.alliancesList = []
 
@@ -84,6 +85,7 @@ class TFEW():
             self.players = war.players
         else:
             war = War()
+            self.alliance = self.user.alliance_id
             self.setPlayersActive(war.date, self.alliance)
             missing_players = []
 
@@ -97,6 +99,12 @@ class TFEW():
 
     def setPlayersList(self):
         self.playersList = [player.name for player in Player.query.order_by('name').all()]
+
+    def setPlayerArg(self, player_id):
+        self.player_id = int(player_id)
+        self.filt.append(getattr(Player, 'id') == self.player_id)
+        if not self.playerName:
+            self.playerName = getNamebyID(Player, int(player_id))
 
     def setPlayers(self):
         self.players = Player.query.order_by(Player.name).all()

@@ -1,6 +1,10 @@
 var WarEditor = (function() {
 
   var alert_wrapper, players;
+  var editor_table;
+  var playerOrder;
+  var scoreOrder;
+  var lastSort = 0;
 
   document.addEventListener('DOMContentLoaded', function(event) {
     alert_wrapper = document.getElementById('alert_wrapper');
@@ -9,6 +13,9 @@ var WarEditor = (function() {
     // Initialize autocomplete
     var oppdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
     autocomplete(document.getElementsByName('opponent')[0], oppdata);
+
+    editor_table = document.getElementById('editor_table');
+    addSortListeners();
 
     // Setup auto-totaler for our score
     for (var i=0; i < players.length; i++) {
@@ -40,4 +47,24 @@ var WarEditor = (function() {
       request.send(JSON.stringify(data));
     });
   });
+
+  function addSortListeners() {
+    document.getElementById('player_sort').addEventListener('click', function() {
+      if (lastSort == 1)
+        playerOrder = (playerOrder == 'asc') ? 'desc' : 'asc';
+      else
+        playerOrder = 'asc';
+      lastSort = 1;
+      sortTable(editor_table, lastSort, playerOrder)
+    });
+
+    document.getElementById('score_sort').addEventListener('click', function() {
+      if (lastSort == 2)
+        scoreOrder = (scoreOrder == 'asc') ? 'desc' : 'asc';
+      else
+        scoreOrder = 'desc';
+      lastSort = 2;
+      sortTable(editor_table, lastSort, scoreOrder)
+    });
+  }
 })();

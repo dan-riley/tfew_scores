@@ -178,6 +178,10 @@ body {
   background-color: #c5c5c5;
 }
 
+.missingScore {
+  background-color: #fff70159;
+}
+
 .noAttempt {
   background-color: #c5000059;
 }

@@ -158,11 +158,16 @@
           {% set attemptsLeft = player.scoresRange[war.id].attempts_left %}
           {% set excused = player.scoresRange[war.id].excused %}
           {% set notInAlliance = False %}
+          {% set missingScore = False %}
           {% if score is not defined %}
-            {% set notInAlliance = True %}
+            {% if player.active_day(war.date, war.alliance_id) %}
+              {% set missingScore = True %}
+            {% else %}
+              {% set notInAlliance = True %}
+            {% endif %}
           {% endif %}
           {% if current_user.id == player.id or current_user.officer %}
-          <td class="{{war.trackedClass()}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}} cls{{war.id}}">
+          <td class="{{war.trackedClass()}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}} {{'missingScore' if missingScore }} cls{{war.id}}">
             {{score if score != None}}
           </td>
           {% else %}

@@ -45,7 +45,10 @@ function sortTable(table, colnum, order, skip=1) {
     let t1 = r1.querySelector(qs);
     let t2 = r2.querySelector(qs);
 
-    return compareValuesFlask(t1.textContent, t2.textContent, order);
+    if ((t1.textContent.trim() == '') && (t2.textContent.trim() == ''))
+      return compareValuesFlask(t1.children[0].value, t2.children[0].value, order);
+    else
+      return compareValuesFlask(t1.textContent, t2.textContent, order);
   });
 
   var rank = 1;
