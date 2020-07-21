@@ -8,7 +8,7 @@ var WarEditor = (function() {
 
   document.addEventListener('DOMContentLoaded', function(event) {
     alert_wrapper = document.getElementById('alert_wrapper');
-    players = document.querySelectorAll("input[name^=players][name*=score]");
+    players = document.querySelectorAll("input[name^=players][name*=score], input[name^=missing_players][name*=score]");
 
     // Initialize autocomplete
     var oppdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);

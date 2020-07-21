@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.05'
+        self.version = 'v1.06'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -386,6 +386,10 @@ class TFEW():
             war.b5 = fwar['b5']
         else:
             war.b5 = None
+
+        # If no scores were added when war was initially created, this can be empty so check
+        if 'players' not in fwar:
+            fwar['players'] = []
 
         if war.scores:
             for score in war.scores:
