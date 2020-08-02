@@ -258,9 +258,9 @@ def downloadFile():
     path = os.path.join(app.root_path, 'output.csv')
     return send_file(path, as_attachment=True)
 
-@app.route('/import_scores')
+@app.route('/import_tfw_scores')
 @officer_required
-def importScores():
+def importTFWScores():
     with open(os.path.join(app.root_path, 'data/jan2_scores.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         count = 0
@@ -354,6 +354,137 @@ def importScores():
 
     db.session.commit()
     return render_template('import_scores.html')
+
+@app.route('/import_sector_scores')
+@officer_required
+def importSectorScores():
+    players = Player.query.order_by('name').all()
+    playersDict = dict(zip([player.name.upper() for player in players], players))
+
+    alliances = Alliance.query.order_by('name').all()
+    alliancesDict = dict(zip([alliance.name.upper() for alliance in alliances], alliances))
+
+    html = []
+    with open(os.path.join(app.root_path, 'data/sectorwars-scores.csv'), 'r') as f:
+        csv_reader = csv.reader(f, delimiter=',')
+        for row in csv_reader:
+            pid = row[0].strip()
+            name = row[1].strip()
+            score = int(row[2].strip())
+            alliance = row[4].strip()
+            wardate = datetime.strptime(row[5].strip(), '%m/%d/%Y').date()
+            our_score = int(row[7].strip())
+            opp_score = int(row[8].strip())
+            opponent = row[9].strip()
+            league = row[10].strip()
+            tracked = row[11].strip()
+            if row[3] == '':
+                attempts = 0
+            else:
+                attempts = int(row[3].strip())
+
+            alliance_id = alliancesDict[alliance].id
+            if name in playersDict:
+                active = playersDict[name].active_day(wardate, alliance_id)
+
+                if not active:
+                    process = True
+                    for war in playersDict[name].wars:
+                        if war.date == wardate:
+                            process = False
+                            break
+
+                    if process:
+                        html.append(str(playersDict[name].id) + ' adjusting player ' + playersDict[name].name + ' ' + str(wardate) + ' ' + alliance)
+                        newaction = PlayerAction()
+                        newaction.alliance_id = alliance_id
+                        newaction.date = wardate
+                        playersDict[name].actions.append(newaction)
+                        db.session.add(playersDict[name])
+            else:
+                player = Player()
+                aname = name.split()
+                player.name = ''
+                for cname in aname:
+                    player.name += cname.capitalize() + ' '
+
+                player.name = player.name.strip()
+                html.append('adding player ' + player.name)
+
+                newaction = PlayerAction()
+                newaction.alliance_id = alliance_id
+                newaction.date = wardate
+                player.actions.append(newaction)
+                player.alliance_id = alliance_id
+
+                newocr = OCR()
+                newocr.ocr_string = name
+                player.ocr.append(newocr)
+
+                playersDict[name] = player
+                db.session.add(player)
+
+            if opponent not in alliancesDict:
+                newopp = Alliance()
+                aname = opponent.split()
+                newopp.name = ''
+                for cname in aname:
+                    newopp.name += cname.capitalize() + ' '
+
+                newopp.name = newopp.name.strip()
+                html.append('opponent ' + newopp.name + ' added')
+                alliancesDict[opponent] = newopp
+                db.session.add(newopp)
+
+            newwar = None
+            for war in alliancesDict[alliance].wars:
+                if war.date == wardate and war.opponent.id == alliancesDict[opponent].id:
+                    newwar = war
+                    break
+
+            if not newwar:
+                newwar = War()
+                newwar.opponent = alliancesDict[opponent]
+
+                if league == 'PRIME':
+                    newwar.league = 8
+                elif league == 'CYBERTRON':
+                    newwar.league = 7
+                elif league == 'CAMINUS':
+                    newwar.league = 6
+                elif league == 'PLATINUM':
+                    newwar.league = 5
+
+                newwar.alliance_id = alliance_id
+                newwar.date = wardate
+                newwar.our_score = our_score
+                newwar.opp_score = opp_score
+
+                if tracked == 'No':
+                    newwar.tracked = 0
+                elif tracked == 'Yes':
+                    newwar.tracked = 1
+                elif tracked == 'Optional':
+                    newwar.tracked = 2
+                else:
+                    newwar.tracked = 0
+
+                html.append('war added ' + str(newwar.date) + ' ' + alliance + ' ' + opponent)
+                alliancesDict[alliance].wars.append(newwar)
+
+            newscore = Score()
+            newscore.score = score
+            if attempts == 3 and score == 0:
+                newscore.no_attempts = True
+            elif attempts > 0:
+                newscore.attempts_left = True
+            newscore.player = playersDict[name]
+            newwar.scores.append(newscore)
+
+            db.session.add(newscore)
+
+    db.session.commit()
+    return render_template('utility.html', html=html)
 
 @app.route('/import_blanks')
 @officer_required
@@ -455,6 +586,18 @@ def adjustActions():
         html.append(' ')
 
     db.session.commit()
+
+    return render_template('utility.html', html=html)
+
+@app.route('/check_scores_player_active')
+@officer_required
+def checkScoresPlayerActive():
+    html = []
+    scores = Score.query.all()
+
+    for score in scores:
+        if not score.player.active_day(score.war.date, score.war.alliance_id):
+            html.append(score.player.name + ' ' + str(score.war.date) + ' ' + score.war.alliance.name)
 
     return render_template('utility.html', html=html)
 

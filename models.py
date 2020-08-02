@@ -124,6 +124,8 @@ class War(db.Model):
             r = 'Cybertron'
         elif self.league == 6:
             r = 'Caminus'
+        elif self.league == 5:
+            r = 'Platinum'
         return r
 
 
@@ -132,3 +134,4 @@ class Alliance(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     active = db.Column(db.Boolean())
     name = db.Column(db.String(255), nullable=False)
+    wars = db.relationship('War', foreign_keys='War.alliance_id')

@@ -3,11 +3,13 @@ var untrackedChart = false;
 var primeChart = false;
 var cyberChart = false;
 var allChart = true;
+var addCol = 0;
 
 var Player = (function() {
 
   var player_table;
   var dateOrder;
+  var allianceOrder;
   var opponentOrder;
   var leagueOrder;
   var pointsOrder;
@@ -59,6 +61,9 @@ var Player = (function() {
       autocomplete(document.getElementsByName('player')[0], pldata);
     }
 
+    // If we're showing the alliance column, adjust the ones after
+    if (document.getElementById("alliance_sort")) addCol = 1;
+
     player_table = document.getElementById('player_table');
     addSortListeners();
     addZoomListeners(player_table);
@@ -79,48 +84,59 @@ var Player = (function() {
       buildChart('chart_Score', 'getScoreData', ScoreOptions, 'line');
     });
 
+    if (document.getElementById("alliance_sort")) {
+      document.getElementById('alliance_sort').addEventListener('click', function() {
+        if (lastSort == 2)
+          allianceOrder = (allianceOrder == 'asc') ? 'desc' : 'asc';
+        else
+          allianceOrder = 'asc';
+        lastSort = 2;
+        sortTable(player_table, lastSort, allianceOrder)
+      });
+    }
+
     document.getElementById('opponent_sort').addEventListener('click', function() {
-      if (lastSort == 2)
+      if (lastSort == 2 + addCol)
         opponentOrder = (opponentOrder == 'asc') ? 'desc' : 'asc';
       else
         opponentOrder = 'asc';
-      lastSort = 2;
+      lastSort = 2 + addCol;
       sortTable(player_table, lastSort, opponentOrder)
     });
 
     document.getElementById('league_sort').addEventListener('click', function() {
-      if (lastSort == 3)
+      if (lastSort == 3 + addCol)
         leagueOrder = (leagueOrder == 'asc') ? 'desc' : 'asc';
       else
         leagueOrder = 'desc';
-      lastSort = 3;
+      lastSort = 3 + addCol;
       sortTable(player_table, lastSort, leagueOrder)
     });
 
     document.getElementById('points_sort').addEventListener('click', function() {
-      if (lastSort == 4)
+      if (lastSort == 4 + addCol)
         pointsOrder = (pointsOrder == 'asc') ? 'desc' : 'asc';
       else
         pointsOrder = 'desc';
-      lastSort = 4;
+      lastSort = 4 + addCol;
       sortTable(player_table, lastSort, pointsOrder)
     });
 
     document.getElementById('base_sort').addEventListener('click', function() {
-      if (lastSort == 5)
+      if (lastSort == 5 + addCol)
         baseOrder = (baseOrder == 'asc') ? 'desc' : 'asc';
       else
         baseOrder = 'desc';
-      lastSort = 5;
+      lastSort = 5 + addCol;
       sortTable(player_table, lastSort, baseOrder)
     });
 
     document.getElementById('score_sort').addEventListener('click', function() {
-      if (lastSort == 6)
+      if (lastSort == 6 + addCol)
         scoreOrder = (scoreOrder == 'asc') ? 'desc' : 'asc';
       else
         scoreOrder = 'desc';
-      lastSort = 6;
+      lastSort = 6 + addCol;
       sortTable(player_table, lastSort, scoreOrder)
     });
   }
@@ -254,7 +270,7 @@ function getScoreData() {
       data.addColumn('number', 'Cybertron');
     } else {
       // Need null values for dates to exclude from each category
-      var score = parseInt(row.cells[5].innerText);
+      var score = parseInt(row.cells[5 + addCol].innerText);
       var tracked = null;
       if (row.cells[0].children[1].value == '1')
         // Only show tracked on the chart, not optional
@@ -263,10 +279,10 @@ function getScoreData() {
       if (row.cells[0].children[1].value == '0')
         untracked = score;
       var prime = null;
-      if (row.cells[2].innerText == 'Prime')
+      if (row.cells[2 + addCol].innerText == 'Prime')
         prime = score;
       var cyber = null;
-      if (row.cells[2].innerText == 'Cybertron')
+      if (row.cells[2 + addCol].innerText == 'Cybertron')
         cyber = score;
 
       date = new Date(row.cells[0].innerText + ' 00:00');

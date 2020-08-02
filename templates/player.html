@@ -98,6 +98,9 @@
         <table id="player_table" class="player_table table table-sm table-bordered">
           <tr>
             <th class="player_sort sticky-top min-width sorted-down" id="date_sort">Date</th>
+            {% if t.alliance == 9999 %}
+            <th class="player_sort sticky-top sorted-none" id="alliance_sort">Alliance</th>
+            {% endif %}
             <th class="player_sort sticky-top sorted-none" id="opponent_sort">Opponent</th>
             <th class="player_sort sticky-top sorted-none" id="league_sort">League</th>
             <th class="player_sort sticky-top min-width sorted-none" id="points_sort">Total Points</th>
@@ -114,6 +117,11 @@
               {% endif %}
               <input type="hidden" id="{{war.id}}" value="{{war.tracked}}">
             </td>
+            {% if t.alliance == 9999 %}
+            <td class="left {{war.winClass()}} {{war.trackedClass()}}">
+              <a href="{{url_for('player_view', player_id=t.player.id, alliance_id=war.alliance.id)}}">{{war.alliance.name}}</a>
+            </td>
+            {% endif %}
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
               <a href="{{url_for('player_view', player_id=t.player.id, alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>
             </td>

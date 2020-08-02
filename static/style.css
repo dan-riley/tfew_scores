@@ -123,6 +123,7 @@ body {
   position: fixed;
   bottom: 10px;
   width: 100%;
+  z-index: 1025;
 }
 
 .header-left {
