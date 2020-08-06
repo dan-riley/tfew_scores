@@ -601,5 +601,27 @@ def checkScoresPlayerActive():
 
     return render_template('utility.html', html=html)
 
+@app.route('/check_player_alliance_action')
+@officer_required
+def checkPlayerAllianceAction():
+    html = []
+    players = Player.query.all()
+
+    for player in players:
+        checkAction = PlayerAction()
+        prevdate = datetime.strptime("2019-01-01", '%Y-%m-%d').date()
+        for action in player.actions:
+            if action.date > prevdate:
+                checkAction = action
+
+        if checkAction.alliance_id != player.alliance_id:
+            html.append(player.name + ' ' + str(player.alliance_id) + ' ' + str(checkAction.alliance_id))
+            player.alliance_id = checkAction.alliance_id
+            db.session.add(player)
+
+    db.session.commit()
+
+    return render_template('utility.html', html=html)
+
 if __name__ == "__main__":
     manager.run()
