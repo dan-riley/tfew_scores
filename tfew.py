@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.07'
+        self.version = 'v1.08'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -90,6 +90,17 @@ class TFEW():
             missing_players = []
 
         return war, missing_players
+
+    def setRequestsPlayerEditor(self, request):
+        if request.args:
+            ralliance = request.args.get('alliance_id')
+            if ralliance:
+                self.alliance = int(ralliance)
+        else:
+            self.alliance = self.user.alliance_id
+
+        if self.alliance != 9999:
+            self.players = Player.query.order_by(Player.name).filter(Player.alliance_id == self.alliance).all()
 
     def setAlliances(self):
         self.alliances = Alliance.query.order_by(Alliance.name).all()
@@ -237,7 +248,12 @@ class TFEW():
     def updatePlayers(self, fplayers):
         for player in self.players:
             changed = False
-            fplayer = fplayers['players'][player.id]
+            try:
+                fplayer = fplayers['players'][player.id]
+            except IndexError:
+                continue
+            if fplayer is None:
+                continue
 
             # Edit the name
             if player.name != fplayer['name']:

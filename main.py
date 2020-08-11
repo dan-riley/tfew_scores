@@ -186,6 +186,9 @@ def player_editor():
     t.setAlliances()
     t.setPlayers()
 
+    if request.method == 'GET':
+        t.setRequestsPlayerEditor(request)
+
     if request.method == 'POST':
         t.updatePlayers(request.get_json())
         return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)
@@ -365,7 +368,7 @@ def importSectorScores():
     alliancesDict = dict(zip([alliance.name.upper() for alliance in alliances], alliances))
 
     html = []
-    with open(os.path.join(app.root_path, 'data/sectorwars-scores.csv'), 'r') as f:
+    with open(os.path.join(app.root_path, 'data/sectorwars-scores-update2.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         for row in csv_reader:
             pid = row[0].strip()

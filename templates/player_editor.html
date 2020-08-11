@@ -10,6 +10,30 @@
 
 {% block update_form %}{% endblock %}
 {% block content %}
+      <form method="GET">
+        <div class="form-row">
+          <div class="col-auto">
+            <label for="alliance_id" class="update-label">Alliance</label>
+            <select class="custom-select" name="alliance_id">
+              <option></option>
+              <option value="9999" {% if t.alliance == 9999 %} selected {% endif %}>All
+              </option>
+              {% for alliance in t.alliances %}
+                {% if alliance.active %}
+              <option value="{{alliance.id}}"
+              {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
+              </option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-auto button-shift">
+            <input class="btn btn-primary" type="submit" name="refresh" value="Refresh">
+            <input type="hidden" name="player_id" value="{{t.player.id}}">
+          </div>
+        </div>
+      </form>
+
       <form method="POST">
         <table class="table table-sm table-striped">
           <thead>

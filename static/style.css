@@ -159,6 +159,10 @@ body {
   min-width: 7em;
 }
 
+.button-shift {
+  padding-top: 24px;
+}
+
 .win {
   background-color: #4a9a4a;
 }

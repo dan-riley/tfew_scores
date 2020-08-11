@@ -15,7 +15,7 @@ var PlayerEditor = (function() {
           }
       });
 
-      data = $(document.forms[0]).serializeObject();
+      data = $(document.forms[1]).serializeObject();
       request.responseType = 'json';
       request.open('POST', '/player_editor', true);
       request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
