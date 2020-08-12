@@ -135,3 +135,13 @@ class Alliance(db.Model):
     active = db.Column(db.Boolean())
     name = db.Column(db.String(255), nullable=False)
     wars = db.relationship('War', foreign_keys='War.alliance_id')
+
+
+class Issue(db.Model):
+    __tablename__ = 'issues'
+    id = db.Column(db.Integer(), primary_key=True)
+    complete = db.Column(db.Boolean())
+    requester = db.Column(db.Integer(), db.ForeignKey('players.id'))
+    request = db.Column(db.Text())
+    comments = db.Column(db.Text())
+    player = db.relationship('Player', foreign_keys='Issue.requester')

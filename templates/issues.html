@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+{% endblock %}
+
+{% block title %}Issues{% endblock %}
+{% block header %}TFEW Scoreboard Issues{% endblock %}
+
+{% block update_form %}{% endblock %}
+
+{% block content %}
+      <form method="POST">
+        <div class="form-group col-8">
+          <input type="hidden" name="requester" value="{{t.player_id}}">
+          <label for="request">Enter your issue or feature request</label>
+          <textarea class="form-control" name="request" rows="3"></textarea>
+          <input class="btn btn-primary" type="submit" name="submit" value="Submit">
+        </div>
+      </form>
+      <div class="col">
+        <table class="issues_table table table-sm table-bordered">
+          <tr>
+            <th>Complete</th>
+            <th>Requester</th>
+            <th>Issue</th>
+            <th>Comments</th>
+          </tr>
+          {% for issue in t.issues %}
+          <tr>
+            <td>
+              {% if issue.complete %}
+              Yes
+              {% else %}
+              No
+              {% endif %}
+            </td>
+            <td>{{issue.player.name}}</td>
+            <td>{{issue.request}}</td>
+            <td>{{issue.comments}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+{% endblock %}

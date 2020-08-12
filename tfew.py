@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 import pytz
-from models import db, Alliance, Player, PlayerAction, OCR, War, Score
+from models import db, Alliance, Player, PlayerAction, OCR, War, Score, Issue
 
 class TFEW():
     """ Holds global information for the app """
@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.08'
+        self.version = 'v1.09'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -25,6 +25,7 @@ class TFEW():
         self.players = []
         self.wars = []
         self.filt = []
+        self.issues = []
         # Display messages
         self.flash = None
 
@@ -74,6 +75,9 @@ class TFEW():
 
         if self.alliance != 9999:
             self.filt.append(getattr(War, 'alliance_id') == self.alliance)
+        elif self.alliance == 9999 and 'history' in request.url_rule.rule:
+            # Remove TFW from the All selector in History
+            self.filt.append(getattr(War, 'alliance_id') != 1)
 
     def setRequestsWarEditor(self, request):
         if request.args:
@@ -140,6 +144,9 @@ class TFEW():
 
     def setPlayersByWar(self):
         self.players = Player.query.join(Score).join(War).order_by(Player.name).filter(*self.filt).all()
+
+    def setIssues(self):
+        self.issues = Issue.query.all()
 
     def buildAverages(self, player):
         allScore = 0
@@ -515,6 +522,13 @@ class TFEW():
             overall.cyber_average = round(overall.cyber_average / overall_cyber_wars)
 
         return totals, overall
+
+    def submitIssue(self, issueText):
+        issue = Issue()
+        issue.requester = self.user.id
+        issue.request = issueText
+        db.session.add(issue)
+        db.session.commit()
 
 
 class MonthlyTotal:

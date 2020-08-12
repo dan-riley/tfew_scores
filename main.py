@@ -219,6 +219,16 @@ def delete_war():
 
     return redirect(url_for('home_page'))
 
+@app.route('/issues', methods=['GET', 'POST'])
+@login_required
+def issues():
+    if request.method == 'POST':
+        t.submitIssue(request.form['request'])
+
+    t.setIssues()
+
+    return render_template('issues.html', t=t)
+
 @app.route('/upload', methods=['GET', 'POST'])
 @officer_required
 def upload():
