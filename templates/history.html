@@ -69,7 +69,7 @@
             </td>
             {% if t.alliance == 9999 %}
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
-              <a href="{{url_for('player_view', player_id=t.player.id, alliance_id=war.alliance.id)}}">{{war.alliance.name}}</a>
+              <a href="{{url_for('history', alliance_id=war.alliance.id)}}">{{war.alliance.name}}</a>
             </td>
             {% endif %}
             <td class="left {{war.winClass()}} {{war.trackedClass()}}">
