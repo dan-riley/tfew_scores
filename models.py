@@ -25,21 +25,22 @@ class Player(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
 
     scores = db.relationship('Score', back_populates='player')
-    wars = db.relationship('War', secondary='scores')
+    wars = db.relationship('War', secondary='scores', order_by='War.date')
     ocr = db.relationship('OCR', backref='player')
-    actions = db.relationship('PlayerAction', order_by='PlayerAction.date', backref='player')
     alliance = db.relationship('Alliance', foreign_keys='Player.alliance_id')
 
     def score(self, war_id):
         return Score.query.filter(Score.player_id == self.id, Score.war_id == war_id).first()
 
-    def active_day(self, day, alliance_id):
-        active = False
-        for action in self.actions: # pylint: disable=not-an-iterable
-            if action.date <= day:
-                active = bool(action.alliance_id == alliance_id)
+    def alliances(self):
+        alliances = []
+        lastAlliance = -1
+        for score in sorted(self.scores, key=lambda x: x.war.date):
+            if score.war.alliance_id != lastAlliance:
+                lastAlliance = score.war.alliance_id
+                alliances.append({'alliance': score.war.alliance, 'date': score.war.date})
 
-        return active
+        return alliances
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -49,15 +50,6 @@ class Player(UserMixin, db.Model):
             return check_password_hash(self.password_hash, password)
         else:
             return False
-
-
-class PlayerAction(db.Model):
-    __tablename__ = 'player_actions'
-    dummy_id = db.Column(db.Integer(), primary_key=True)
-    player_id = db.Column(db.Integer(), db.ForeignKey('players.id'))
-    alliance_id = db.Column(db.Integer(), db.ForeignKey('alliances.id'))
-    date = db.Column(db.Date(), nullable=False)
-    alliance = db.relationship('Alliance', foreign_keys='PlayerAction.alliance_id')
 
 
 class OCR(db.Model):

@@ -27,10 +27,10 @@
             <th>Alliance</th>
           </tr>
 
-          {% for action in t.player.actions %}
+          {% for alliance in t.player.alliances() %}
           <tr>
-            <td>{{action.date}}</td>
-            <td>{{action.alliance.name}}</td>
+            <td>{{alliance['date']}}</td>
+            <td>{{alliance['alliance'].name}}</td>
           </tr>
           {% endfor %}
         </table>

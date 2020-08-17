@@ -48,8 +48,15 @@ var WarEditor = (function() {
     });
   });
 
+  function removeRow() {
+    var row = document.getElementById('missingPlayersButtonRow');
+    if (row)
+      row.parentNode.removeChild(row);
+  }
+
   function addSortListeners() {
     document.getElementById('player_sort').addEventListener('click', function() {
+      removeRow();
       if (lastSort == 1)
         playerOrder = (playerOrder == 'asc') ? 'desc' : 'asc';
       else
@@ -59,6 +66,7 @@ var WarEditor = (function() {
     });
 
     document.getElementById('score_sort').addEventListener('click', function() {
+      removeRow();
       if (lastSort == 2)
         scoreOrder = (scoreOrder == 'asc') ? 'desc' : 'asc';
       else

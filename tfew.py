@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 import pytz
-from models import db, Alliance, Player, PlayerAction, OCR, War, Score, Issue
+from models import db, Alliance, Player, OCR, War, Score, Issue
 
 class TFEW():
     """ Holds global information for the app """
@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.09'
+        self.version = 'v1.10'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -84,13 +84,13 @@ class TFEW():
             war_id = int(request.args.get('war_id'))
             war = War.query.get(war_id)
             self.alliance = war.alliance_id
-            self.setPlayersActive(war.date, war.alliance_id)
+            self.setPlayersAlliance(war.alliance_id)
             missing_players = [player for player in self.players if player not in war.players]
             self.players = war.players
         else:
             war = War()
             self.alliance = self.user.alliance_id
-            self.setPlayersActive(war.date, self.alliance)
+            self.setPlayersAlliance(self.alliance)
             missing_players = []
 
         return war, missing_players
@@ -104,7 +104,7 @@ class TFEW():
             self.alliance = self.user.alliance_id
 
         if self.alliance != 9999:
-            self.players = Player.query.order_by(Player.name).filter(Player.alliance_id == self.alliance).all()
+            self.setPlayersAlliance(self.alliance)
 
     def setAlliances(self):
         self.alliances = Alliance.query.order_by(Alliance.name).all()
@@ -124,14 +124,8 @@ class TFEW():
     def setPlayers(self):
         self.players = Player.query.order_by(Player.name).all()
 
-    def setPlayersActive(self, day, alliance_id):
-        if not day:
-            day = datetime.now(pytz.timezone('US/Central')).date()
-        self.players = []
-        players = Player.query.order_by(Player.name).all()
-        for player in players:
-            if player.active_day(day, alliance_id):
-                self.players.append(player)
+    def setPlayersAlliance(self, alliance_id):
+        self.players = Player.query.order_by(Player.name).filter(Player.alliance_id == alliance_id).all()
 
     def setPlayer(self):
         self.player = Player.query.get(self.player_id)
@@ -217,7 +211,7 @@ class TFEW():
             primeCount -= 1
 
         if cyberCount > 3:
-            cyberScore -= primeMin
+            cyberScore -= cyberMin
             cyberCount -= 1
 
         # Get the initial averages without optional wars
@@ -277,25 +271,8 @@ class TFEW():
                     player.officer = False
                     changed = True
 
-            # Edit the last action or add new last action
-            lastAction = player.actions[-1]
-            if (str(lastAction.date) != fplayer['lastDate'] and
-                    str(lastAction.alliance_id) != fplayer['lastAction']):
-                newAction = PlayerAction()
-                newAction.player_id = player.id
-                newAction.date = fplayer['lastDate']
-                newAction.alliance_id = fplayer['lastAction']
-                player.alliance_id = fplayer['lastAction']
-                db.session.add(newAction)
-                changed = True
-            elif (str(lastAction.date) != fplayer['lastDate'] and
-                  str(lastAction.alliance_id) == fplayer['lastAction']):
-                lastAction.date = fplayer['lastDate']
-                changed = True
-            elif (str(lastAction.alliance_id) != fplayer['lastAction'] and
-                  str(lastAction.date) == fplayer['lastDate']):
-                lastAction.alliance_id = fplayer['lastAction']
-                player.alliance_id = fplayer['lastAction']
+            if str(player.alliance_id) != fplayer['alliance']:
+                player.alliance_id = fplayer['alliance']
                 changed = True
 
             # Edit the OCR strings
@@ -319,16 +296,11 @@ class TFEW():
         if fplayers['newName']:
             newplayer = Player()
             newplayer.name = fplayers['newName']
+            newplayer.alliance_id = fplayers['newAlliance']
 
             # For now we require a player to have logged in before giving officer rights
             # if 'newOfficer' in fplayers:
             #     newplayer.officer = True
-
-            newaction = PlayerAction()
-            newaction.date = fplayers['newActionDate']
-            newaction.alliance_id = fplayers['newAction']
-            newplayer.alliance_id = fplayers['newAction']
-            newplayer.actions.append(newaction)
 
             newocr = OCR()
             newocr.ocr_string = fplayers['newName'].upper()

@@ -2,14 +2,14 @@ import os
 from datetime import datetime
 import json
 import csv
+from functools import wraps
 import pytz
 from flask import Flask, render_template, flash, request, send_file, jsonify, make_response, redirect, url_for
 from flask_script import Manager
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
-from functools import wraps
 from werkzeug.utils import secure_filename
 import ocr
-from models import db, Player, PlayerAction, OCR, War, Score, Alliance
+from models import db, Player, OCR, War, Score, Alliance
 from forms import LoginForm, SignupForm
 import tfew
 
@@ -289,12 +289,6 @@ def importTFWScores():
                         player.name = name.strip()
                         player.active = False
 
-                        newaction = PlayerAction()
-                        newaction.alliance_id = 2
-                        newaction.date = '2020-01-17'
-                        newaction.action = 3
-                        player.actions.append(newaction)
-
                         newocr = OCR()
                         newocr.ocr_string = name.strip().upper()
                         player.ocr.append(newocr)
@@ -381,7 +375,6 @@ def importSectorScores():
     with open(os.path.join(app.root_path, 'data/sectorwars-scores-update2.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         for row in csv_reader:
-            pid = row[0].strip()
             name = row[1].strip()
             score = int(row[2].strip())
             alliance = row[4].strip()
@@ -397,24 +390,7 @@ def importSectorScores():
                 attempts = int(row[3].strip())
 
             alliance_id = alliancesDict[alliance].id
-            if name in playersDict:
-                active = playersDict[name].active_day(wardate, alliance_id)
-
-                if not active:
-                    process = True
-                    for war in playersDict[name].wars:
-                        if war.date == wardate:
-                            process = False
-                            break
-
-                    if process:
-                        html.append(str(playersDict[name].id) + ' adjusting player ' + playersDict[name].name + ' ' + str(wardate) + ' ' + alliance)
-                        newaction = PlayerAction()
-                        newaction.alliance_id = alliance_id
-                        newaction.date = wardate
-                        playersDict[name].actions.append(newaction)
-                        db.session.add(playersDict[name])
-            else:
+            if name not in playersDict:
                 player = Player()
                 aname = name.split()
                 player.name = ''
@@ -424,10 +400,6 @@ def importSectorScores():
                 player.name = player.name.strip()
                 html.append('adding player ' + player.name)
 
-                newaction = PlayerAction()
-                newaction.alliance_id = alliance_id
-                newaction.date = wardate
-                player.actions.append(newaction)
                 player.alliance_id = alliance_id
 
                 newocr = OCR()
@@ -534,105 +506,20 @@ def importBlanks():
     db.session.commit()
     return render_template('import_scores.html')
 
-@app.route('/adjust_actions')
+@app.route('/check_player_alliance')
 @officer_required
-def adjustActions():
-    html = []
-    players = Player.query.order_by(Player.name).all()
-    wars = War.query.order_by(War.date).all()
-
-    actions = 1
-    while actions > 0:
-        actions = 0
-        # Add join action if war has score but player not in alliance
-        for war in wars:
-            for player in war.players:
-                if not player.active_day(war.date, war.alliance_id):
-                    ht = str(player.id) + ' ' + player.name + ' '
-                    ht += str(war.date) + ' ' + str(war.id)
-                    html.append(ht)
-                    html.append('adding join action ' + str(war.date))
-                    newaction = PlayerAction()
-                    newaction.date = war.date
-                    newaction.alliance_id = war.alliance_id
-                    player.actions.append(newaction)
-                    actions += 1
-                db.session.add(player)
-
-        html.append(' ')
-        html.append(' ')
-        html.append(' ')
-
-        # Adjust existing start date or remove from allaince
-        for war in wars:
-            for player in players:
-                if player.active_day(war.date, war.alliance_id) and player not in war.players:
-                    ht = str(player.id) + ' ' + player.name + ' '
-                    ht += str(war.date) + ' ' + str(war.id)
-                    html.append(ht)
-                    start_adjust = False
-                    # Adjust date if already in alliance but date is too early
-                    for action in player.actions:
-                        if (action.alliance_id == war.alliance_id and
-                                player.wars[0].date > action.date):
-                            ht = 'adjusted from '
-                            ht += str(action.date) + ' to ' + str(player.wars[0].date) + ' '
-                            ht += str(action.alliance_id) + ' ' + str(war.alliance_id)
-                            html.append(ht)
-                            action.date = player.wars[0].date
-                            start_adjust = True
-                            actions += 1
-                            break
-
-                    # Otherwise they must have left, so remove from alliance
-                    if not start_adjust:
-                        html.append('adding left action ' + str(war.date))
-                        newaction = PlayerAction()
-                        newaction.date = war.date
-                        newaction.alliance_id = war.alliance_id + 1
-                        player.actions.append(newaction)
-                        actions += 1
-                db.session.add(player)
-
-        html.append(' ')
-        html.append(' ')
-        html.append(' ')
-
-    db.session.commit()
-
-    return render_template('utility.html', html=html)
-
-@app.route('/check_scores_player_active')
-@officer_required
-def checkScoresPlayerActive():
-    html = []
-    scores = Score.query.all()
-
-    for score in scores:
-        if not score.player.active_day(score.war.date, score.war.alliance_id):
-            html.append(score.player.name + ' ' + str(score.war.date) + ' ' + score.war.alliance.name)
-
-    return render_template('utility.html', html=html)
-
-@app.route('/check_player_alliance_action')
-@officer_required
-def checkPlayerAllianceAction():
+def checkPlayerAlliance():
     html = []
     players = Player.query.all()
 
     for player in players:
-        checkAction = PlayerAction()
-        prevdate = datetime.strptime("2019-01-01", '%Y-%m-%d').date()
-        for action in player.actions:
-            if action.date > prevdate:
-                checkAction = action
+        if len(player.wars) > 1:
+            if player.alliance_id and player.wars[-1].alliance_id != player.alliance_id:
+                html.append(player.name + ' ' + str(player.alliance_id) + ' ' + str(player.wars[-1].alliance_id))
+                player.alliance_id = player.wars[-1].alliance_id
+                db.session.add(player)
 
-        if checkAction.alliance_id != player.alliance_id:
-            html.append(player.name + ' ' + str(player.alliance_id) + ' ' + str(checkAction.alliance_id))
-            player.alliance_id = checkAction.alliance_id
-            db.session.add(player)
-
-    db.session.commit()
+    # db.session.commit()
 
     return render_template('utility.html', html=html)
 

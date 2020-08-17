@@ -64,12 +64,11 @@
               >
             </td>
             <td>
-              <input class="form-control" type="date" name="players[{{player.id}}][lastDate]" value="{{player.actions[-1].date}}">
-              <select class="custom-select" name="players[{{player.id}}][lastAction]">
+              <select class="custom-select" name="players[{{player.id}}][alliance]">
                 {% for alliance in t.alliances %}
-                  {% if alliance.active or alliance.id == player.actions[-1].alliance_id or alliance.id == 0 %}
+                  {% if alliance.active or alliance.id == 0 %}
                 <option value="{{alliance.id}}"
-                {% if player.actions[-1].alliance_id == alliance.id %} selected {% endif %}>{{alliance.name}}
+                {% if player.alliance_id == alliance.id %} selected {% endif %}>{{alliance.name}}
                 </option>
                   {% endif %}
                 {% endfor %}
@@ -109,8 +108,7 @@
               <input class="form-control" type="checkbox" name="newOfficer" value="new" disabled>
             </td>
             <td>
-              <input class="form-control" type="date" name="newActionDate" value="{{today}}">
-              <select class="custom-select" name="newAction">
+              <select class="custom-select" name="newAlliance">
                 {% for alliance in t.alliances %}
                   {% if alliance.active or alliance.id == 0 %}
                 <option value="{{alliance.id}}"
