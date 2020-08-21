@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.10'
+        self.version = 'v1.12'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -80,16 +80,26 @@ class TFEW():
             self.filt.append(getattr(War, 'alliance_id') != 1)
 
     def setRequestsWarEditor(self, request):
+        self.alliance = self.user.alliance_id
+        defaultWar = True
         if request.args:
-            war_id = int(request.args.get('war_id'))
-            war = War.query.get(war_id)
-            self.alliance = war.alliance_id
-            self.setPlayersAlliance(war.alliance_id)
-            missing_players = [player for player in self.players if player not in war.players]
-            self.players = war.players
-        else:
+            rwar_id = request.args.get('war_id')
+            ralliance = request.args.get('alliance_id')
+
+            if rwar_id:
+                defaultWar = False
+                war_id = int(rwar_id)
+                war = War.query.get(war_id)
+                self.alliance = war.alliance_id
+                self.setPlayersAlliance(war.alliance_id)
+                missing_players = [player for player in self.players if player not in war.players]
+                self.players = war.players
+
+            if ralliance:
+                self.alliance = int(ralliance)
+
+        if defaultWar:
             war = War()
-            self.alliance = self.user.alliance_id
             self.setPlayersAlliance(self.alliance)
             missing_players = []
 

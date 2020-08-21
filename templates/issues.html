@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='issues.js')+v}}"></script>
 {% endblock %}
 
 {% block title %}Issues{% endblock %}
@@ -18,21 +19,34 @@
         </div>
       </form>
       <div class="col">
-        <table class="issues_table table table-sm table-bordered">
+        <div class="col">
+          View Incomplete Only:
+          <input class="form-control update-check" type="checkbox" name="complete_toggle">
+        </div>
+        <table id="issues_table" class="table table-sm table-bordered">
           <tr>
-            <th>Complete</th>
-            <th>Requester</th>
-            <th>Issue</th>
-            <th>Comments</th>
+            <th class="issues_sort sticky-top sorted-up" id="id_sort">ID</th>
+            <th class="issues_sort sticky-top sorted-none" id="complete_sort">Complete</th>
+            <th class="issues_sort sticky-top sorted-none" id="requester_sort">Requester</th>
+            <th class="issues_sort sticky-top sorted-none" id="issue_sort">Issue</th>
+            <th class="issues_sort sticky-top sorted-none" id="comments_sort">Comments</th>
           </tr>
           {% for issue in t.issues %}
           <tr>
-            <td>
+            <td class="center">{{issue.id}}</td>
+            {% if issue.complete %}
+              {% set completeClass = "win" %}
+            {% else %}
+              {% set completeClass = "loss" %}
+            {% endif %}
+            <td class="{{completeClass}} center">
               {% if issue.complete %}
               Yes
               {% else %}
               No
               {% endif %}
+              <input type="hidden" id="blank" value="">
+              <input type="hidden" id="{{issue.id}}" value="{{issue.complete}}">
             </td>
             <td>{{issue.player.name}}</td>
             <td>{{issue.request}}</td>

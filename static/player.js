@@ -285,7 +285,8 @@ function getScoreData() {
       if (row.cells[2 + addCol].innerText == 'Cybertron')
         cyber = score;
 
-      date = new Date(row.cells[0].innerText + ' 00:00');
+      datearr = row.cells[0].innerText.split('-')
+      date = new Date(datearr[0], datearr[1]-1, datearr[2]);
       data.addRow([date, score, tracked, untracked, prime, cyber]);
     }
   });

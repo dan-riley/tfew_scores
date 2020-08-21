@@ -54,6 +54,15 @@ body {
   background: white;
 }
 
+#issues_table {
+  text-align: left;
+}
+
+#issues_table th {
+  text-align: center;
+  background: white;
+}
+
 #spark_table {
   text-align: left;
   font-size: 0.8em;
@@ -203,6 +212,10 @@ body {
   color: red;
   list-style: none;
   padding: 0;
+}
+
+.selected {
+  color: #22cc22;
 }
 
 .collapse:not(.show) {

@@ -14,7 +14,7 @@
         <div class="form-row">
           <div class="col-auto">
             <label for="alliance_id" class="update-label">Alliance</label>
-            <select class="custom-select" name="alliance_id">
+            <select class="custom-select" name="alliance_id" id="alliance_id">
               <option></option>
               <option value="9999" {% if t.alliance == 9999 %} selected {% endif %}>All
               </option>
@@ -26,10 +26,6 @@
                 {% endif %}
               {% endfor %}
             </select>
-          </div>
-          <div class="col-auto button-shift">
-            <input class="btn btn-primary" type="submit" name="refresh" value="Refresh">
-            <input type="hidden" name="player_id" value="{{t.player.id}}">
           </div>
         </div>
       </form>
@@ -121,8 +117,12 @@
             <td colspan="100"></td>
           </tr>
         </table>
-        <input class="btn btn-primary" type="button" id="submit" value="Submit changes">
+
+        <div class="sticky-bottom">
+          <input class="btn btn-primary" type="button" id="submit" value="Submit Changes">
+          <div id="alert_wrapper"></div>
+        </div>
       </form>
-      <div id="alert_wrapper"></div>
+      <div class="row">&nbsp;</div>
       <div class="row">&nbsp;</div>
 {% endblock %}
