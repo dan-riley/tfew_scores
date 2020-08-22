@@ -115,7 +115,7 @@
             {% set player_sort = "nosort" %}
             {% set tracked_sort = "sorted-down" %}
           {% endif %}
-          <th class="col-collapse" id="col-toggle" title="Show/hide additional averages"></th>
+          <th class="col-collapse sticky-top-1" id="col-toggle" title="Show/hide additional averages"></th>
           <th class="summary_sort sticky-top-left {{player_sort}}" id="player_sort">Player</th>
           <th class="summary_sort sticky-top-1 {{tracked_sort}}" id="tracked_sort">Tracked</th>
           <th class="summary_sort sticky-top-1 sorted-none" id="untracked_sort">Untracked</th>
@@ -125,15 +125,15 @@
         </tr>
         <tr>
           <td></td>
-          <td class="header-left sticky-left">
+          <td class="header-left sticky-left avgScore">
             <div>Average</div>
             <input type="hidden" id="activeAverage" value="true">
           </td>
-          <td class="light font-weight-bold" id="avg_tracked"></td>
-          <td class="light font-weight-bold" id="avg_untracked"></td>
-          <td class="light font-weight-bold" id="avg_prime"></td>
-          <td class="light font-weight-bold" id="avg_cyber"></td>
-          <td class="light font-weight-bold" id="avg_all"></td>
+          <td class="light avgScore" id="avg_tracked"></td>
+          <td class="light avgScore" id="avg_untracked"></td>
+          <td class="light avgScore" id="avg_prime"></td>
+          <td class="light avgScore" id="avg_cyber"></td>
+          <td class="light avgScore" id="avg_all"></td>
         </tr>
 
         {% for player in t.players %}
@@ -147,7 +147,7 @@
             {% endif %}
             <input type="hidden" id="active{{loop.index}}" value="{{player.alliance_id == t.alliance}}">
           </td>
-          <td class="light">{{player.trackedAvg}}</td>
+          <td class="light font-weight-bold">{{player.trackedAvg}}</td>
           <td class="light">{{player.untrackedAvg}}</td>
           <td class="light">{{player.primeAvg}}</td>
           <td class="light">{{player.cyberAvg}}</td>

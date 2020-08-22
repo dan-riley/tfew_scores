@@ -119,6 +119,7 @@ body {
   position: sticky;
   top: 0px;
   z-index: 1020;
+  background: white;
 }
 
 .sticky-top-2 {
@@ -206,6 +207,11 @@ body {
 
 .excused {
   background-color: #49aa0059;
+}
+
+.avgScore {
+  font-weight: 700!important;
+  color: #ff00ff;
 }
 
 .error {
