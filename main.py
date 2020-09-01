@@ -195,6 +195,18 @@ def player_editor():
 
     return render_template('player_editor.html', t=t)
 
+@app.route('/move_player', methods=['GET', 'POST'])
+@officer_required
+def move_player():
+    t.setPlayers()
+    t.setPlayersList()
+
+    if request.method == 'POST':
+        t.movePlayer(request.get_json())
+        return make_response(jsonify({"message": "Changes sucessfully submitted" + t.flash}), 200)
+
+    return render_template('move_player.html', t=t)
+
 @app.route('/war_editor', methods=['GET', 'POST'])
 @officer_required
 def war_editor():

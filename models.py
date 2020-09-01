@@ -97,7 +97,7 @@ class War(db.Model):
         elif self.tracked == 1:
             r = 'tracked'
         else:
-            r = 'untracked'
+            r = 'optional'
         return r
 
     def trackedText(self):

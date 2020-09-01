@@ -161,8 +161,7 @@ body {
 }
 
 .optional {
-  font-weight: bold;
-  background-color: #fafaca;
+  font-style: italic;
 }
 
 .min-width {

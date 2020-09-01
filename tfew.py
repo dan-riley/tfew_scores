@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.13'
+        self.version = 'v1.14'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -318,6 +318,23 @@ class TFEW():
 
             db.session.add(newplayer)
 
+        db.session.commit()
+
+    def movePlayer(self, fplayer):
+        player_from = Player.query.get(fplayer['player_from'])
+        player_to = Player.query.get(fplayer['player_to'])
+        self.flash = ''
+
+        while player_from.scores:
+            for score in player_from.scores:
+                player_to.scores.append(score)
+
+        if player_to.alliance_id == 0:
+            player_to.alliance_id = player_from.alliance_id
+
+        db.session.add(player_to)
+        db.session.commit()
+        db.session.delete(player_from)
         db.session.commit()
 
     def updateScore(self, fplayer, score):
