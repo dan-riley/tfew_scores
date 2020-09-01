@@ -304,19 +304,25 @@ class TFEW():
                 db.session.add(player)
 
         if fplayers['newName']:
-            newplayer = Player()
-            newplayer.name = fplayers['newName']
-            newplayer.alliance_id = fplayers['newAlliance']
+            player_id = getIDbyName(Player, fplayers['newName'])
+            if player_id:
+                player = Player.query.get(player_id)
+                player.alliance_id = fplayers['newAlliance']
+                db.session.add(player)
+            else:
+                newplayer = Player()
+                newplayer.name = fplayers['newName']
+                newplayer.alliance_id = fplayers['newAlliance']
 
-            # For now we require a player to have logged in before giving officer rights
-            # if 'newOfficer' in fplayers:
-            #     newplayer.officer = True
+                # For now we require a player to have logged in before giving officer rights
+                # if 'newOfficer' in fplayers:
+                #     newplayer.officer = True
 
-            newocr = OCR()
-            newocr.ocr_string = fplayers['newName'].upper()
-            newplayer.ocr.append(newocr)
+                newocr = OCR()
+                newocr.ocr_string = fplayers['newName'].upper()
+                newplayer.ocr.append(newocr)
 
-            db.session.add(newplayer)
+                db.session.add(newplayer)
 
         db.session.commit()
 

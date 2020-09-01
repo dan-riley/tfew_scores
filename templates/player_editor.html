@@ -98,7 +98,11 @@
           <tr>
             <td></td>
             <td>
-              <input class="form-control" type="text" name="newName" value="">
+              <div class="col-auto">
+                <div id="newNameAuto" class="autocomplete" data-autocomplete='{{t.playersList|tojson}}'>
+                  <input class="form-control" type="text" name="newName" value="" autocomplete="off">
+                </div>
+              </div>
             </td>
             <td>
               <input class="form-control" type="checkbox" name="newOfficer" value="new" disabled>

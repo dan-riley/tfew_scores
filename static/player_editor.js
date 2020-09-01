@@ -4,6 +4,12 @@ var PlayerEditor = (function() {
 
   document.addEventListener('DOMContentLoaded', function(event) {
     alert_wrapper = document.getElementById('alert_wrapper');
+    // Initialize autocomplete
+    if (document.getElementById("newNameAuto")) {
+      var pldata = JSON.parse(document.getElementById("newNameAuto").dataset.autocomplete);
+      autocomplete(document.getElementsByName('newName')[0], pldata);
+    }
+
 
     document.getElementById('submit').addEventListener('click', function() {
       var request = new XMLHttpRequest();

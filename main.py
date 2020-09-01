@@ -185,6 +185,7 @@ def player_view():
 def player_editor():
     t.setAlliances()
     t.setPlayers()
+    t.setPlayersList()
 
     if request.method == 'GET':
         t.setRequestsPlayerEditor(request)
@@ -378,13 +379,15 @@ def importTFWScores():
 @officer_required
 def importSectorScores():
     players = Player.query.order_by('name').all()
-    playersDict = dict(zip([player.name.upper() for player in players], players))
+    # playersDict = dict(zip([player.name.upper() for player in players], players))
+    playersDict = dict(zip([player.name for player in players], players))
 
     alliances = Alliance.query.order_by('name').all()
-    alliancesDict = dict(zip([alliance.name.upper() for alliance in alliances], alliances))
+    # alliancesDict = dict(zip([alliance.name.upper() for alliance in alliances], alliances))
+    alliancesDict = dict(zip([alliance.name for alliance in alliances], alliances))
 
     html = []
-    with open(os.path.join(app.root_path, 'data/sectorwars-scores-update2.csv'), 'r') as f:
+    with open(os.path.join(app.root_path, 'data/sectorwars-scores-update3.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         for row in csv_reader:
             name = row[1].strip()
@@ -404,12 +407,13 @@ def importSectorScores():
             alliance_id = alliancesDict[alliance].id
             if name not in playersDict:
                 player = Player()
-                aname = name.split()
-                player.name = ''
-                for cname in aname:
-                    player.name += cname.capitalize() + ' '
-
-                player.name = player.name.strip()
+                player.name = name
+                # aname = name.split()
+                # player.name = ''
+                # for cname in aname:
+                #     player.name += cname.capitalize() + ' '
+                #
+                # player.name = player.name.strip()
                 html.append('adding player ' + player.name)
 
                 player.alliance_id = alliance_id
@@ -423,12 +427,13 @@ def importSectorScores():
 
             if opponent not in alliancesDict:
                 newopp = Alliance()
-                aname = opponent.split()
-                newopp.name = ''
-                for cname in aname:
-                    newopp.name += cname.capitalize() + ' '
-
-                newopp.name = newopp.name.strip()
+                newopp.name = opponent
+                # aname = opponent.split()
+                # newopp.name = ''
+                # for cname in aname:
+                #     newopp.name += cname.capitalize() + ' '
+                #
+                # newopp.name = newopp.name.strip()
                 html.append('opponent ' + newopp.name + ' added')
                 alliancesDict[opponent] = newopp
                 db.session.add(newopp)
@@ -443,14 +448,16 @@ def importSectorScores():
                 newwar = War()
                 newwar.opponent = alliancesDict[opponent]
 
-                if league == 'PRIME':
+                if league in ('PRIME', 'Prime'):
                     newwar.league = 8
-                elif league == 'CYBERTRON':
+                elif league in ('CYBERTRON', 'Cybertron'):
                     newwar.league = 7
-                elif league == 'CAMINUS':
+                elif league in ('CAMINUS', 'Caminus'):
                     newwar.league = 6
-                elif league == 'PLATINUM':
+                elif league in ('PLATINUM', 'Platinum'):
                     newwar.league = 5
+                elif league in ('GOLD', 'Gold'):
+                    newwar.league = 4
 
                 newwar.alliance_id = alliance_id
                 newwar.date = wardate
