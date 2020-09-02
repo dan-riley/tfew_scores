@@ -381,13 +381,14 @@ def importSectorScores():
     players = Player.query.order_by('name').all()
     # playersDict = dict(zip([player.name.upper() for player in players], players))
     playersDict = dict(zip([player.name for player in players], players))
+    playersDictUpper = dict(zip([player.name.upper() for player in players], players))
 
     alliances = Alliance.query.order_by('name').all()
     # alliancesDict = dict(zip([alliance.name.upper() for alliance in alliances], alliances))
     alliancesDict = dict(zip([alliance.name for alliance in alliances], alliances))
 
     html = []
-    with open(os.path.join(app.root_path, 'data/sectorwars-scores-update3.csv'), 'r') as f:
+    with open(os.path.join(app.root_path, 'data/sectorwars-scores-update4.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         for row in csv_reader:
             name = row[1].strip()
@@ -406,24 +407,30 @@ def importSectorScores():
 
             alliance_id = alliancesDict[alliance].id
             if name not in playersDict:
-                player = Player()
-                player.name = name
-                # aname = name.split()
-                # player.name = ''
-                # for cname in aname:
-                #     player.name += cname.capitalize() + ' '
-                #
-                # player.name = player.name.strip()
-                html.append('adding player ' + player.name)
+                if name.upper() in playersDictUpper:
+                    playersDictUpper[name.upper()].name = name
+                    playersDict[name] = playersDictUpper[name.upper()]
+                    html.append('fixed player name ' + name)
+                    db.session.add(playersDictUpper[name.upper()])
+                else:
+                    player = Player()
+                    player.name = name
+                    # aname = name.split()
+                    # player.name = ''
+                    # for cname in aname:
+                    #     player.name += cname.capitalize() + ' '
+                    #
+                    # player.name = player.name.strip()
+                    html.append('adding player ' + player.name)
 
-                player.alliance_id = alliance_id
+                    player.alliance_id = alliance_id
 
-                newocr = OCR()
-                newocr.ocr_string = name
-                player.ocr.append(newocr)
+                    newocr = OCR()
+                    newocr.ocr_string = name
+                    player.ocr.append(newocr)
 
-                playersDict[name] = player
-                db.session.add(player)
+                    playersDict[name] = player
+                    db.session.add(player)
 
             if opponent not in alliancesDict:
                 newopp = Alliance()
