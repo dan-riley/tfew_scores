@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.14'
+        self.version = 'v1.15'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -378,13 +378,16 @@ class TFEW():
         else:
             war = War()
 
-        opponent = getIDbyName(Alliance, fwar['opponent'])
-        if opponent:
-            war.opponent_id = opponent
+        if fwar['opponent_id']:
+            war.opponent_id = fwar['opponent_id']
         else:
-            newopp = Alliance()
-            newopp.name = fwar['opponent'].strip()
-            war.opponent = newopp
+            opponent = getIDbyName(Alliance, fwar['opponent_new'])
+            if opponent:
+                war.opponent_id = opponent
+            else:
+                newopp = Alliance()
+                newopp.name = fwar['opponent_new'].strip()
+                war.opponent = newopp
 
         war.alliance_id = fwar['alliance_id']
         war.league = fwar['league']

@@ -10,10 +10,6 @@ var WarEditor = (function() {
     alert_wrapper = document.getElementById('alert_wrapper');
     players = document.querySelectorAll("input[name^=players][name*=score], input[name^=missing_players][name*=score]");
 
-    // Initialize autocomplete
-    var oppdata = JSON.parse(document.getElementById("opponentsAuto").dataset.autocomplete);
-    autocomplete(document.getElementsByName('opponent')[0], oppdata);
-
     editor_table = document.getElementById('editor_table');
     addSortListeners();
 

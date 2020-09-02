@@ -32,9 +32,20 @@
           <tr>
             <th>Opponent</th>
             <td>
-              <div id="opponentsAuto" class="autocomplete" data-autocomplete='{{t.alliancesList|tojson}}'>
-                <input class="form-control" type="text" name="opponent" value="{{war.opponent.name}}" autocomplete="off">
-              </div>
+              <select class="selectpicker" name="opponent_id" data-style="custom-multiselect" data-live-search="true" data-actions-box="true">
+                <option></option>
+                {% for opponent in t.alliances %}
+                <option value="{{opponent.id}}"
+                {% if opponent.id == war.opponent.id %} selected {% endif %}>{{opponent.name}}
+                </option>
+                {% endfor %}
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <th>New Opponent</th>
+            <td>
+              <input class="form-control" type="text" name="opponent_new" autocomplete="off">
             </td>
           </tr>
           <tr>
