@@ -118,7 +118,7 @@ class War(db.Model):
             r = 'Caminus'
         elif self.league == 5:
             r = 'Platinum'
-        elif self.leauge == 4:
+        elif self.league == 4:
             r = 'Gold'
         return r
 

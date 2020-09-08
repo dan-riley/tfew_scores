@@ -54,6 +54,11 @@ body {
   background: white;
 }
 
+#ore_input_table {
+  text-align: center;
+  background: white;
+}
+
 #issues_table {
   text-align: left;
 }

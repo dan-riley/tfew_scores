@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='ore_calculator.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}Ore Calculator{% endblock %}
+{% block header %}TFEW Ore Calculator{% endblock %}
+{% block nav_ore %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+
+{% block content %}
+      <form>
+        <table class="table table-sm w-auto sticky-top" id="ore_input_table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Storage</th>
+              <th>Harvester</th>
+              <th>Hours till use</th>
+              <th>Amount to use</th>
+            </tr>
+          </thead>
+          <tr>
+            <th>Max</th>
+            <td>
+              <input class="form-control" type="number" id="max_storage" value="140" title="Maximum value of your ore storage.  Should be 140 or 125.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="max_harvester" value="70" title="Maximum value of your ore harvester.  Should be 70 or 60.  Setting this automatically sets the harvest rate of 2.0 or 1.6.">
+            </td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>Current</th>
+            <td>
+              <input class="form-control" type="number" id="current_storage" value="" title="Your current ore storage value.  Recommend setting this after charging COP or using a combiner.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="current_harvester" value="" title="Your current ore harvester value.  If unknown, estimate or charge COP to reveal.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="hours_till_use" value="" title="Number of hours until you plan to use ore next.  Easiest is to use the number of hours until COP expires (under 24 hours).">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="amount_to_use" value="10" title="Amount of ore you will use in XX hours.  Defaults to 10.">
+            </td>
+          </tr>
+          <tr>
+            <td colspan="5" id="results">
+            </td>
+          </tr>
+        </table>
+
+        <table class="table table-sm w-auto" id="ore_table">
+          <thead>
+            <tr class="text-center">
+              <th title="Hours from now.">Hours</th>
+              <th title="Cumulative ore that will be gained by the harvester.">Ore Gained</th>
+              <th title="Total ore (storage + harvester) you will have if you don't do anything at this time.">No Purge</th>
+              <th title="Total ore (storage + harvester) you will have if you empty your harvester now.">Purge</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </form>
+{% endblock %}

@@ -232,6 +232,11 @@ def delete_war():
 
     return redirect(url_for('home_page'))
 
+@app.route('/ore_calculator')
+@login_required
+def ore_calculator():
+    return render_template('ore_calculator.html', t=t)
+
 @app.route('/issues', methods=['GET', 'POST'])
 @login_required
 def issues():
