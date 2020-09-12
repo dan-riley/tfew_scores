@@ -67,6 +67,8 @@ class TFEW():
             self.opp_ids = []
             self.playersList = []
             self.alliancesList = []
+            self.start_day = None
+            self.end_day = None
 
         if dateWindow and not self.filt:
             self.end_day = datetime.now(pytz.timezone('US/Central')).date()
@@ -378,7 +380,7 @@ class TFEW():
         else:
             war = War()
 
-        if fwar['opponent_id']:
+        if fwar['opponent_id'] != '':
             war.opponent_id = fwar['opponent_id']
         else:
             opponent = getIDbyName(Alliance, fwar['opponent_new'])

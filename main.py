@@ -160,6 +160,8 @@ def history():
     # Process data
     totals, overall = t.getHistory()
 
+    if t.flash:
+        flash(t.flash)
     return render_template('history.html', t=t, overall=overall, totals=totals)
 
 @app.route('/player')
@@ -178,6 +180,8 @@ def player_view():
     # Process data
     t.buildAverages(t.player)
 
+    if t.flash:
+        flash(t.flash)
     return render_template('player.html', t=t)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
@@ -194,6 +198,8 @@ def player_editor():
         t.updatePlayers(request.get_json())
         return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)
 
+    if t.flash:
+        flash(t.flash)
     return render_template('player_editor.html', t=t)
 
 @app.route('/move_player', methods=['GET', 'POST'])
@@ -221,6 +227,8 @@ def war_editor():
         t.updateWar(request.get_json())
         return make_response(jsonify({"message": "War submitted"}), 200)
 
+    if t.flash:
+        flash(t.flash)
     return render_template('war_editor.html', t=t, war=war, missing_players=missing_players)
 
 @app.route('/delete_war', methods=['GET'])
@@ -383,17 +391,20 @@ def importTFWScores():
 @app.route('/import_sector_scores')
 @officer_required
 def importSectorScores():
+    allCaps = True
     players = Player.query.order_by('name').all()
-    # playersDict = dict(zip([player.name.upper() for player in players], players))
-    playersDict = dict(zip([player.name for player in players], players))
-    playersDictUpper = dict(zip([player.name.upper() for player in players], players))
-
     alliances = Alliance.query.order_by('name').all()
-    # alliancesDict = dict(zip([alliance.name.upper() for alliance in alliances], alliances))
-    alliancesDict = dict(zip([alliance.name for alliance in alliances], alliances))
+
+    if allCaps:
+        playersDict = dict(zip([player.name.upper() for player in players], players))
+        alliancesDict = dict(zip([alliance.name.upper() for alliance in alliances], alliances))
+    else:
+        playersDict = dict(zip([player.name for player in players], players))
+        playersDictUpper = dict(zip([player.name.upper() for player in players], players))
+        alliancesDict = dict(zip([alliance.name for alliance in alliances], alliances))
 
     html = []
-    with open(os.path.join(app.root_path, 'data/sectorwars-scores-update4.csv'), 'r') as f:
+    with open(os.path.join(app.root_path, 'data/one-wars-scores.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         for row in csv_reader:
             name = row[1].strip()
@@ -412,20 +423,22 @@ def importSectorScores():
 
             alliance_id = alliancesDict[alliance].id
             if name not in playersDict:
-                if name.upper() in playersDictUpper:
+                if not allCaps and name.upper() in playersDictUpper:
                     playersDictUpper[name.upper()].name = name
                     playersDict[name] = playersDictUpper[name.upper()]
                     html.append('fixed player name ' + name)
                     db.session.add(playersDictUpper[name.upper()])
                 else:
                     player = Player()
-                    player.name = name
-                    # aname = name.split()
-                    # player.name = ''
-                    # for cname in aname:
-                    #     player.name += cname.capitalize() + ' '
-                    #
-                    # player.name = player.name.strip()
+                    if allCaps:
+                        aname = name.split()
+                        player.name = ''
+                        for cname in aname:
+                            player.name += cname.capitalize() + ' '
+
+                        player.name = player.name.strip()
+                    else:
+                        player.name = name
                     html.append('adding player ' + player.name)
 
                     player.alliance_id = alliance_id
@@ -436,16 +449,22 @@ def importSectorScores():
 
                     playersDict[name] = player
                     db.session.add(player)
+            else:
+                for war in playersDict[name].wars:
+                    if war.date == wardate:
+                        html.append('player already exists ' + name)
 
             if opponent not in alliancesDict:
                 newopp = Alliance()
-                newopp.name = opponent
-                # aname = opponent.split()
-                # newopp.name = ''
-                # for cname in aname:
-                #     newopp.name += cname.capitalize() + ' '
-                #
-                # newopp.name = newopp.name.strip()
+                if allCaps:
+                    aname = opponent.split()
+                    newopp.name = ''
+                    for cname in aname:
+                        newopp.name += cname.capitalize() + ' '
+
+                    newopp.name = newopp.name.strip()
+                else:
+                    newopp.name = opponent
                 html.append('opponent ' + newopp.name + ' added')
                 alliancesDict[opponent] = newopp
                 db.session.add(newopp)
@@ -462,7 +481,7 @@ def importSectorScores():
 
                 if league in ('PRIME', 'Prime'):
                     newwar.league = 8
-                elif league in ('CYBERTRON', 'Cybertron'):
+                elif league in ('CYBERTRON', 'Cybertron', 'CYBER'):
                     newwar.league = 7
                 elif league in ('CAMINUS', 'Caminus'):
                     newwar.league = 6

@@ -141,7 +141,11 @@
           <td class="rank">{{loop.index}}</td>
           <td class="header-left sticky-left">
             {% if current_user.id == player.id or current_user.officer %}
-            <a href="{{url_for('player_view', player_id=player.id)}}">{{player.name}}</a>
+                {% set italic = "" %}
+                {% if player.officer %}
+                    {% set italic = "optional" %}
+                {% endif %}
+            <a class="{{italic}}" href="{{url_for('player_view', player_id=player.id)}}">{{player.name}}</a>
             {% else %}
             <div>&nbsp;</div>
             {% endif %}
