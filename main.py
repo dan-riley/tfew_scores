@@ -302,13 +302,14 @@ def downloadFile():
 def export():
     scores = Score.query.join(War).order_by(War.date).all()
     output = []
-    output.append('Date,Player ID,Player Name,Alliance ID,Alliance Name,\
-                   Opponent ID,Opponent Name,League,Tracked,Our Score,Opp Score,\
-                   Score,Excused,Attempts Left,No Attempts')
+    output.append('Date,Player ID,Player Name,Alliance ID,Alliance Name,'
+                  'Opponent ID,Opponent Name,League,Tracked,Our Score,Opp Score,'
+                  'Excused,Attempts Left,No Attempts,Score')
     for score in scores:
         excused = '1' if score.excused else '0'
         attempts_left = '1' if score.attempts_left else '0'
         no_attempts = '1' if score.no_attempts else '0'
+        score.score = '' if score.score is None else score.score
 
         output.append(str(score.war.date) + ',' +
                       str(score.player.id) + ',' + score.player.name + ',' +
@@ -316,8 +317,7 @@ def export():
                       str(score.war.opponent_id) + ',' + score.war.opponent.name + ',' +
                       score.war.leagueText() + ',' + str(score.war.tracked) + ',' +
                       str(score.war.our_score) + ',' + str(score.war.opp_score) + ',' +
-                      str(score.score) + ',' + excused + ',' +
-                      attempts_left + ',' + no_attempts
+                      excused + ',' + attempts_left + ',' + no_attempts + ',' + str(score.score)
                       )
 
     with open(os.path.join(app.root_path, 'export.csv'), 'w') as fo:
@@ -325,6 +325,43 @@ def export():
 
     path = os.path.join(app.root_path, 'export.csv')
     return send_file(path, as_attachment=True)
+
+@app.route('/ml')
+@officer_required
+def ml():
+    players = Player.query.all()
+    x = []
+    y = []
+    x.append('date,player_id,alliance_id,opponent_id,league,tracked,our_score,opp_score,'
+             'attempts_left,no_attempts,score')
+    y.append('date,player_id,opponent_id,score')
+    for player in players:
+        player.scores.sort(key=lambda x: x.war.date)
+        for score in player.scores:
+            if not score.excused:
+                attempts_left = '1' if score.attempts_left else '0'
+                no_attempts = '1' if score.no_attempts else '0'
+
+                x.append(str(score.war.date) + ',' + str(score.player.id) + ',' +
+                         str(score.war.alliance_id) + ',' +
+                         str(score.war.opponent_id) + ',' +
+                         str(score.war.league) + ',' + str(score.war.tracked) + ',' +
+                         str(score.war.our_score) + ',' + str(score.war.opp_score) + ',' +
+                         attempts_left + ',' + no_attempts + ',' + str(score.score)
+                         )
+
+                if score.war.opponent_id in (53, 107, 19, 159, 104, 28):
+                    y.append(str(score.war.date) + ',' + str(score.player.id) + ',' +
+                             str(score.war.opponent_id) + ',' + str(score.score))
+
+    with open(os.path.join(app.root_path, 'training_x.csv'), 'w') as fo:
+        fo.write('\n'.join(x))
+
+    with open(os.path.join(app.root_path, 'training_y.csv'), 'w') as fo:
+        fo.write('\n'.join(y))
+
+    html = 'Success!'
+    return render_template('utility.html', html=html)
 
 @app.route('/import_tfw_scores')
 @officer_required
