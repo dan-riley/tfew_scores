@@ -297,6 +297,35 @@ def downloadFile():
     path = os.path.join(app.root_path, 'output.csv')
     return send_file(path, as_attachment=True)
 
+@app.route('/export')
+@officer_required
+def export():
+    scores = Score.query.join(War).order_by(War.date).all()
+    output = []
+    output.append('Date,Player ID,Player Name,Alliance ID,Alliance Name,\
+                   Opponent ID,Opponent Name,League,Tracked,Our Score,Opp Score,\
+                   Score,Excused,Attempts Left,No Attempts')
+    for score in scores:
+        excused = '1' if score.excused else '0'
+        attempts_left = '1' if score.attempts_left else '0'
+        no_attempts = '1' if score.no_attempts else '0'
+
+        output.append(str(score.war.date) + ',' +
+                      str(score.player.id) + ',' + score.player.name + ',' +
+                      str(score.war.alliance_id) + ',' + score.war.alliance.name + ',' +
+                      str(score.war.opponent_id) + ',' + score.war.opponent.name + ',' +
+                      score.war.leagueText() + ',' + str(score.war.tracked) + ',' +
+                      str(score.war.our_score) + ',' + str(score.war.opp_score) + ',' +
+                      str(score.score) + ',' + excused + ',' +
+                      attempts_left + ',' + no_attempts
+                      )
+
+    with open(os.path.join(app.root_path, 'export.csv'), 'w') as fo:
+        fo.write('\n'.join(output))
+
+    path = os.path.join(app.root_path, 'export.csv')
+    return send_file(path, as_attachment=True)
+
 @app.route('/import_tfw_scores')
 @officer_required
 def importTFWScores():
