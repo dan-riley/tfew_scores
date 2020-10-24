@@ -329,38 +329,211 @@ def export():
 @app.route('/ml')
 @officer_required
 def ml():
+    html = []
+    num_wars = 24
+    predict_tracked = False
+    # pred_opps = (53, 107, 19, 159, 104, 28)
+    pred_opps = (53, 107, 19, 159, 104, 28, 88, 31, 152, 43)
+    valid_wars = (0, 1172)
+
     players = Player.query.all()
-    x = []
-    y = []
-    x.append('date,player_id,alliance_id,opponent_id,league,tracked,our_score,opp_score,'
-             'attempts_left,no_attempts,score')
-    y.append('date,player_id,opponent_id,score')
+    train_full = []
+    train_valid = []
+    valid = []
+    train_avg = []
+    train_avg_valid = []
+    valid_avg = []
+    cols = 'pid,'
+    # Header for per war version
+    for i in range(1, num_wars + 1):
+        si = '_' + str(i)
+        cols += ('league' + si + ',tracked' + si + ',our_score' + si + ',opp_score' + si +
+                 ',attempts_left' + si + ',no_attempts' + si + ',score' + si + ',')
+    train_full.append(cols + 'tracked_avg,' + 'pred_score')
+    train_valid.append(cols + 'tracked_avg,' + 'pred_score')
+    valid.append(cols + 'tracked_avg,' + 'pred_score')
+    # Header for averages version
+    cols = 'pid,our_score,opp_score,all,tracked,optional,untracked,league_1,league_2,league_3,league_4,'
+    cols += 'league_5,league_6,league_7,league_8,attempts_left_tracked,no_attempts_tracked,'
+    cols += 'attempts_left_opt,no_attempts_opt,attempts_left_untracked,no_attempts_untracked,'
+    train_avg.append(cols + 'tracked_avg,' + 'pred_score')
+    train_avg_valid.append(cols + 'tracked_avg,' + 'pred_score')
+    valid_avg.append(cols + 'tracked_avg,' + 'pred_score')
+
     for player in players:
         player.scores.sort(key=lambda x: x.war.date)
-        for score in player.scores:
-            if not score.excused:
-                attempts_left = '1' if score.attempts_left else '0'
-                no_attempts = '1' if score.no_attempts else '0'
+        pid = str(player.id) + ','
+        for idx, pred_score in enumerate(player.scores):
+            # Set either Top 5 or any tracked war
+            if predict_tracked:
+                predictor = pred_score.war.tracked
+            else:
+                predictor = pred_score.war.opponent_id in pred_opps
 
-                x.append(str(score.war.date) + ',' + str(score.player.id) + ',' +
-                         str(score.war.alliance_id) + ',' +
-                         str(score.war.opponent_id) + ',' +
-                         str(score.war.league) + ',' + str(score.war.tracked) + ',' +
-                         str(score.war.our_score) + ',' + str(score.war.opp_score) + ',' +
-                         attempts_left + ',' + no_attempts + ',' + str(score.score)
-                         )
+            # Find each top 5 or tracked war the player competed in, but need at least num_wars
+            if idx > num_wars and not pred_score.excused and predictor:
+                # Now add each score to the data
+                x = ''
+                our_score = 0
+                opp_score = 0
+                league = {}
+                league_count = {}
+                for i in range(1, 9):
+                    league[i] = 0
+                    league_count[i] = 0
+                count = 0
+                all_score = 0
+                untracked_score = 0
+                untracked_count = 0
+                tracked_score = 0
+                tracked_count = 0
+                optional_score = 0
+                optional_count = 0
+                attempts_left_tracked = 0
+                no_attempts_tracked = 0
+                attempts_left_untracked = 0
+                no_attempts_untracked = 0
+                attempts_left_optional = 0
+                no_attempts_optional = 0
+                cidx = idx - 1
+                while count < num_wars and cidx >= 0:
+                    score = player.scores[cidx]
+                    if not (score.excused and (score.score is None or score.score < 90)):
+                        count += 1
+                        # Correct for None in these
+                        attempts_left = 1 if score.attempts_left else 0
+                        no_attempts = 1 if score.no_attempts else 0
 
-                if score.war.opponent_id in (53, 107, 19, 159, 104, 28):
-                    y.append(str(score.war.date) + ',' + str(score.player.id) + ',' +
-                             str(score.war.opponent_id) + ',' + str(score.score))
+                        if score.war.tracked == 1:
+                            tracked_score += score.score
+                            tracked_count += 1
+                            attempts_left_tracked += attempts_left
+                            no_attempts_tracked += no_attempts
+                        elif score.war.tracked == 0:
+                            untracked_score += score.score
+                            untracked_count += 1
+                            attempts_left_untracked += attempts_left
+                            no_attempts_untracked += no_attempts
+                        elif score.war.tracked == 2:
+                            optional_score += score.score
+                            optional_count += 1
+                            attempts_left_optional += attempts_left
+                            no_attempts_optional += no_attempts
 
-    with open(os.path.join(app.root_path, 'training_x.csv'), 'w') as fo:
-        fo.write('\n'.join(x))
+                        # Total war totals
+                        our_score += score.war.our_score
+                        opp_score += score.war.opp_score
+                        all_score += score.score
 
-    with open(os.path.join(app.root_path, 'training_y.csv'), 'w') as fo:
-        fo.write('\n'.join(y))
+                        # Total each league
+                        league[score.war.league] += score.score
+                        league_count[score.war.league] += 1
 
-    html = 'Success!'
+                        if score.war.tracked == 1:
+                            tracked = '2'
+                        elif score.war.tracked == 2:
+                            tracked = '1'
+                        else:
+                            tracked = '0'
+
+                        x += (str(score.war.league) + ',' + tracked + ',' +
+                              str(score.war.our_score) + ',' + str(score.war.opp_score) + ',' +
+                              str(attempts_left) + ',' + str(no_attempts) + ',' + str(score.score) + ','
+                             )
+
+                    cidx -= 1
+
+                if count == num_wars:
+                    if tracked_count:
+                        tracked_avg = tracked_score / tracked_count
+                        str_tracked_avg = str(int(tracked_avg))
+                        attempts_left_tracked_avg = str(attempts_left_tracked / tracked_count)
+                        no_attempts_tracked_avg = str(no_attempts_tracked / tracked_count)
+                    else:
+                        tracked_avg = '0'
+                        str_tracked_avg = '0'
+                        attempts_left_tracked_avg = '0'
+                        no_attempts_tracked_avg = '0'
+
+                    # Add to the full training data
+                    train_full.append(pid + x + str_tracked_avg + ',' + str(pred_score.score))
+
+                    # Build the average version
+                    all_score = str(all_score / count)
+                    tracked_avg = str(tracked_avg)
+                    if untracked_count:
+                        untracked_avg = str(untracked_score / untracked_count)
+                        attempts_left_untracked_avg = str(attempts_left_untracked / untracked_count)
+                        no_attempts_untracked_avg = str(no_attempts_untracked / untracked_count)
+                    else:
+                        untracked_avg = '0'
+                        attempts_left_untracked_avg = '0'
+                        no_attempts_untracked_avg = '0'
+
+                    if optional_count:
+                        optional_avg = str(optional_score / optional_count)
+                        attempts_left_opt_avg = str(attempts_left_optional / optional_count)
+                        no_attempts_opt_avg = str(no_attempts_optional / optional_count)
+                    else:
+                        optional_avg = '0'
+                        attempts_left_opt_avg = '0'
+                        no_attempts_opt_avg = '0'
+
+                    # Add
+                    our_avg = our_score / count
+                    opp_avg = opp_score / count
+
+                    league_text = ''
+                    for i in range(1, 9):
+                        if league_count[i]:
+                            league_text += str(league[i] / league_count[i]) + ','
+                        else:
+                            league_text += '0,'
+
+                    avg_line = (pid + str(our_avg) + ',' + str(opp_avg) + ',' + all_score + ',' +
+                                tracked_avg + ',' + optional_avg + ',' + untracked_avg + ',' +
+                                league_text +
+                                attempts_left_tracked_avg + ',' + no_attempts_tracked_avg + ',' +
+                                attempts_left_opt_avg + ',' + no_attempts_opt_avg + ',' +
+                                attempts_left_untracked_avg + ',' + no_attempts_untracked_avg + ',' +
+                                str_tracked_avg + ',' + str(pred_score.score))
+
+                    train_avg.append(avg_line)
+
+                    # Separate the validation wars from the training data
+                    if pred_score.war.id in valid_wars:
+                        valid.append(pid + x + str_tracked_avg + ',' + str(pred_score.score))
+                        valid_avg.append(avg_line)
+                    else:
+                        train_valid.append(pid + x + str_tracked_avg + ',' + str(pred_score.score))
+                        train_avg_valid.append(avg_line)
+
+                elif count < num_wars:
+                    html.append('not enough for ' + pred_score.player.name + ' ' + str(count))
+
+    if predict_tracked:
+        pre = 'tracked_'
+    else:
+        pre = 'top5_'
+    with open(os.path.join(app.root_path, pre + 'training_full.csv'), 'w') as fo:
+        fo.write('\n'.join(train_full))
+
+    with open(os.path.join(app.root_path, pre + 'training_valid.csv'), 'w') as fo:
+        fo.write('\n'.join(train_valid))
+
+    with open(os.path.join(app.root_path, pre + 'valid.csv'), 'w') as fo:
+        fo.write('\n'.join(valid))
+
+    with open(os.path.join(app.root_path, pre + 'training_avg.csv'), 'w') as fo:
+        fo.write('\n'.join(train_avg))
+
+    with open(os.path.join(app.root_path, pre + 'training_avg_valid.csv'), 'w') as fo:
+        fo.write('\n'.join(train_avg_valid))
+
+    with open(os.path.join(app.root_path, pre + 'valid_avg.csv'), 'w') as fo:
+        fo.write('\n'.join(valid_avg))
+
+    html.append('Success!')
     return render_template('utility.html', html=html)
 
 @app.route('/import_tfw_scores')
