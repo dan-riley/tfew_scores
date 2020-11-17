@@ -396,8 +396,8 @@ class TFEW():
         war.tracked = fwar['tracked']
 
         war.date = fwar['date']
-        war.opp_score = fwar['opp_score']
-        war.our_score = fwar['our_score']
+        war.opp_score = fwar['opp_score'] if fwar['opp_score'] != '' else 0
+        war.our_score = fwar['our_score'] if fwar['our_score'] != '' else 0
 
         if fwar['b1']:
             war.b1 = fwar['b1']
