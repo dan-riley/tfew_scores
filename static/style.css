@@ -68,12 +68,12 @@ body {
   background: white;
 }
 
-#spark_table {
+#spark_table, #effects_table {
   text-align: left;
   font-size: 0.8em;
 }
 
-#spark_table th {
+#spark_table th, #effects_table th {
   text-align: center;
   background: white;
 }
@@ -364,8 +364,25 @@ body {
   font-weight: bold;
 }
 
+a.dropdown-item {
+  color: rgba(0,0,0,0.5);
+}
+
+a.dropdown-item.active, a.dropdown-item:active {
+  color: rgba(0,0,0,0.9);
+  background: white;
+}
+
+.dropdown-menu {
+  min-width: 7rem;
+}
+
+.navbar-nav li:hover>.dropdown-menu {
+  display: block;
+}
+
 @media (max-width: 610px) {
-  .nav-link {
+  .nav-link, .dropdown-item {
     font-size: 0.7rem;
   }
   .sticky-top {

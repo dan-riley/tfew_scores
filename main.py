@@ -144,6 +144,7 @@ def scoreboard():
 
     if t.flash:
         flash(t.flash)
+        t.flash = None
     return render_template('scoreboard.html', t=t)
 
 @app.route('/history')
@@ -156,12 +157,15 @@ def history():
     t.setAlliances()
     # Pull the data we need from the database
     t.setWars()
+    # Get the Prime Effects
+    t.setPrimeEffects()
 
     # Process data
     totals, overall = t.getHistory()
 
     if t.flash:
         flash(t.flash)
+        t.flash = None
     return render_template('history.html', t=t, overall=overall, totals=totals)
 
 @app.route('/player')
@@ -182,6 +186,7 @@ def player_view():
 
     if t.flash:
         flash(t.flash)
+        t.flash = None
     return render_template('player.html', t=t)
 
 @app.route('/player_editor', methods=['GET', 'POST'])
@@ -200,6 +205,7 @@ def player_editor():
 
     if t.flash:
         flash(t.flash)
+        t.flash = None
     return render_template('player_editor.html', t=t)
 
 @app.route('/move_player', methods=['GET', 'POST'])
@@ -229,6 +235,7 @@ def war_editor():
 
     if t.flash:
         flash(t.flash)
+        t.flash = None
     return render_template('war_editor.html', t=t, war=war, missing_players=missing_players)
 
 @app.route('/delete_war', methods=['GET'])
@@ -239,6 +246,22 @@ def delete_war():
             t.deleteWar(int(request.args.get('war_id')))
 
     return redirect(url_for('home_page'))
+
+@app.route('/prime_editor', methods=['GET', 'POST'])
+@officer_required
+def prime_editor():
+    t.start_day = None
+    t.end_day = None
+    t.setPrimeEffects()
+
+    if request.method == 'POST':
+        t.updatePrimeEffects(request.get_json())
+        return make_response(jsonify({"message": "Prime Effects updated"}), 200)
+
+    if t.flash:
+        flash(t.flash)
+        t.flash = None
+    return render_template('prime_editor.html', t=t)
 
 @app.route('/ore_calculator')
 @login_required

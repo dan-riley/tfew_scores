@@ -251,7 +251,9 @@
 
         <div class="sticky-bottom">
           <input class="btn btn-primary" type="button" id="submit" value="Submit">
+          {% if war.id != None %}
           <a href="/delete_war?war_id={{war.id}}" class="btn btn-danger">Delete War</a>
+          {% endif %}
           <div id="alert_wrapper"></div>
         </div>
       </form>

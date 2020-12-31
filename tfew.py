@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 import pytz
-from models import db, Alliance, Player, OCR, War, Score, Issue
+from models import db, Alliance, Player, OCR, War, Score, Issue, PrimeEffect
 
 class TFEW():
     """ Holds global information for the app """
@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.16'
+        self.version = 'v1.17'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -153,6 +153,12 @@ class TFEW():
 
     def setIssues(self):
         self.issues = Issue.query.all()
+
+    def setPrimeEffects(self):
+        filt = []
+        if self.start_day and self.end_day:
+            filt = [PrimeEffect.date.between(self.start_day, self.end_day)]
+        self.primeEffects = PrimeEffect.query.order_by(PrimeEffect.date.desc()).filter(*filt).all()
 
     def buildAverages(self, player):
         allScore = 0
@@ -455,6 +461,38 @@ class TFEW():
     def deleteWar(self, war_id):
         war = War.query.get(war_id)
         db.session.delete(war)
+        db.session.commit()
+
+    def updatePrimeEffects(self, fprime):
+        for pe in self.primeEffects:
+            changed = False
+            try:
+                fpe = fprime['pes'][pe.id]
+            except IndexError:
+                continue
+            if fpe is None:
+                continue
+
+            # Edit the date
+            if str(pe.date) != fpe['date']:
+                pe.date = fpe['date']
+                changed = True
+
+            # Edit the effects
+            if pe.effects != fpe['effects']:
+                pe.effects = fpe['effects']
+                changed = True
+
+            if changed:
+                db.session.add(pe)
+
+        if fprime['new_effects']:
+            newprime = PrimeEffect()
+            newprime.date = fprime['new_date']
+            newprime.effects = fprime['new_effects']
+
+            db.session.add(newprime)
+
         db.session.commit()
 
     def getHistory(self):

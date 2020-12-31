@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='prime_editor.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}Prime Editor{% endblock %}
+{% block header %}TFEW Prime Editor{% endblock %}
+{% block nav_tools %}active{% endblock %}
+{% block nav_prime_editor %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+
+{% block content %}
+      <form method="POST">
+        <table class="table table-sm w-auto">
+          <tr>
+            <th>Date</th>
+            <th class="col-6">Effects</th>
+          </tr>
+          <tr>
+            <td>
+              <input class="form-control" type="date" name="new_date" value="{{today}}">
+            </td>
+            <td>
+              <input class="form-control" type="text" name="new_effects" placeholder="Enter new effects here">
+            </td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          {% for pe in t.primeEffects %}
+          <tr>
+            <td>
+              <input class="form-control" type="date" name="pes[{{pe.id}}][date]" value="{{pe.date}}">
+            </td>
+            <td>
+              <input class="form-control" type="text" name="pes[{{pe.id}}][effects]" value="{{pe.effects}}">
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+
+        <div class="sticky-bottom">
+          <input class="btn btn-primary" type="button" id="submit" value="Submit">
+          <div id="alert_wrapper"></div>
+        </div>
+      </form>
+      <div class="row">&nbsp;</div>
+      <div class="row">&nbsp;</div>
+{% endblock %}

@@ -42,6 +42,18 @@
               {% endfor %}
           {% endfor %}
         </table>
+        <table id="effects_table" class="table table-sm table-bordered">
+          <tr>
+            <th class="sticky-top">Date</th>
+            <th class="sticky-top">Effects</th>
+          </tr>
+          {% for pe in t.primeEffects %}
+          <tr>
+            <td class="center text-nowrap">{{pe.date}}</td>
+            <td class="left">{{pe.effects}}</td>
+          </tr>
+          {% endfor %}
+        </table>
       </div>
 
       <div class="col-md-7 table-responsive float-sm-none float-md-left">

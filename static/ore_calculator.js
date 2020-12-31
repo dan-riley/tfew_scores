@@ -98,7 +98,7 @@ var OreCalculator = (function() {
 
       // Display a message for what to do
       if (hours == hours_calc) {
-        if (purge > no_purge) {
+        if (purge >= no_purge) {
           results.innerHTML = 'You should purge your harvester!';
           results.style.fontWeight = 'bold';
           results.style.color = 'green';

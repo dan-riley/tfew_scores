@@ -139,3 +139,9 @@ class Issue(db.Model):
     request = db.Column(db.Text())
     comments = db.Column(db.Text())
     player = db.relationship('Player', foreign_keys='Issue.requester')
+
+class PrimeEffect(db.Model):
+    __tablename__ = 'prime_effects'
+    id = db.Column(db.Integer(), primary_key=True)
+    date = db.Column(db.Date(), nullable=False)
+    effects = db.Column(db.Text())
