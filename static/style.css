@@ -364,6 +364,10 @@ body {
   font-weight: bold;
 }
 
+#alert_wrapper {
+  width: 70em;
+}
+
 a.dropdown-item {
   color: rgba(0,0,0,0.5);
 }

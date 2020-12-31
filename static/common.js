@@ -8,6 +8,35 @@ function show_alert(message, alert) {
     `
 }
 
+// Form submission and responses
+function initJSON(formNum, url) {
+  if (window.location.search.indexOf('reload=success') > 0) {
+    show_alert('Changes saved and page reloaded', 'success');
+  }
+
+  document.getElementById('submit').addEventListener('click', function() {
+    var request = new XMLHttpRequest();
+    request.addEventListener('load', function (e) {
+        if (request.status == 200) {
+          show_alert('Changes successfully saved', 'success');
+          if (window.location.search.indexOf('reload=success') == -1) {
+            window.location.search += "&reload=success";
+          } else {
+            location.reload();
+          }
+        } else {
+          show_alert('Error submitting changes', 'danger');
+        }
+    });
+
+    data = $(document.forms[formNum]).serializeObject();
+    request.responseType = 'json';
+    request.open('POST', url, true);
+    request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    request.send(JSON.stringify(data));
+  });
+}
+
 // Sorting algorithm
 function compareValues(key, order = 'asc') {
   return function innerSort(a, b) {

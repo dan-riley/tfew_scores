@@ -274,6 +274,10 @@ class TFEW():
             if fplayer is None:
                 continue
 
+            if 'reset' in fplayer:
+                player.password_hash = None
+                changed = True
+
             # Edit the name
             if player.name != fplayer['name']:
                 player.name = fplayer['name']

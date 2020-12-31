@@ -36,6 +36,7 @@
           <thead>
             <tr>
               <th></th>
+              <th>Reset</th>
               <th>Name</th>
               <th>Officer</th>
               <th>Last Action</th>
@@ -46,6 +47,13 @@
           {% for player in t.players %}
           <tr>
             <td></td>
+            <td>
+              <input class="form-control" type="checkbox" name="players[{{player.id}}][reset]" value="{{player.id}}"
+              {% if not player.password_hash %}
+                disabled
+              {% endif %}
+              >
+            </td>
             <td>
               <input type="hidden" name="players[{{player.id}}][id]" value="{{player.id}}">
               <input class="form-control" type="text" name="players[{{player.id}}][name]" value="{{player.name}}">
@@ -97,6 +105,7 @@
             </th>
           </tr>
           <tr>
+            <td></td>
             <td></td>
             <td>
               <div class="col-auto">
