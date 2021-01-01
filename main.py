@@ -247,6 +247,33 @@ def delete_war():
 
     return redirect(url_for('home_page'))
 
+@app.route('/alliance_editor', methods=['GET', 'POST'])
+@officer_required
+def alliance_editor():
+    t.setAlliances()
+    t.setAlliancesList()
+
+    if request.method == 'POST':
+        t.updateAlliances(request.get_json())
+        return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)
+
+    if t.flash:
+        flash(t.flash)
+        t.flash = None
+    return render_template('alliance_editor.html', t=t)
+
+@app.route('/move_alliance', methods=['GET', 'POST'])
+@officer_required
+def move_alliance():
+    t.setAlliances()
+    t.setAlliancesList()
+
+    if request.method == 'POST':
+        t.moveAlliance(request.get_json())
+        return make_response(jsonify({"message": "Changes sucessfully submitted" + t.flash}), 200)
+
+    return render_template('move_alliance.html', t=t)
+
 @app.route('/prime_editor', methods=['GET', 'POST'])
 @officer_required
 def prime_editor():

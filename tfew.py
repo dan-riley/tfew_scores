@@ -355,6 +355,63 @@ class TFEW():
         db.session.delete(player_from)
         db.session.commit()
 
+    def updateAlliances(self, falliances):
+        for alliance in self.alliances:
+            changed = False
+            try:
+                falliance = falliances['alliances'][alliance.id]
+            except IndexError:
+                continue
+            if falliance is None:
+                continue
+
+            # Edit the name
+            if alliance.name != falliance['name']:
+                alliance.name = falliance['name']
+                changed = True
+
+            # Set whether the alliance is a family alliance and so active
+            if 'active' in falliance:
+                if not alliance.active:
+                    alliance.active = True
+                    changed = True
+            else:
+                if alliance.active:
+                    alliance.active = False
+                    changed = True
+
+            if changed:
+                db.session.add(alliance)
+
+        if falliances['newName']:
+            alliance_id = getIDbyName(Alliance, falliances['newName'])
+            if alliance_id:
+                alliance = Alliance.query.get(alliance_id)
+                db.session.add(alliance)
+            else:
+                newalliance = Alliance()
+                newalliance.name = falliances['newName']
+
+                if 'newActive' in falliances:
+                    newalliance.active= True
+
+                db.session.add(newalliance)
+
+        db.session.commit()
+
+    def moveAlliance(self, falliance):
+        alliance_from = Alliance.query.get(falliance['alliance_from'])
+        alliance_to = Alliance.query.get(falliance['alliance_to'])
+        self.flash = ''
+
+        for war in alliance_from.oppwars:
+            alliance_to.oppwars.append(war)
+
+        db.session.add(alliance_to)
+        db.session.commit()
+        db.session.delete(alliance_from)
+        db.session.commit()
+
     def updateScore(self, fplayer, score):
         if fplayer['score']:
             score.score = int(fplayer['score'].strip())

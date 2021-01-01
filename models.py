@@ -129,6 +129,7 @@ class Alliance(db.Model):
     active = db.Column(db.Boolean())
     name = db.Column(db.String(255), nullable=False)
     wars = db.relationship('War', foreign_keys='War.alliance_id')
+    oppwars = db.relationship('War', foreign_keys='War.opponent_id')
 
 
 class Issue(db.Model):

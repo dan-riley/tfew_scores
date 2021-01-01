@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='alliance_editor.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}Alliance Editor{% endblock %}
+{% block header %}TFEW Alliance Editor{% endblock %}
+{% block nav_tools %}active{% endblock %}
+{% block nav_alliance_editor %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+{% block content %}
+      <form method="POST">
+        <table class="table table-sm table-striped w-auto">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Family</th>
+            </tr>
+          </thead>
+          {% for alliance in t.alliances %}
+          <tr>
+            <td></td>
+            <td>
+              <input type="hidden" name="alliances[{{alliance.id}}][id]" value="{{alliance.id}}">
+              <input class="form-control" type="text" name="alliances[{{alliance.id}}][name]" value="{{alliance.name}}">
+            </td>
+            <td>
+              <input class="form-control" type="checkbox" name="alliances[{{alliance.id}}][active]" value="{{alliance.id}}"
+              {% if alliance.active %}
+                checked
+              {% endif %}
+              >
+            </td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <th colspan="100">
+              Add new alliance
+            </th>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <div class="col-auto">
+                <div id="newNameAuto" class="autocomplete" data-autocomplete='{{t.alliancesList|tojson}}'>
+                  <input class="form-control" type="text" name="newName" value="" autocomplete="off">
+                </div>
+              </div>
+            </td>
+            <td>
+              <input class="form-control" type="checkbox" name="newActive" value="new">
+            </td>
+          </tr>
+        </table>
+
+        <div class="sticky-bottom">
+          <input class="btn btn-primary" type="button" id="submit" value="Submit Changes">
+          <div id="alert_wrapper"></div>
+        </div>
+      </form>
+      <div class="row">&nbsp;</div>
+      <div class="row">&nbsp;</div>
+{% endblock %}

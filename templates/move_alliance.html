@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='move_alliance.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}Move Alliance{% endblock %}
+{% block header %}TFEW Move Alliance{% endblock %}
+{% block nav_alliance_editor %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+{% block content %}
+      <form method="POST">
+        <div class="col-6">
+          <table class="table table-sm table-striped">
+            <thead>
+              <tr>
+                <th>Move From</th>
+                <th>Move To</th>
+              </tr>
+            </thead>
+            <tr>
+              <td>
+                  <input class="form-control" type="text" name="alliance_from">
+              </td>
+              <td>
+                  <input class="form-control" type="text" name="alliance_to">
+              </td>
+            </tr>
+          </table>
+
+          <div class="col">
+            <input class="btn btn-primary" type="button" id="submit" value="Submit Changes">
+            <div id="alert_wrapper"></div>
+          </div>
+        </div>
+      </form>
+      <div class="row">&nbsp;</div>
+      <div class="row">&nbsp;</div>
+{% endblock %}
