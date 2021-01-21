@@ -385,6 +385,10 @@ a.dropdown-item.active, a.dropdown-item:active {
   display: block;
 }
 
+.modal-wide {
+  max-width: 800px;
+}
+
 @media (max-width: 610px) {
   .nav-link, .dropdown-item {
     font-size: 0.7rem;

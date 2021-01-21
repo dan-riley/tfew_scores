@@ -28,7 +28,7 @@
               <input class="form-control" type="text" name="alliances[{{alliance.id}}][name]" value="{{alliance.name}}">
             </td>
             <td>
-              <input class="form-control" type="checkbox" name="alliances[{{alliance.id}}][active]" value="{{alliance.id}}"
+              <input class="form-control" type="checkbox" name="alliances[{{alliance.id}}][family]" value="{{alliance.id}}"
               {% if alliance.active %}
                 checked
               {% endif %}
@@ -51,7 +51,7 @@
               </div>
             </td>
             <td>
-              <input class="form-control" type="checkbox" name="newActive" value="new">
+              <input class="form-control" type="checkbox" name="newFamily" value="new">
             </td>
           </tr>
         </table>

@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.17'
+        self.version = 'v1.18'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -26,6 +26,7 @@ class TFEW():
         self.wars = []
         self.filt = []
         self.issues = []
+        self.updates = {}
         # Display messages
         self.flash = None
 
@@ -265,6 +266,7 @@ class TFEW():
         player.cyberAvg = round(cyberAvg)
 
     def updatePlayers(self, fplayers):
+        self.updates = {}
         for player in self.players:
             changed = False
             try:
@@ -274,64 +276,110 @@ class TFEW():
             if fplayer is None:
                 continue
 
+            pupdate = player.updater()
             if 'reset' in fplayer:
-                player.password_hash = None
+                pupdate['Reset'] = True
                 changed = True
 
             # Edit the name
             if player.name != fplayer['name']:
-                player.name = fplayer['name']
+                pupdate['New_Name'] = fplayer['name']
                 changed = True
 
             # Set whether the player is an officer, but only if they've logged in before
             if 'officer' in fplayer:
                 if not player.officer and player.password_hash:
-                    player.officer = True
+                    pupdate['Officer'] = True
                     changed = True
             else:
                 if player.officer:
-                    player.officer = False
+                    pupdate['Officer'] = False
                     changed = True
 
             if str(player.alliance_id) != fplayer['alliance']:
-                player.alliance_id = fplayer['alliance']
+                alliance = Alliance.query.get(fplayer['alliance'])
+                pupdate['Alliance'] = alliance.name
                 changed = True
 
             # Edit the OCR strings
             i = 0
             for pocr in player.ocr:
                 if pocr.ocr_string != fplayer['ocr'][i]:
-                    pocr.ocr_string = fplayer['ocr'][i]
+                    pupdate['OCR'][str(i)] = fplayer['ocr'][i]
                     changed = True
                 i += 1
 
             if fplayer['newocr']:
-                newocr = OCR()
-                newocr.player_id = player.id
-                newocr.ocr_string = fplayer['newocr']
-                db.session.add(newocr)
+                pupdate['New_OCR'] = fplayer['newocr']
                 changed = True
 
             if changed:
-                db.session.add(player)
+                self.updates[player.id] = pupdate
 
         if fplayers['newName']:
             player_id = getIDbyName(Player, fplayers['newName'])
             if player_id:
                 player = Player.query.get(player_id)
-                player.alliance_id = fplayers['newAlliance']
-                db.session.add(player)
+                pupdate = player.updater()
+                alliance = Alliance.query.get(fplayers['newAlliance'])
+                pupdate['Alliance'] = alliance.name
+                self.updates[player.id] = pupdate
             else:
                 newplayer = Player()
-                newplayer.name = fplayers['newName']
-                newplayer.alliance_id = fplayers['newAlliance']
+                pupdate = newplayer.updater()
+                pupdate['Name'] = 'New Player'
+                pupdate['New_Name'] = fplayers['newName']
+                alliance = Alliance.query.get(fplayers['newAlliance'])
+                pupdate['Alliance'] = alliance.name
+                self.updates['new'] = pupdate
 
                 # For now we require a player to have logged in before giving officer rights
                 # if 'newOfficer' in fplayers:
                 #     newplayer.officer = True
 
+    def updatePlayersConfirm(self, fplayers):
+        for player_id in fplayers:
+            fplayer = fplayers[player_id]
+            if player_id != 'confirmed' and player_id != 'new':
+                player = Player.query.get(player_id)
+                if fplayer['New_Name'] is not None:
+                    player.name = fplayer['New_Name']
+
+                if fplayer['Reset'] is not None:
+                    player.password_hash = None
+
+                if fplayer['Officer'] is not None:
+                    player.officer = fplayer['Officer']
+
+                if fplayer['Alliance'] is not None:
+                    alliance_id = getIDbyName(Alliance, fplayer['Alliance'])
+                    player.alliance_id = alliance_id
+
+                for oid in fplayer['OCR']:
+                    if fplayer['OCR'][oid] is not None:
+                        i = 0
+                        for pocr in player.ocr:
+                            if i == int(oid):
+                                if fplayer['OCR'][oid]:
+                                    pocr.ocr_string = fplayer['OCR'][oid]
+                                else:
+                                    db.session.delete(pocr)
+                            i += 1
+
+                if fplayer['New_OCR'] is not None:
+                    newocr = OCR()
+                    newocr.player_id = player.id
+                    newocr.ocr_string = fplayer['New_OCR']
+                    db.session.add(newocr)
+
+                db.session.add(player)
+            elif player_id == 'new':
+                newplayer = Player()
+                newplayer.name = fplayer['New_Name']
+                newplayer.alliance_id = getIDbyName(Alliance, fplayer['Alliance'])
+
                 newocr = OCR()
-                newocr.ocr_string = fplayers['newName'].upper()
+                newocr.ocr_string = fplayer['New_Name'].upper()
                 newplayer.ocr.append(newocr)
 
                 db.session.add(newplayer)
@@ -356,6 +404,7 @@ class TFEW():
         db.session.commit()
 
     def updateAlliances(self, falliances):
+        self.updates = {}
         for alliance in self.alliances:
             changed = False
             try:
@@ -365,35 +414,56 @@ class TFEW():
             if falliance is None:
                 continue
 
+            aupdate = alliance.updater()
             # Edit the name
             if alliance.name != falliance['name']:
-                alliance.name = falliance['name']
+                aupdate['New_Name'] = falliance['name']
                 changed = True
 
             # Set whether the alliance is a family alliance and so active
-            if 'active' in falliance:
+            if 'family' in falliance:
                 if not alliance.active:
-                    alliance.active = True
+                    aupdate['Family'] = True
                     changed = True
             else:
                 if alliance.active:
-                    alliance.active = False
+                    aupdate['Family'] = False
                     changed = True
 
             if changed:
-                db.session.add(alliance)
+                self.updates[alliance.id] = aupdate
 
         if falliances['newName']:
             alliance_id = getIDbyName(Alliance, falliances['newName'])
-            if alliance_id:
-                alliance = Alliance.query.get(alliance_id)
-                db.session.add(alliance)
-            else:
+            if not alliance_id:
                 newalliance = Alliance()
-                newalliance.name = falliances['newName']
+                aupdate = newalliance.updater()
+                aupdate['Name'] = 'New Alliance'
+                aupdate['New_Name'] = falliances['newName']
 
-                if 'newActive' in falliances:
-                    newalliance.active= True
+                if 'newFamily' in falliances:
+                    aupdate['Family'] = True
+
+                self.updates['new'] = aupdate
+
+    def updateAlliancesConfirm(self, falliances):
+        for alliance_id in falliances:
+            falliance = falliances[alliance_id]
+            if alliance_id != 'confirmed' and alliance_id != 'new':
+                alliance = Alliance.query.get(alliance_id)
+                if falliance['New_Name'] is not None:
+                    alliance.name = falliance['New_Name']
+
+                if falliance['Family'] is not None:
+                    alliance.active = falliance['Family']
+
+                db.session.add(alliance)
+            elif alliance_id == 'new':
+                newalliance = Alliance()
+                newalliance.name = falliance['New_Name']
+
+                if falliance['Family'] is not None:
+                    newalliance.active = falliance['Family']
 
                 db.session.add(newalliance)
 
@@ -525,6 +595,7 @@ class TFEW():
         db.session.commit()
 
     def updatePrimeEffects(self, fprime):
+        self.updates = {}
         for pe in self.primeEffects:
             changed = False
             try:
@@ -534,25 +605,49 @@ class TFEW():
             if fpe is None:
                 continue
 
+            pupdate = pe.updater()
             # Edit the date
             if str(pe.date) != fpe['date']:
-                pe.date = fpe['date']
+                pupdate['New_Date'] = fpe['date']
+                # pe.date = fpe['date']
                 changed = True
 
             # Edit the effects
             if pe.effects != fpe['effects']:
-                pe.effects = fpe['effects']
+                pupdate['Effects'] = fpe['effects']
+                # pe.effects = fpe['effects']
                 changed = True
 
             if changed:
-                db.session.add(pe)
+                self.updates[pe.id] = pupdate
 
         if fprime['new_effects']:
             newprime = PrimeEffect()
-            newprime.date = fprime['new_date']
-            newprime.effects = fprime['new_effects']
+            pupdate = newprime.updater()
+            pupdate['Date'] = 'New Effect'
+            pupdate['New_Date'] = fprime['new_date']
+            pupdate['Effects'] = fprime['new_effects']
 
-            db.session.add(newprime)
+            self.updates['new'] = pupdate
+
+    def updatePrimeEffectsConfirm(self, fprime):
+        for fpi in fprime:
+            fpe = fprime[fpi]
+            if fpi != 'confirmed' and fpi != 'new':
+                pe = PrimeEffect.query.get(fpi)
+                if fpe['New_Date'] is not None:
+                    pe.date = fpe['New_Date']
+
+                if fpe['Effects'] is not None:
+                    pe.effects = fpe['Effects']
+
+                db.session.add(pe)
+            elif fpi == 'new':
+                newprime = PrimeEffect()
+                newprime.date = fpe['New_Date']
+                newprime.effects = fpe['Effects']
+
+                db.session.add(newprime)
 
         db.session.commit()
 

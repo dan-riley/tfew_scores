@@ -200,8 +200,13 @@ def player_editor():
         t.setRequestsPlayerEditor(request)
 
     if request.method == 'POST':
-        t.updatePlayers(request.get_json())
-        return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)
+        json = request.get_json()
+        if 'confirmed' in json and 'true' in json['confirmed']:
+            t.updatePlayersConfirm(json)
+            return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)
+        else:
+            t.updatePlayers(json)
+            return make_response(jsonify(t.updates), 201)
 
     if t.flash:
         flash(t.flash)
@@ -254,8 +259,13 @@ def alliance_editor():
     t.setAlliancesList()
 
     if request.method == 'POST':
-        t.updateAlliances(request.get_json())
-        return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)
+        json = request.get_json()
+        if 'confirmed' in json and 'true' in json['confirmed']:
+            t.updateAlliancesConfirm(json)
+            return make_response(jsonify({"message": "Changes sucessfully submitted"}), 200)
+        else:
+            t.updateAlliances(json)
+            return make_response(jsonify(t.updates), 201)
 
     if t.flash:
         flash(t.flash)
@@ -282,8 +292,13 @@ def prime_editor():
     t.setPrimeEffects()
 
     if request.method == 'POST':
-        t.updatePrimeEffects(request.get_json())
-        return make_response(jsonify({"message": "Prime Effects updated"}), 200)
+        json = request.get_json()
+        if 'confirmed' in json and 'true' in json['confirmed']:
+            t.updatePrimeEffectsConfirm(json)
+            return make_response(jsonify({"message": "Prime Effects updated"}), 200)
+        else:
+            t.updatePrimeEffects(json)
+            return make_response(jsonify(t.updates), 201)
 
     if t.flash:
         flash(t.flash)
@@ -359,7 +374,7 @@ def export():
         excused = '1' if score.excused else '0'
         attempts_left = '1' if score.attempts_left else '0'
         no_attempts = '1' if score.no_attempts else '0'
-        score.score = '' if score.score is None else score.score
+        tscore = '' if score.score is None else score.score
 
         output.append(str(score.war.date) + ',' +
                       str(score.player.id) + ',' + score.player.name + ',' +
@@ -367,13 +382,13 @@ def export():
                       str(score.war.opponent_id) + ',' + score.war.opponent.name + ',' +
                       score.war.leagueText() + ',' + str(score.war.tracked) + ',' +
                       str(score.war.our_score) + ',' + str(score.war.opp_score) + ',' +
-                      excused + ',' + attempts_left + ',' + no_attempts + ',' + str(score.score)
+                      excused + ',' + attempts_left + ',' + no_attempts + ',' + str(tscore)
                       )
 
-    with open(os.path.join(app.root_path, 'export.csv'), 'w') as fo:
+    with open(os.path.join(app.config['UPLOAD_FOLDER'], 'export.csv'), 'w') as fo:
         fo.write('\n'.join(output))
 
-    path = os.path.join(app.root_path, 'export.csv')
+    path = os.path.join(app.config['UPLOAD_FOLDER'], 'export.csv')
     return send_file(path, as_attachment=True)
 
 @app.route('/ml')

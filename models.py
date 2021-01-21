@@ -51,6 +51,22 @@ class Player(UserMixin, db.Model):
         else:
             return False
 
+    def updater(self):
+        update = {}
+        update['Name'] = self.name
+        update['New_Name'] = None
+        update['Reset'] = None
+        update['Officer'] = None
+        update['Alliance'] = None
+        update['OCR'] = {}
+        update['New_OCR'] = None
+        i = 0
+        for pocr in self.ocr:
+            update['OCR'][str(i)] = None
+            i += 1
+
+        return update
+
 
 class OCR(db.Model):
     dummy_id = db.Column(db.Integer(), primary_key=True)
@@ -120,6 +136,8 @@ class War(db.Model):
             r = 'Platinum'
         elif self.league == 4:
             r = 'Gold'
+        elif self.league == 3:
+            r = 'Silver'
         return r
 
 
@@ -131,6 +149,14 @@ class Alliance(db.Model):
     wars = db.relationship('War', foreign_keys='War.alliance_id')
     oppwars = db.relationship('War', foreign_keys='War.opponent_id')
 
+    def updater(self):
+        update = {}
+        update['Name'] = self.name
+        update['New_Name'] = None
+        update['Family'] = None
+
+        return update
+
 
 class Issue(db.Model):
     __tablename__ = 'issues'
@@ -141,8 +167,20 @@ class Issue(db.Model):
     comments = db.Column(db.Text())
     player = db.relationship('Player', foreign_keys='Issue.requester')
 
+
 class PrimeEffect(db.Model):
     __tablename__ = 'prime_effects'
     id = db.Column(db.Integer(), primary_key=True)
     date = db.Column(db.Date(), nullable=False)
     effects = db.Column(db.Text())
+
+    def updater(self):
+        update = {}
+        if self.date:
+            update['Date'] = self.date.isoformat()
+        else:
+            update['Date'] = ''
+        update['New_Date'] = None
+        update['Effects'] = None
+
+        return update

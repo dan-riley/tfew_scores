@@ -8,8 +8,18 @@ function show_alert(message, alert) {
     `
 }
 
+function submit_success(msg) {
+  show_alert(msg, 'success');
+  if (window.location.search.indexOf('reload=success') == -1) {
+    window.location.search += "&reload=success";
+  } else {
+    location.reload();
+  }
+}
+
 // Form submission and responses
 function initJSON(formNum, url) {
+  var updateData;
   if (window.location.search.indexOf('reload=success') > 0) {
     show_alert('Changes saved and page reloaded', 'success');
   }
@@ -17,16 +27,49 @@ function initJSON(formNum, url) {
   document.getElementById('submit').addEventListener('click', function() {
     var request = new XMLHttpRequest();
     request.addEventListener('load', function (e) {
-        if (request.status == 200) {
-          show_alert('Changes successfully saved', 'success');
-          if (window.location.search.indexOf('reload=success') == -1) {
-            window.location.search += "&reload=success";
-          } else {
-            location.reload();
+      if (request.status == 201) {
+        var html = '';
+        var header = '<thead><tr>';
+        var noheader = true;
+        for (var id in request.response) {
+          html += '<tr>';
+          for (var idx in request.response[id]) {
+            var text = ''
+            if (noheader) header += '<th>' + idx.replace('_', ' ') + '</th>';
+            if (request.response[id][idx] != null) {
+              if (typeof request.response[id][idx] === 'object') {
+                for (var idx2 in request.response[id][idx]) {
+                  var text2 = ''
+                  if (request.response[id][idx][idx2] != null) {
+                    text2 = request.response[id][idx][idx2];
+                  }
+                  text += '<div>' + text2 + '</div>';
+                }
+              } else {
+                text = request.response[id][idx];
+              }
+            }
+
+            var regex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/i;
+            var addclass = '';
+            if (text.length && regex.test(text))
+              addclass = ' class="text-nowrap"';
+            html += '<td' + addclass + '>' + text + '</td>';
           }
-        } else {
-          show_alert('Error submitting changes', 'danger');
+          html += '</tr>';
+          if (noheader) header += '</tr></thead>';
+          noheader = false;
         }
+
+        $('#confirmUpdates').html(header + html);
+        $('#updates').modal({backdrop: 'static', keyboard: false});
+        updateData = request.response;
+        updateData['confirmed'] = 'true';
+      } else if (request.status == 200) {
+        submit_success(request.response['message']);
+      } else {
+        show_alert('Error submitting changes', 'danger');
+      }
     });
 
     data = $(document.forms[formNum]).serializeObject();
@@ -34,6 +77,22 @@ function initJSON(formNum, url) {
     request.open('POST', url, true);
     request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     request.send(JSON.stringify(data));
+  });
+
+  document.getElementById('confirm').addEventListener('click', function() {
+    var request = new XMLHttpRequest();
+    request.addEventListener('load', function (e) {
+      if (request.status == 200) {
+        submit_success(request.response['message']);
+      } else {
+        show_alert('Error submitting changes', 'danger');
+      }
+    });
+
+    request.responseType = 'json';
+    request.open('POST', url, true);
+    request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    request.send(JSON.stringify(updateData));
   });
 }
 
