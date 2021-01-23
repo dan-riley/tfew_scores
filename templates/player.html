@@ -48,7 +48,7 @@
           </tr>
 
           <tr>
-            <th>{{t.player.name}}</th>
+            <th class="{{'strikeOne' if t.player.strikes == 1}} {{'strikeTwo' if t.player.strikes == 2}} {{'strikeThree' if t.player.strikes >= 3}}">{{t.player.name}}</th>
             <th>{{t.player.trackedAvg}}</th>
             <th>{{t.player.untrackedAvg}}</th>
             <th>{{t.player.primeAvg}}</th>
@@ -140,14 +140,14 @@
             </td>
 
             {% set score = t.player.scoresRange[war.id].score %}
-            {% set noAttempt = t.player.scoresRange[war.id].no_attempts %}
-            {% set attemptsLeft = t.player.scoresRange[war.id].attempts_left %}
+            {% set brokeProtocol = t.player.scoresRange[war.id].broke_protocol %}
+            {% set minorInfraction = t.player.scoresRange[war.id].minor_infraction %}
             {% set excused = t.player.scoresRange[war.id].excused %}
             {% set notInAlliance = False %}
             {% if score is not defined %}
               {% set notInAlliance = True %}
             {% endif %}
-            <td class="{{war.trackedClass()}} {{'noAttempt' if noAttempt}} {{'attemptsLeft' if attemptsLeft}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
+            <td class="{{war.trackedClass()}} {{'brokeProtocol' if brokeProtocol}} {{'minorInfraction' if minorInfraction}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
               {{score if score != None}}
             </td>
             {% endfor %}

@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.18'
+        self.version = 'v1.19'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -69,7 +69,7 @@ class TFEW():
             self.playersList = []
             self.alliancesList = []
             self.start_day = None
-            self.end_day = None
+            self.end_day = datetime.now(pytz.timezone('US/Central')).date()
 
         if dateWindow and not self.filt:
             self.end_day = datetime.now(pytz.timezone('US/Central')).date()
@@ -179,6 +179,9 @@ class TFEW():
         cyberMin = 300
         player.scoresRange = {}
 
+        # Set the number of protocol strikes for this player
+        player.setProtocol(self.alliance, self.end_day)
+
         # Get the scores and initial averages for this player
         for war in self.wars:
             score = player.score(war.id)
@@ -212,26 +215,27 @@ class TFEW():
                     if score.score < cyberMin:
                         cyberMin = score.score
 
-        # Remove the minimum scores if we have enough
-        if allCount > 3:
-            allScore -= totalMin
-            allCount -= 1
+        # If player doesn't have strikes, remove the minimum scores if we have enough
+        if player.strikes == 0:
+            if allCount > 3:
+                allScore -= totalMin
+                allCount -= 1
 
-        if untrackedCount > 3:
-            untrackedScore -= untrackedMin
-            untrackedCount -= 1
+            if untrackedCount > 3:
+                untrackedScore -= untrackedMin
+                untrackedCount -= 1
 
-        if trackedCount > 3:
-            trackedScore -= trackedMin
-            trackedCount -= 1
+            if trackedCount > 3:
+                trackedScore -= trackedMin
+                trackedCount -= 1
 
-        if primeCount > 3:
-            primeScore -= primeMin
-            primeCount -= 1
+            if primeCount > 3:
+                primeScore -= primeMin
+                primeCount -= 1
 
-        if cyberCount > 3:
-            cyberScore -= cyberMin
-            cyberCount -= 1
+            if cyberCount > 3:
+                cyberScore -= cyberMin
+                cyberCount -= 1
 
         # Get the initial averages without optional wars
         allAvg = allScore / allCount if allCount else allScore
@@ -257,6 +261,12 @@ class TFEW():
         trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
         primeAvg = primeScore / primeCount if primeCount else primeScore
         cyberAvg = cyberScore / cyberCount if cyberCount else cyberScore
+
+        # Deduct points for strikes
+        if player.strikes == 1:
+            trackedAvg -= 10
+        elif player.strikes >= 2:
+            trackedAvg -= 20
 
         # Save the final averages, rounded for display
         player.allAvg = round(allAvg)
@@ -496,19 +506,19 @@ class TFEW():
             if score.excused:
                 score.excused = False
 
-        if 'attempts_left' in fplayer:
-            if not score.attempts_left:
-                score.attempts_left = True
+        if 'minor_infraction' in fplayer:
+            if not score.minor_infraction:
+                score.minor_infraction = True
         else:
-            if score.attempts_left:
-                score.attempts_left = False
+            if score.minor_infraction:
+                score.minor_infraction = False
 
-        if 'no_attempts' in fplayer:
-            if not score.no_attempts:
-                score.no_attempts = True
+        if 'broke_protocol' in fplayer:
+            if not score.broke_protocol:
+                score.broke_protocol = True
         else:
-            if score.no_attempts:
-                score.no_attempts = False
+            if score.broke_protocol:
+                score.broke_protocol = False
 
     def updateWar(self, fwar):
         # Get the war from the database, or create a new one
@@ -569,8 +579,8 @@ class TFEW():
             for fplayer in fwar['players']:
                 if fplayer:
                     if (fplayer['score'] or 'excused' in fplayer or
-                                            'attempts_left' in fplayer or
-                                            'no_attempts' in fplayer):
+                                            'minor_infraction' in fplayer or
+                                            'broke_protocol' in fplayer):
                         newscore = Score()
                         self.updateScore(fplayer, newscore)
                         newscore.player = Player.query.get(fplayer['id'])
@@ -579,8 +589,8 @@ class TFEW():
         for fplayer in fwar['missing_players']:
             if fplayer:
                 if (fplayer['score'] or 'excused' in fplayer or
-                                        'attempts_left' in fplayer or
-                                        'no_attempts' in fplayer):
+                                        'minor_infraction' in fplayer or
+                                        'broke_protocol' in fplayer):
                     newscore = Score()
                     self.updateScore(fplayer, newscore)
                     newscore.player = Player.query.get(fplayer['id'])
@@ -675,7 +685,12 @@ class TFEW():
                 losses = 1
 
             # Setup triple spark times
-            if date(2020, 3, 24) < war.date < date(2020, 5, 13):
+            if (date(2019, 4, 24) < war.date < date(2019, 5, 2) or
+                date(2020, 3, 24) < war.date < date(2020, 5, 13) or
+                date(2020, 10, 7) < war.date < date(2020, 10, 15) or
+                date(2020, 11, 11) < war.date < date(2020, 11, 19) or
+                date(2020, 12, 16) < war.date < date(2020, 12, 24) or
+                date(2021, 1, 20) < war.date < date(2021, 1, 28)):
                 multiplier = 3
             else:
                 multiplier = 1

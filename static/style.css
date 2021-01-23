@@ -201,16 +201,28 @@ body {
   background-color: #fff70159;
 }
 
-.noAttempt {
+.brokeProtocol {
   background-color: #c5000059;
 }
 
-.attemptsLeft {
+.minorInfraction {
   background-color: #d8900d59;
 }
 
 .excused {
   background-color: #49aa0059;
+}
+
+.strikeOne {
+  background-color: #fff70159;
+}
+
+.strikeTwo {
+  background-color: #d8900d59;
+}
+
+.strikeThree {
+  background-color: #c5000059;
 }
 
 .avgScore {

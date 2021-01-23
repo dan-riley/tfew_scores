@@ -171,8 +171,8 @@
               <th class="sticky-top sorted-up" id="player_sort">Player</th>
               <th class="sticky-top sorted-none" id="score_sort">Score</th>
               <th class="sticky-top">Excused</th>
-              <th class="sticky-top">Attempts Remaining</th>
-              <th class="sticky-top">No Attempts</th>
+              <th class="sticky-top" title="Didn't use all attempts in decided war, etc.">Minor Infraction</th>
+              <th class="sticky-top" title="Rage coined, early flameout, no help, etc.">Broke Protocol</th>
             </tr>
           </thead>
 
@@ -193,15 +193,15 @@
               >
             </td>
             <td>
-              <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][attempts_left]" value="{{player.id}}"
-              {% if player.score(war.id).attempts_left %}
+              <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][minor_infraction]" value="{{player.id}}"
+              {% if player.score(war.id).minor_infraction %}
                 checked
               {% endif %}
               >
             </td>
             <td>
-              <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][no_attempts]" value="{{player.id}}"
-              {% if player.score(war.id).no_attempts %}
+              <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][broke_protocol]" value="{{player.id}}"
+              {% if player.score(war.id).broke_protocol %}
                 checked
               {% endif %}
               >
@@ -236,15 +236,15 @@
               >
             </td>
             <td>
-              <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][attempts_left]" value="{{player.id}}"
-              {% if player.score(war.id).attempts_left %}
+              <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][minor_infraction]" value="{{player.id}}"
+              {% if player.score(war.id).minor_infraction %}
                 checked
               {% endif %}
               >
             </td>
             <td>
-              <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][no_attempts]" value="{{player.id}}"
-              {% if player.score(war.id).no_attempts %}
+              <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][broke_protocol]" value="{{player.id}}"
+              {% if player.score(war.id).broke_protocol %}
                 checked
               {% endif %}
               >

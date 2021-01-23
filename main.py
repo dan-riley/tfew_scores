@@ -369,11 +369,11 @@ def export():
     output = []
     output.append('Date,Player ID,Player Name,Alliance ID,Alliance Name,'
                   'Opponent ID,Opponent Name,League,Tracked,Our Score,Opp Score,'
-                  'Excused,Attempts Left,No Attempts,Score')
+                  'Excused,Minor Infraction,Broke Protocol,Score')
     for score in scores:
         excused = '1' if score.excused else '0'
-        attempts_left = '1' if score.attempts_left else '0'
-        no_attempts = '1' if score.no_attempts else '0'
+        minor_infraction = '1' if score.minor_infraction else '0'
+        broke_protocol = '1' if score.broke_protocol else '0'
         tscore = '' if score.score is None else score.score
 
         output.append(str(score.war.date) + ',' +
@@ -382,7 +382,7 @@ def export():
                       str(score.war.opponent_id) + ',' + score.war.opponent.name + ',' +
                       score.war.leagueText() + ',' + str(score.war.tracked) + ',' +
                       str(score.war.our_score) + ',' + str(score.war.opp_score) + ',' +
-                      excused + ',' + attempts_left + ',' + no_attempts + ',' + str(tscore)
+                      excused + ',' + minor_infraction + ',' + broke_protocol + ',' + str(tscore)
                       )
 
     with open(os.path.join(app.config['UPLOAD_FOLDER'], 'export.csv'), 'w') as fo:
@@ -413,14 +413,14 @@ def ml():
     for i in range(1, num_wars + 1):
         si = '_' + str(i)
         cols += ('league' + si + ',tracked' + si + ',our_score' + si + ',opp_score' + si +
-                 ',attempts_left' + si + ',no_attempts' + si + ',score' + si + ',')
+                 ',minor_infraction' + si + ',broke_protocol' + si + ',score' + si + ',')
     train_full.append(cols + 'tracked_avg,' + 'pred_score')
     train_valid.append(cols + 'tracked_avg,' + 'pred_score')
     valid.append(cols + 'tracked_avg,' + 'pred_score')
     # Header for averages version
     cols = 'pid,our_score,opp_score,all,tracked,optional,untracked,league_1,league_2,league_3,league_4,'
-    cols += 'league_5,league_6,league_7,league_8,attempts_left_tracked,no_attempts_tracked,'
-    cols += 'attempts_left_opt,no_attempts_opt,attempts_left_untracked,no_attempts_untracked,'
+    cols += 'league_5,league_6,league_7,league_8,minor_infraction_tracked,broke_protocol_tracked,'
+    cols += 'minor_infraction_opt,broke_protocol_opt,minor_infraction_untracked,broke_protocol_untracked,'
     train_avg.append(cols + 'tracked_avg,' + 'pred_score')
     train_avg_valid.append(cols + 'tracked_avg,' + 'pred_score')
     valid_avg.append(cols + 'tracked_avg,' + 'pred_score')
@@ -454,36 +454,36 @@ def ml():
                 tracked_count = 0
                 optional_score = 0
                 optional_count = 0
-                attempts_left_tracked = 0
-                no_attempts_tracked = 0
-                attempts_left_untracked = 0
-                no_attempts_untracked = 0
-                attempts_left_optional = 0
-                no_attempts_optional = 0
+                minor_infraction_tracked = 0
+                broke_protocol_tracked = 0
+                minor_infraction_untracked = 0
+                broke_protocol_untracked = 0
+                minor_infraction_optional = 0
+                broke_protocol_optional = 0
                 cidx = idx - 1
                 while count < num_wars and cidx >= 0:
                     score = player.scores[cidx]
                     if not (score.excused and (score.score is None or score.score < 90)):
                         count += 1
                         # Correct for None in these
-                        attempts_left = 1 if score.attempts_left else 0
-                        no_attempts = 1 if score.no_attempts else 0
+                        minor_infraction = 1 if score.minor_infraction else 0
+                        broke_protocol = 1 if score.broke_protocol else 0
 
                         if score.war.tracked == 1:
                             tracked_score += score.score
                             tracked_count += 1
-                            attempts_left_tracked += attempts_left
-                            no_attempts_tracked += no_attempts
+                            minor_infraction_tracked += minor_infraction
+                            broke_protocol_tracked += broke_protocol
                         elif score.war.tracked == 0:
                             untracked_score += score.score
                             untracked_count += 1
-                            attempts_left_untracked += attempts_left
-                            no_attempts_untracked += no_attempts
+                            minor_infraction_untracked += minor_infraction
+                            broke_protocol_untracked += broke_protocol
                         elif score.war.tracked == 2:
                             optional_score += score.score
                             optional_count += 1
-                            attempts_left_optional += attempts_left
-                            no_attempts_optional += no_attempts
+                            minor_infraction_optional += minor_infraction
+                            broke_protocol_optional += broke_protocol
 
                         # Total war totals
                         our_score += score.war.our_score
@@ -503,7 +503,7 @@ def ml():
 
                         x += (str(score.war.league) + ',' + tracked + ',' +
                               str(score.war.our_score) + ',' + str(score.war.opp_score) + ',' +
-                              str(attempts_left) + ',' + str(no_attempts) + ',' + str(score.score) + ','
+                              str(minor_infraction) + ',' + str(broke_protocol) + ',' + str(score.score) + ','
                              )
 
                     cidx -= 1
@@ -512,13 +512,13 @@ def ml():
                     if tracked_count:
                         tracked_avg = tracked_score / tracked_count
                         str_tracked_avg = str(int(tracked_avg))
-                        attempts_left_tracked_avg = str(attempts_left_tracked / tracked_count)
-                        no_attempts_tracked_avg = str(no_attempts_tracked / tracked_count)
+                        minor_infraction_tracked_avg = str(minor_infraction_tracked / tracked_count)
+                        broke_protocol_tracked_avg = str(broke_protocol_tracked / tracked_count)
                     else:
                         tracked_avg = '0'
                         str_tracked_avg = '0'
-                        attempts_left_tracked_avg = '0'
-                        no_attempts_tracked_avg = '0'
+                        minor_infraction_tracked_avg = '0'
+                        broke_protocol_tracked_avg = '0'
 
                     # Add to the full training data
                     train_full.append(pid + x + str_tracked_avg + ',' + str(pred_score.score))
@@ -528,21 +528,21 @@ def ml():
                     tracked_avg = str(tracked_avg)
                     if untracked_count:
                         untracked_avg = str(untracked_score / untracked_count)
-                        attempts_left_untracked_avg = str(attempts_left_untracked / untracked_count)
-                        no_attempts_untracked_avg = str(no_attempts_untracked / untracked_count)
+                        minor_infraction_untracked_avg = str(minor_infraction_untracked / untracked_count)
+                        broke_protocol_untracked_avg = str(broke_protocol_untracked / untracked_count)
                     else:
                         untracked_avg = '0'
-                        attempts_left_untracked_avg = '0'
-                        no_attempts_untracked_avg = '0'
+                        minor_infraction_untracked_avg = '0'
+                        broke_protocol_untracked_avg = '0'
 
                     if optional_count:
                         optional_avg = str(optional_score / optional_count)
-                        attempts_left_opt_avg = str(attempts_left_optional / optional_count)
-                        no_attempts_opt_avg = str(no_attempts_optional / optional_count)
+                        minor_infraction_opt_avg = str(minor_infraction_optional / optional_count)
+                        broke_protocol_opt_avg = str(broke_protocol_optional / optional_count)
                     else:
                         optional_avg = '0'
-                        attempts_left_opt_avg = '0'
-                        no_attempts_opt_avg = '0'
+                        minor_infraction_opt_avg = '0'
+                        broke_protocol_opt_avg = '0'
 
                     # Add
                     our_avg = our_score / count
@@ -558,9 +558,9 @@ def ml():
                     avg_line = (pid + str(our_avg) + ',' + str(opp_avg) + ',' + all_score + ',' +
                                 tracked_avg + ',' + optional_avg + ',' + untracked_avg + ',' +
                                 league_text +
-                                attempts_left_tracked_avg + ',' + no_attempts_tracked_avg + ',' +
-                                attempts_left_opt_avg + ',' + no_attempts_opt_avg + ',' +
-                                attempts_left_untracked_avg + ',' + no_attempts_untracked_avg + ',' +
+                                minor_infraction_tracked_avg + ',' + broke_protocol_tracked_avg + ',' +
+                                minor_infraction_opt_avg + ',' + broke_protocol_opt_avg + ',' +
+                                minor_infraction_untracked_avg + ',' + broke_protocol_untracked_avg + ',' +
                                 str_tracked_avg + ',' + str(pred_score.score))
 
                     train_avg.append(avg_line)
@@ -814,9 +814,9 @@ def importSectorScores():
             newscore = Score()
             newscore.score = score
             if attempts == 3 and score == 0:
-                newscore.no_attempts = True
+                newscore.broke_protocol = True
             elif attempts > 0:
-                newscore.attempts_left = True
+                newscore.minor_infraction = True
             newscore.player = playersDict[name]
             newwar.scores.append(newscore)
 

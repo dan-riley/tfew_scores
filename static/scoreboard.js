@@ -7,8 +7,11 @@ var Main = (function() {
   var untrackedOrder;
   var primeOrder;
   var allOrder;
+  var strikeOrder;
   var lastSort = 2;
   var skip = 12;
+
+  // TODO Fix secondary sort order...look back through chat
 
   document.addEventListener('DOMContentLoaded', function(event) {
     summary_table = document.getElementById('summary_table');
@@ -91,6 +94,16 @@ var Main = (function() {
       lastSort = 7;
       sortTable(summary_table, lastSort, allOrder, skip)
     });
+
+    document.getElementById('strike_sort').addEventListener('click', function() {
+      if (lastSort == 8)
+        strikeOrder = (strikeOrder == 'asc') ? 'desc' : 'asc';
+      else
+        strikeOrder = 'desc';
+      lastSort = 8;
+      sortTable(summary_table, lastSort, strikeOrder, skip)
+    });
+
   }
 
   function toggleAverages(table) {
@@ -101,7 +114,7 @@ var Main = (function() {
         this.classList.add('col-collapse');
         this.classList.remove('col-expand');
         display = 'table-cell';
-        colSpan = 7;
+        colSpan = 8;
       } else {
         this.classList.add('col-expand');
         this.classList.remove('col-collapse');
@@ -120,6 +133,7 @@ var Main = (function() {
         for (var i = 3; i < 6; i++) {
           row.children[i].style.display = display;
         }
+        row.children[7].style.display = display;
       });
     });
   }

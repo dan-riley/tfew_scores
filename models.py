@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
 
 db = SQLAlchemy()
 
@@ -10,8 +11,8 @@ class Score(db.Model):
     war_id = db.Column(db.Integer(), db.ForeignKey('wars.id'), primary_key=True)
     score = db.Column(db.Integer())
     excused = db.Column(db.Boolean())
-    attempts_left = db.Column(db.Boolean())
-    no_attempts = db.Column(db.Boolean())
+    minor_infraction = db.Column(db.Boolean())
+    broke_protocol = db.Column(db.Boolean())
     player = db.relationship('Player', back_populates='scores')
     war = db.relationship('War', back_populates='scores')
 
@@ -28,9 +29,29 @@ class Player(UserMixin, db.Model):
     wars = db.relationship('War', secondary='scores', order_by='War.date')
     ocr = db.relationship('OCR', backref='player')
     alliance = db.relationship('Alliance', foreign_keys='Player.alliance_id')
+    strikes = 0
 
     def score(self, war_id):
         return Score.query.filter(Score.player_id == self.id, Score.war_id == war_id).first()
+
+    def setProtocol(self, palliance_id, date):
+        # Find the number of strikes in the last 90 days, only in this alliance
+        self.strikes = 0
+        # Don't count infractions before this date
+        protocolStart = datetime(2021,1,22).date()
+        end_day = date
+        if isinstance(end_day, str):
+            end_day = datetime.strptime(end_day, "%Y-%m-%d")
+        start_day = end_day - timedelta(days=90)
+        if start_day < protocolStart:
+            start_day = protocolStart
+
+        # Find all tracked wars in the time period for this player, and count strikes
+        pwars = War.query.join(Score).join(Player).filter(Player.id == self.id, War.alliance_id == palliance_id, War.tracked == 1, War.date.between(start_day, end_day)).all()
+        for war in pwars:
+            pscore = self.score(war.id)
+            if pscore.broke_protocol:
+                self.strikes += 1
 
     def alliances(self):
         alliances = []
