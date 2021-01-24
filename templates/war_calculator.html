@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='war_calculator.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}War Calculator{% endblock %}
+{% block header %}TFEW War Calculator{% endblock %}
+{% block nav_utilities %}active{% endblock %}
+{% block nav_war_calculator %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+
+{% block content %}
+      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".calcHelp" aria-expanded="false" aria-controls="calcHelp">Help</button>
+      <button class="btn btn-primary" type="button" id="enableLow">Enable Extra Players</button>
+      <div class="collapse calcHelp">
+        Enter the current scores (as displayed in game) for each team.  Then for each player who has NOT completed their runs, input their current status.  The form should look similar to war leaderboard screen!  If the next attempt is expected to be Normal Mode instead of Hard, click the blue H to toggle.  This will set that attempt to Normal, but later bases will be Hard again.
+        <br><br>
+        If one team has extra players, click Enable Extra Players.  Unfortunately this is more complicated!  For each player that hasn't finished, enter their current score.  If that player's score doesn't currently count in the game (it is grayed out and at the bottom), click the '-' so the site knows that their current score is not included in the total yet.  At the bottom, enter the current lowest scores of players who have COMPLETED their attempts, to automatically remove the appropriate scores.  If a completed player is already grayed out in game, you don't have to add it, as it won't make a difference, but you can.  <b>NOTE! The number of extra scores at the bottom MUST equal the number of extra scores in game, unless those scores are complete and guaranteed to not count!</b>
+        <br><br>
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".example" aria-expanded="false" aria-controls="example">Show Example</button>
+        <div class="collapse example">
+          <img src="{{url_for('static', filename='war_calculator_gameshot.jpg')}}" width="49%">
+          <img src="{{url_for('static', filename='war_calculator_example.jpg')}}" width="49%">
+        </div>
+      </div>
+      <form>
+        <table class="table table-sm w-auto sticky-top" id="war_input_table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Us</th>
+              <th>Them</th>
+            </tr>
+            <tr>
+              <th>Current</th>
+              <th>
+                <input class="form-control center" type="number" id="our_total" value="" title="Our current point total displayed on the war screen">
+              </th>
+              <th>
+                <input class="form-control center" type="number" id="opp_total" value="" title="Their current point total displayed on the war screen">
+              </th>
+            </tr>
+            <tr>
+              <th>Max</th>
+              <th class="center bigtext sticky-top" id="our_max"></th>
+              <th class="center bigtext sticky-top" id="opp_max"></th>
+            </tr>
+          </thead>
+          <tbody id="scores">
+          </tbody>
+          <tbody id="low_scores">
+          </tbody>
+        </table>
+      </form>
+      <button class="btn btn-primary" type="button" id="addScore">Add Score</button>
+      <button class="btn btn-primary low hide" type="button" id="addLow">Add Low Score</button>
+      <div class="row">&nbsp;</div>
+      <div class="row">&nbsp;</div>
+
+{% endblock %}

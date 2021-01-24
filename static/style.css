@@ -54,9 +54,13 @@ body {
   background: white;
 }
 
-#ore_input_table {
+#ore_input_table, #war_input_table {
   text-align: center;
   background: white;
+}
+
+#war_input_table thead th {
+  vertical-align: middle;
 }
 
 #issues_table {
@@ -80,6 +84,10 @@ body {
 
 .table-responsive {
   overflow-x: visible;
+}
+
+.bigtext {
+  font-size: 1.75em;
 }
 
 .left {
@@ -366,6 +374,50 @@ body {
   width: 1.0em;
   height: 1.0em;
   vertical-align: sub;
+}
+
+.war_calc {
+  text-align: left;
+}
+
+.war_calc label {
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  text-align: center;
+  border: 1px solid #666;
+  line-height: 2em;
+  margin: 3px;
+  cursor: pointer;
+}
+
+.calc-checked {
+  background: #999;
+  color: #ffffff;
+}
+
+.calc-selected {
+  background: #ddd;
+  color: #ffffff;
+}
+
+.calc-selected-loss {
+  background: #c14040;
+  color: #ffffff;
+}
+
+.hard-mode {
+  background: #006ddd;
+  color: #ffffff;
+}
+
+.normal-mode {
+  background: #0cc40c;
+  color: #ffffff;
+}
+
+.hide {
+  display: none!important;
 }
 
 .edit-score {

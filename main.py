@@ -310,6 +310,11 @@ def prime_editor():
 def ore_calculator():
     return render_template('ore_calculator.html', t=t)
 
+@app.route('/war_calculator')
+@login_required
+def war_calculator():
+    return render_template('war_calculator.html', t=t)
+
 @app.route('/issues', methods=['GET', 'POST'])
 @login_required
 def issues():

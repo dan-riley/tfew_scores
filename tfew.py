@@ -16,7 +16,7 @@ class TFEW():
         self.war = None
         self.playerName = ''
         self.start_day = None
-        self.end_day = None
+        self.end_day = datetime.now(pytz.timezone('US/Central')).date()
 
         self.alliances = []
         self.alliancesList = []
@@ -56,6 +56,9 @@ class TFEW():
 
             if self.start_day or self.end_day:
                 self.filt.append(War.date.between(self.start_day, self.end_day))
+
+            if not self.end_day:
+                self.end_day = datetime.now(pytz.timezone('US/Central')).date()
         else:
             # Set to logged in user's alliance, and player id if requested
             self.alliance = self.user.alliance_id
@@ -292,8 +295,9 @@ class TFEW():
                 changed = True
 
             # Edit the name
-            if player.name != fplayer['name']:
-                pupdate['New_Name'] = fplayer['name']
+            if player.name != fplayer['name'].strip():
+                # TODO add a check if the new name already exists
+                pupdate['New_Name'] = fplayer['name'].strip()
                 changed = True
 
             # Set whether the player is an officer, but only if they've logged in before
@@ -426,8 +430,8 @@ class TFEW():
 
             aupdate = alliance.updater()
             # Edit the name
-            if alliance.name != falliance['name']:
-                aupdate['New_Name'] = falliance['name']
+            if alliance.name != falliance['name'].strip():
+                aupdate['New_Name'] = falliance['name'].strip()
                 changed = True
 
             # Set whether the alliance is a family alliance and so active

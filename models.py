@@ -41,7 +41,7 @@ class Player(UserMixin, db.Model):
         protocolStart = datetime(2021,1,22).date()
         end_day = date
         if isinstance(end_day, str):
-            end_day = datetime.strptime(end_day, "%Y-%m-%d")
+            end_day = datetime.strptime(end_day, "%Y-%m-%d").date()
         start_day = end_day - timedelta(days=90)
         if start_day < protocolStart:
             start_day = protocolStart
