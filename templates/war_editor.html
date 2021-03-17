@@ -22,8 +22,7 @@
                 {% for alliance in t.alliances %}
                     {% if alliance.active %}
                 <option value="{{alliance.id}}"
-                {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
-                </option>
+                {%- if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}</option>
                     {% endif %}
                 {% endfor %}
               </select>
@@ -36,8 +35,7 @@
                 <option></option>
                 {% for opponent in t.alliances %}
                 <option value="{{opponent.id}}"
-                {% if opponent.id == war.opponent.id %} selected {% endif %}>{{opponent.name}}
-                </option>
+                {%- if opponent.id == war.opponent.id %} selected {% endif %}>{{opponent.name}}</option>
                 {% endfor %}
               </select>
             </td>
@@ -55,17 +53,17 @@
             <td>
               <select class="custom-select" name="league">
                 <option value="8"
-                {% if war.league == 8 %} selected {% endif %}>Prime</option>
+                {%- if war.league == 8 %} selected {% endif %}>Prime</option>
                 <option value="7"
-                {% if war.league == 7 %} selected {% endif %}>Cybertron</option>
+                {%- if war.league == 7 %} selected {% endif %}>Cybertron</option>
                 <option value="6"
-                {% if war.league == 6 %} selected {% endif %}>Caminus</option>
+                {%- if war.league == 6 %} selected {% endif %}>Caminus</option>
                 <option value="5"
-                {% if war.league == 5 %} selected {% endif %}>Platinum</option>
+                {%- if war.league == 5 %} selected {% endif %}>Platinum</option>
                 <option value="4"
-                {% if war.league == 4 %} selected {% endif %}>Gold</option>
+                {%- if war.league == 4 %} selected {% endif %}>Gold</option>
                 <option value="3"
-                {% if war.league == 3 %} selected {% endif %}>Silver</option>
+                {%- if war.league == 3 %} selected {% endif %}>Silver</option>
               </select>
             </td>
           </tr>
@@ -74,11 +72,11 @@
             <td>
               <select class="custom-select" name="tracked">
                 <option value="0"
-                {% if war.tracked == 0 %} selected {% endif %}>No</option>
+                {%- if war.tracked == 0 %} selected {% endif %}>No</option>
                 <option value="1"
-                {% if war.tracked == 1 %} selected {% endif %}>Yes</option>
+                {%- if war.tracked == 1 %} selected {% endif %}>Yes</option>
                 <option value="2"
-                {% if war.tracked == 2 %} selected {% endif %}>Optional</option>
+                {%- if war.tracked == 2 %} selected {% endif %}>Optional</option>
               </select>
             </td>
           </tr>
@@ -86,9 +84,9 @@
             <th>Date</th>
             <td>
               <input class="form-control" type="date" name="date" value=
-              {% if war.date %} "{{war.date}}"
-              {% else %} "{{today}}"
-              {% endif %}
+              {%- if war.date %} "{{war.date}}"
+              {%- else %} "{{today}}"
+              {%- endif -%}
               >
             </td>
           </tr>
@@ -111,7 +109,7 @@
                 <option></option>
                 {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
-                {% if war.b1 == player.id %} selected {% endif %}>{{player.name}}</option>
+                {%- if war.b1 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
               </select>
             </td>
@@ -123,7 +121,7 @@
                 <option></option>
                 {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
-                {% if war.b2 == player.id %} selected {% endif %}>{{player.name}}</option>
+                {%- if war.b2 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
               </select>
             </td>
@@ -135,7 +133,7 @@
                 <option></option>
                 {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
-                {% if war.b3 == player.id %} selected {% endif %}>{{player.name}}</option>
+                {%- if war.b3 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
               </select>
             </td>
@@ -147,7 +145,7 @@
                 <option></option>
                 {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
-                {% if war.b4 == player.id %} selected {% endif %}>{{player.name}}</option>
+                {%- if war.b4 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
               </select>
             </td>
@@ -159,7 +157,7 @@
                 <option></option>
                 {% for player in t.players + missing_players %}
                 <option value="{{player.id}}"
-                {% if war.b5 == player.id %} selected {% endif %}>{{player.name}}</option>
+                {%- if war.b5 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
               </select>
             </td>
@@ -187,23 +185,17 @@
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][excused]" value="{{player.id}}"
-              {% if player.score(war.id).excused %}
-                checked
-              {% endif %}
+              {%- if player.score(war.id).excused %} checked {% endif -%}
               >
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][minor_infraction]" value="{{player.id}}"
-              {% if player.score(war.id).minor_infraction %}
-                checked
-              {% endif %}
+              {%- if player.score(war.id).minor_infraction %} checked {% endif -%}
               >
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][broke_protocol]" value="{{player.id}}"
-              {% if player.score(war.id).broke_protocol %}
-                checked
-              {% endif %}
+              {%- if player.score(war.id).broke_protocol %} checked {% endif -%}
               >
             </td>
           </tr>
@@ -230,23 +222,17 @@
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][excused]" value="{{player.id}}"
-              {% if player.score(war.id).excused %}
-                checked
-              {% endif %}
+              {%- if player.score(war.id).excused %} checked {% endif -%}
               >
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][minor_infraction]" value="{{player.id}}"
-              {% if player.score(war.id).minor_infraction %}
-                checked
-              {% endif %}
+              {%- if player.score(war.id).minor_infraction %} checked {% endif -%}
               >
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][broke_protocol]" value="{{player.id}}"
-              {% if player.score(war.id).broke_protocol %}
-                checked
-              {% endif %}
+              {%- if player.score(war.id).broke_protocol %} checked {% endif -%}
               >
             </td>
           </tr>

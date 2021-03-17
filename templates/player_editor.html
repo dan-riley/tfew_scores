@@ -22,8 +22,7 @@
               {% for alliance in t.alliances %}
                 {% if alliance.active %}
               <option value="{{alliance.id}}"
-              {% if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}
-              </option>
+              {%- if t.alliance == alliance.id %} selected {% endif %}>{{alliance.name}}</option>
                 {% endif %}
               {% endfor %}
             </select>
@@ -49,9 +48,7 @@
             <td></td>
             <td>
               <input class="form-control" type="checkbox" name="players[{{player.id}}][reset]" value="{{player.id}}"
-              {% if not player.password_hash %}
-                disabled
-              {% endif %}
+              {%- if not player.password_hash %} disabled {% endif -%}
               >
             </td>
             <td>
@@ -60,12 +57,8 @@
             </td>
             <td>
               <input class="form-control" type="checkbox" name="players[{{player.id}}][officer]" value="{{player.id}}"
-              {% if player.officer %}
-                checked
-              {% endif %}
-              {% if not player.password_hash %}
-                disabled
-              {% endif %}
+              {%- if player.officer %} checked {% endif -%}
+              {%- if not player.password_hash %} disabled {% endif -%}
               >
             </td>
             <td>
@@ -73,8 +66,7 @@
                 {% for alliance in t.alliances %}
                   {% if alliance.active or alliance.id == 0 %}
                 <option value="{{alliance.id}}"
-                {% if player.alliance_id == alliance.id %} selected {% endif %}>{{alliance.name}}
-                </option>
+                {%- if player.alliance_id == alliance.id %} selected {% endif %}>{{alliance.name}}</option>
                   {% endif %}
                 {% endfor %}
               </select>
@@ -95,7 +87,6 @@
                 </td>
               {% endif %}
             {% endfor %}
-
             <td colspan="100"></td>
           </tr>
           {% endfor %}

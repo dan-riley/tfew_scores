@@ -132,13 +132,12 @@
               {{war.our_score}}-{{war.opp_score}}
             </td>
             <td class="{{war.winClass()}} {{war.trackedClass()}}">
-              {{ 'B1' if war.b1 == t.player.id }}
-              {{ 'B2' if war.b2 == t.player.id }}
-              {{ 'B3' if war.b3 == t.player.id }}
-              {{ 'B4' if war.b4 == t.player.id }}
-              {{ 'B5' if war.b5 == t.player.id }}
+              {{- 'B1' if war.b1 == t.player.id }}
+              {{- 'B2' if war.b2 == t.player.id }}
+              {{- 'B3' if war.b3 == t.player.id }}
+              {{- 'B4' if war.b4 == t.player.id }}
+              {{- 'B5' if war.b5 == t.player.id }}
             </td>
-
             {% set score = t.player.scoresRange[war.id].score %}
             {% set brokeProtocol = t.player.scoresRange[war.id].broke_protocol %}
             {% set minorInfraction = t.player.scoresRange[war.id].minor_infraction %}
@@ -150,8 +149,8 @@
             <td class="{{war.trackedClass()}} {{'brokeProtocol' if brokeProtocol}} {{'minorInfraction' if minorInfraction}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}}">
               {{score if score != None}}
             </td>
-            {% endfor %}
           </tr>
+          {% endfor %}
         </table>
       </div>
 {% endblock %}

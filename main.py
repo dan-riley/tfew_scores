@@ -20,6 +20,8 @@ login_manager = LoginManager(app)
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'mp4', 'mov'])
 app.config.from_object('config.Config')
 app.config.from_pyfile('config.py')
+app.jinja_env.lstrip_blocks = True
+app.jinja_env.trim_blocks = True
 db.init_app(app)
 login_manager.init_app(app)
 
@@ -713,7 +715,7 @@ def importSectorScores():
         alliancesDict = dict(zip([alliance.name for alliance in alliances], alliances))
 
     html = []
-    with open(os.path.join(app.root_path, 'data/one-wars-scores.csv'), 'r') as f:
+    with open(os.path.join(app.root_path, 'data/vector_scores.csv'), 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         for row in csv_reader:
             name = row[1].strip()
