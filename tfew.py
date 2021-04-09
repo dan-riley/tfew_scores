@@ -295,9 +295,13 @@ class TFEW():
                 changed = True
 
             # Edit the name
-            if player.name != fplayer['name'].strip():
-                # TODO add a check if the new name already exists
-                pupdate['New_Name'] = fplayer['name'].strip()
+            newname = fplayer['name'].strip()
+            if newname and player.name != newname:
+                if newname in self.playersList:
+                    pupdate['New_Name'] = 'New name already exists!'
+                    pupdate['error'] = True
+                else:
+                    pupdate['New_Name'] = newname
                 changed = True
 
             # Set whether the player is an officer, but only if they've logged in before
@@ -430,8 +434,14 @@ class TFEW():
 
             aupdate = alliance.updater()
             # Edit the name
-            if alliance.name != falliance['name'].strip():
-                aupdate['New_Name'] = falliance['name'].strip()
+            newname = falliance['name'].strip()
+
+            if alliance.name != newname:
+                if newname in self.alliancesList:
+                    aupdate['New_Name'] = 'New name already exists!'
+                    aupdate['error'] = True
+                else:
+                    aupdate['New_Name'] = newname
                 changed = True
 
             # Set whether the alliance is a family alliance and so active
@@ -534,6 +544,10 @@ class TFEW():
         if fwar['opponent_id'] != '':
             war.opponent_id = fwar['opponent_id']
         else:
+            # TODO quick check to prevent blank names.  Need full error checking on this page!
+            if fwar['opponent_new'].strip() == '':
+                return
+
             opponent = getIDbyName(Alliance, fwar['opponent_new'])
             if opponent:
                 war.opponent_id = opponent

@@ -31,9 +31,14 @@ function initJSON(formNum, url) {
         var html = '';
         var header = '<thead><tr>';
         var noheader = true;
+        var disable = false;
         for (var id in request.response) {
           html += '<tr>';
           for (var idx in request.response[id]) {
+            if (idx == 'error') {
+              disable = true;
+              continue;
+            }
             var text = ''
             if (noheader) header += '<th>' + idx.replace('_', ' ') + '</th>';
             if (request.response[id][idx] != null) {
@@ -63,6 +68,7 @@ function initJSON(formNum, url) {
 
         $('#confirmUpdates').html(header + html);
         $('#updates').modal({backdrop: 'static', keyboard: false});
+        $('#confirm').prop('disabled', disable);
         updateData = request.response;
         updateData['confirmed'] = 'true';
       } else if (request.status == 200) {
