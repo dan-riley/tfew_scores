@@ -17,17 +17,17 @@ var WarEditor = (function() {
 
     editor_table = document.getElementById('editor_table');
     addSortListeners();
+    addScoreListeners(players);
 
     // Setup auto-totaler for our score
     for (var i=0; i < players.length; i++) {
       players[i].addEventListener('blur', function() {
-        var total = 0;
-        for (var i=0; i < players.length; i++) {
-          if (parseInt(players[i].value))
-            total += parseInt(players[i].value)
-        }
+        totalScores();
+      });
 
-        document.getElementsByName('our_score')[0].value = total;
+      players[i].addEventListener('dblclick', function() {
+        if (this.value == '')
+          this.value = 300;
       });
     }
 
@@ -38,6 +38,16 @@ var WarEditor = (function() {
       window.location.href = '/war_editor?alliance_id=' + this.value;
     });
   });
+
+  function totalScores() {
+    var total = 0;
+    for (var i=0; i < players.length; i++) {
+      if (parseInt(players[i].value))
+        total += parseInt(players[i].value)
+    }
+
+    document.getElementsByName('our_score')[0].value = total;
+  }
 
   function removeRow() {
     var row = document.getElementById('missingPlayersButtonRow');
@@ -64,6 +74,22 @@ var WarEditor = (function() {
         scoreOrder = 'desc';
       lastSort = 2;
       sortTable(editor_table, lastSort, scoreOrder)
+    });
+  }
+
+  function addScoreListeners(players) {
+    document.getElementById('setAll300').addEventListener('click', function() {
+      for (var i=0; i < players.length; i++) {
+        players[i].value = 300;
+      }
+      totalScores();
+    });
+
+    document.getElementById('resetAll').addEventListener('click', function() {
+      for (var i=0; i < players.length; i++) {
+        players[i].value = '';
+      }
+      totalScores();
     });
   }
 })();
