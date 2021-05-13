@@ -22,6 +22,11 @@ var WarEditor = (function() {
     // Setup auto-totaler for our score
     for (var i=0; i < players.length; i++) {
       players[i].addEventListener('blur', function() {
+        if (this.value % 5 != 0)
+          this.style.backgroundColor = 'red';
+        else if (this.style.backgroundColor == 'red')
+          this.style.backgroundColor = '';
+
         totalScores();
       });
 
