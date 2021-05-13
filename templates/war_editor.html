@@ -93,13 +93,13 @@
           <tr>
             <th>Opponent Score</th>
             <td>
-              <input class="form-control" type="number" name="opp_score" value="{{war.opp_score}}">
+              <input class="form-control" type="number" name="opp_score" value="{{war.opp_score}}" step="5" min="0" max="12000">
             </td>
           </tr>
           <tr>
             <th>Our Score</th>
             <td>
-              <input class="form-control" type="number" name="our_score" value="{{war.our_score}}">
+              <input class="form-control" type="number" name="our_score" value="{{war.our_score}}" step="5" min="0" max="12000">
             </td>
           </tr>
           <tr>
@@ -185,7 +185,7 @@
               {{player.name}}
             </td>
             <td>
-              <input class="form-control edit-score" type="number" name="players[{{player.id}}][score]" value="{{player.score(war.id).score}}">
+              <input class="form-control edit-score" type="number" name="players[{{player.id}}][score]" value="{{player.score(war.id).score}}" step="5" min="0" max="300">
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][excused]" value="{{player.id}}"
@@ -222,7 +222,7 @@
               {{player.name}}
             </td>
             <td>
-              <input class="form-control" type="number" name="missing_players[{{player.id}}][score]" value="{{player.score(war.id).score}}">
+              <input class="form-control" type="number" name="missing_players[{{player.id}}][score]" value="{{player.score(war.id).score}}" step="5" min="0" max="300">
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][excused]" value="{{player.id}}"
