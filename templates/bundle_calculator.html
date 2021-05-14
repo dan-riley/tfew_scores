@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='bundle_calculator.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}Bundle Calculator{% endblock %}
+{% block header %}TFEW Bundle Calculator{% endblock %}
+{% block nav_utilities %}active{% endblock %}
+{% block nav_bundle %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+
+{% block content %}
+      Enter data for only the time period you're looking at.  Examples:  Use the entire event to get 60,000 points, enter 60,000 total points and 72 hours.  If you want to reach the goal in 60 hours, only enter that.  If the event has started, and you want to get to 60,000 points and you already have 10,000, only enter 50,000 and the number of hours you have left to complete it, along with your current fuel.
+      <br />
+      <form>
+        <table class="table table-sm w-auto" id="starting_input_table">
+          <thead>
+            <tr>
+              <th>Total Points</th>
+              <th>Total Hours</th>
+              <th>Points per Battle</th>
+              <th>Loss Rate</th>
+              <th>Starting Fuel</th>
+              <th>Starting Coins</th>
+            </tr>
+          </thead>
+          <tr>
+            <td>
+              <input class="form-control" type="number" id="total_points" value="75000" title="Total number of points desired during the timeframe.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="total_hours" value="65" title="Number of hours to complete the point goal.  Default of 65 hours to allow a late start and early finish.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="points_per" value="190" title="Expected average points per battle.  Typical values: Z13 = 160, Z14 = 190, Z15 = 220">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="loss_rate" value="0" title="Expected loss rate to add some headroom.  Enter as percentage, so if you expect to lose 10 percent of your battles, enter '10'.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="starting_fuel" value="50" title="Amount of fuel you will start with (usually 50 at the beginning of the event).  If calculating after the event starts, value is probably less.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="starting_coins" value="0" title="Number of coins you have to start with.">
+            </td>
+          </tr>
+        </table>
+
+        <b>Total battles needed:</b> <span id="total_battles"></span>
+        <br/>
+        <b>Free battles:</b> <span id="free_battles"></span>
+        <br />
+        <b>Remaining battles needed:</b> <span id="remaining_battles"></span>
+        <br/>
+        <b>Remaining fuel needed:</b> <span id="remaining_fuel"></span>
+        <br/>
+        <b>Coins needed for 1 bot / 2 bots / 3 bots:</b> <span id="bots_coins"></span>
+        <br />
+        <br/>
+
+        Select up to 5 sets of bundle combinations, with up to 5 bundles in each set.
+        <br />
+        <table class="table table-sm w-auto" id="bundle_input_table">
+          <thead>
+            <tr>
+              <th>Set 1</th>
+              <th>Set 2</th>
+              <th>Set 3</th>
+              <th>Set 4</th>
+              <th>Set 5</th>
+            </tr>
+          </thead>
+          {% for i in range(0,5) %}
+          <tr>
+            {% for j in range(0,5) %}
+            <td>
+              <select class="custom-select" name="bundle_{{j}}_{{i}}">
+                <option></option>
+                {% for bundle in bundles %}
+                <option value="{{bundle[0]}}_{{bundle[1]}}_{{bundle[2]}}">${{bundle[0]}}: {{bundle[1]}} fuel, {{bundle[2]}} coins</option>
+                {% endfor %}
+              </select>
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+          <tr>
+            {% for i in range(0,5) %}
+            <th id=total_{{i}}>
+            </th>
+            {% endfor %}
+          </tr>
+        </table>
+
+        Coins needed for each set of bundles for point total goal.
+        <br />
+        <table class="table table-sm w-auto" id="coins_table">
+          <thead>
+            <tr class="text-center">
+              <th title="Set number for the bundle above.">Set</th>
+              <th title="Total coins available from bundles and prior to event.">Coins Available</th>
+              <th title="Additional fuel needed after free and bundle fuel.">Fuel Needed</th>
+              <th title="Coins needed for fuel refills.">Coins Needed</th>
+              <th title="Total coins needed if coining 1 bot for every battle except once per hour due to cooldown.  Assumes 40 coins per bot.">1 Bot Coins</th>
+              <th title="Total coins needed if coining 2 bot for every battle except once per hour due to cooldown.  Assumes 40 coins per bot.">2 Bot Coins</th>
+              <th title="Total coins needed if coining 3 bot for every battle except once per hour due to cooldown.  Assumes 40 coins per bot.">3 Bot Coins</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </form>
+{% endblock %}

@@ -317,6 +317,21 @@ def ore_calculator():
 def war_calculator():
     return render_template('war_calculator.html', t=t)
 
+@app.route('/bundle_calculator')
+@login_required
+def bundle_calculator():
+    bundles = []
+    bundles.append([10, 60, 1250])
+    bundles.append([10, 60, 2300])
+    bundles.append([20, 120, 2500])
+    bundles.append([20, 120, 5000])
+    bundles.append([40, 240, 5500])
+    bundles.append([40, 240, 11000])
+    bundles.append([100, 500, 15000])
+    bundles.append([100, 500, 30000])
+
+    return render_template('bundle_calculator.html', t=t, bundles=bundles)
+
 @app.route('/issues', methods=['GET', 'POST'])
 @login_required
 def issues():
