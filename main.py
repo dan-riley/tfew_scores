@@ -308,17 +308,14 @@ def prime_editor():
     return render_template('prime_editor.html', t=t)
 
 @app.route('/ore_calculator')
-@login_required
 def ore_calculator():
     return render_template('ore_calculator.html', t=t)
 
 @app.route('/war_calculator')
-@login_required
 def war_calculator():
     return render_template('war_calculator.html', t=t)
 
 @app.route('/bundle_calculator')
-@login_required
 def bundle_calculator():
     bundles = []
     bundles.append([10, 60, 1250])
@@ -329,6 +326,7 @@ def bundle_calculator():
     bundles.append([40, 240, 11000])
     bundles.append([100, 500, 15000])
     bundles.append([100, 500, 30000])
+
 
     return render_template('bundle_calculator.html', t=t, bundles=bundles)
 

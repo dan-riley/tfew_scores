@@ -46,6 +46,7 @@
           <li class="nav-item {% block nav_player %}{% endblock %}">
             <a class="nav-link" href="{{url_for('player_view')}}">Player Detail</a>
           </li>
+          {% endif %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle {% block nav_utilities %}{% endblock %}" href="#" id="navUtilities" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Utilities</a>
             <div class="dropdown-menu" aria-labelledby="navUtilities">
@@ -70,7 +71,6 @@
           <!--   <a class="nav&#45;link" href="{{url_for('upload')}}">AI Scores</a> -->
           <!-- </li> -->
           {% endif %}
-          {% endif %}
         </ul>
       </div>
       <div class="navbar-collapse">
@@ -81,6 +81,10 @@
           </li>
           <li class="nav-item {% block nav_logout %}{% endblock %}">
             <a class="nav-link" href="{{url_for('logout')}}">Logout</a>
+          </li>
+          {% else %}
+          <li class="nav-item {% block nav_login %}{% endblock %}">
+            <a class="nav-link" href="{{url_for('login')}}">Login</a>
           </li>
           {% endif %}
         </ul>

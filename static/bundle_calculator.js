@@ -59,7 +59,7 @@ var BundleCalculator = (function() {
     var free_battles = total_hours * 60 / 4 / 5 + Math.floor(starting_fuel / 5);
     var remaining_battles = total_battles - free_battles;
     var remaining_fuel = remaining_battles * 5;
-    var bot1coins = (total_battles - total_hours) * 40; 
+    var bot1coins = (total_battles - total_hours) * 40;
     var bot2coins = (total_battles - total_hours) * 40 * 2;
     var bot3coins = (total_battles - total_hours) * 40 * 3;
 
@@ -88,11 +88,18 @@ var BundleCalculator = (function() {
       }
     }
 
+    // Add a blank set for using starting coins only
+    cost.unshift(0);
+    fuel.unshift(0);
+    coins.unshift(0);
+
     coins_table.getElementsByTagName("tbody")[0].innerHTML = "";
     for (i in cost) {
       // Display totals for each set of bundles
-      total_e = document.getElementById('total_' + i);
-      total_e.innerHTML = '$' + cost[i] + ': ' + fuel[i] + ' fuel, ' + coins[i].toLocaleString() + ' coins';
+      if (i != 0) {
+        total_e = document.getElementById('total_' + (i - 1));
+        total_e.innerHTML = '$' + cost[i] + ': ' + fuel[i] + ' fuel, ' + coins[i].toLocaleString() + ' coins';
+      }
 
       // Build the results
       var row = coins_table.tBodies[0].insertRow(i);
@@ -116,7 +123,7 @@ var BundleCalculator = (function() {
       var bot2color = 'green';
       var bot3color = 'green';
 
-      setNumCell.innerHTML = parseInt(i) + 1;
+      setNumCell.innerHTML = parseInt(i);
       coinsAvailableCell.innerHTML = coinsAvailable.toLocaleString();
       fuelNeededCell.innerHTML = fuelNeeded;
       coinsNeededCell.innerHTML = coinsNeeded.toLocaleString();
@@ -130,7 +137,7 @@ var BundleCalculator = (function() {
       if (bot1 > coinsAvailable) bot1color = 'red';
       if (bot2 > coinsAvailable) bot2color = 'red';
       if (bot3 > coinsAvailable) bot3color = 'red';
-    
+
       bot1Cell.style.color = bot1color;
       bot1Cell.style.fontWeight = 'bold';
       bot2Cell.style.color = bot2color;
