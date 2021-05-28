@@ -376,6 +376,13 @@ body {
   vertical-align: sub;
 }
 
+.min-wars {
+  display: inline;
+  width: 3em;
+  height: 1.5em;
+  vertical-align: middle;
+}
+
 .war_calc {
   text-align: left;
 }

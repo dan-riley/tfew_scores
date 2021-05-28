@@ -307,6 +307,28 @@ def prime_editor():
         t.flash = None
     return render_template('prime_editor.html', t=t)
 
+@app.route('/ranker')
+@officer_required
+def ranker():
+    # Set all of the parameters based on URL params, with a default date window
+    t.setRequests(request, dateWindow=60)
+
+    # Load lists for the template
+    t.setAlliances()
+    # Pull the data we need from the database
+    t.setupRanker()
+    t.setWars()
+    t.setPlayersByWar()
+
+    # Build the player averages
+    for player in t.players:
+        t.buildAverages(player)
+
+    if t.flash:
+        flash(t.flash)
+        t.flash = None
+    return render_template('ranker.html', t=t)
+
 @app.route('/ore_calculator')
 def ore_calculator():
     return render_template('ore_calculator.html', t=t)

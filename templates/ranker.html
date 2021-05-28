@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='ranker.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}TFEW Rankings{% endblock %}
+{% block header %}TFEW Top War Player Rankings{% endblock %}
+{% block nav_ranker %}active{% endblock %}
+{% block tracked_check %}{% endblock %}
+{% block active_check %}{% endblock %}
+
+{% block content %}
+    </div>
+    <div class="col scoreboard">
+      <table id="summary_table" class="table table-sm table-bordered">
+        <tr>
+          <th class="header-right" colspan="5">Date</th>
+          {% for war in t.wars %}
+          <td class="sticky-top-1 min-width {{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+            {% if current_user.officer %}
+            <a href="{{url_for('war_editor', war_id=war.id)}}">{{war.date}}</a>
+            {% else %}
+            {{war.date}}
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Opponent</th>
+          {% for war in t.wars %}
+          <td class="sticky-top-2 {{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+            <a href="{{url_for('scoreboard', alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">League</th>
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+            {{war.leagueText()}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Tracked</th>
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+            {{war.trackedText()}}
+            <input type="hidden" id="{{war.id}}" value="cls{{war.id}}">
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Our Points</th>
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+            {{war.our_score}}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th class="header-right" colspan="5">Opponent Points</th>
+          {% for war in t.wars %}
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+            {{war.opp_score}}
+          </td>
+          {% endfor %}
+        </tr>
+
+        <tr>
+          <th class="sticky-top-1"></th>
+          <th class="summary_sort sticky-top-left sorted-none" id="player_sort">Player</th>
+          <th class="summary_sort sticky-top-1 sorted-down" id="avg_sort">Average</th>
+          <th class="summary_sort sticky-top-1 sorted-none" id="count_sort">Wars</th>
+          <th class="summary_sort sticky-top-1 sorted-none" id="alliance_sort">Alliance</th>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="header-left sticky-left avgScore">Average</td>
+          <td class="light avgScore" id="avg_all"></td>
+          <td class="light avgScore" id="avg_count">
+            <div></div>
+            <input type="hidden" id="hideCount">
+          </td>
+          <td></td>
+        </tr>
+
+        {% for player in t.players %}
+            {% set italic = "" %}
+            {% if player.officer %}
+                {% set italic = "optional" %}
+            {% endif %}
+        <tr>
+          <td class="rank">{{loop.index}}</td>
+          <td class="header-left sticky-left">
+            <a class="{{italic}}" href="{{url_for('player_view', player_id=player.id)}}">{{player.name}}</a>
+          </td>
+          <td class="light font-weight-bold">{{player.allAvg}}</td>
+          <td class="light">
+            <div>{{- player.count -}}</div>
+            <input type="hidden" id="count{{loop.index}}" value="{{player.count >= 4}}">
+          </td>
+          <td class="header-left">
+            <a href="{{url_for('history', alliance_id=player.alliance_id)}}">{{player.alliance.name}}</a>
+          </td>
+          {% for war in t.wars %}
+          {% set score = player.scoresRange[war.id].score %}
+          {% set brokeProtocol = player.scoresRange[war.id].broke_protocol %}
+          {% set minorInfraction = player.scoresRange[war.id].minor_infraction %}
+          {% set excused = player.scoresRange[war.id].excused %}
+          {% set notInAlliance = False %}
+          {% if score is not defined %}
+              {% set notInAlliance = True %}
+          {% endif %}
+          <td class="{{war.trackedClass()}} {{'brokeProtocol' if brokeProtocol}} {{'minorInfraction' if minorInfraction}} {{'excused' if excused}} {{'notInAlliance' if notInAlliance}} cls{{war.id}}">
+            {{score if score != None}}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>
+{% endblock %}

@@ -306,6 +306,11 @@ function checkBox(element) {
   triggerEvent(element, 'change');
 }
 
+function uncheckBox(element) {
+  element.checked = false;
+  triggerEvent(element, 'change');
+}
+
 function triggerEvent(element, eventName) {
   var event = document.createEvent("HTMLEvents");
   event.initEvent(eventName, false, true);

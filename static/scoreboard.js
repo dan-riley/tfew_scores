@@ -11,8 +11,6 @@ var Main = (function() {
   var lastSort = 2;
   var skip = 12;
 
-  // TODO Fix secondary sort order...look back through chat
-
   document.addEventListener('DOMContentLoaded', function(event) {
     summary_table = document.getElementById('summary_table');
     // Initialize listeners
@@ -31,11 +29,9 @@ var Main = (function() {
     // Get the players averages before sorting
     getAverages(summary_table, skip);
 
-    // If regular player is logged in, and tracked is default sort, execute it
-    tracked_check = document.getElementById('tracked_sort');
-    if (tracked_check.classList.contains('sorted-down')) {
-      triggerEvent(tracked_check, 'click');
-    }
+    // Sort by tracked average, then all average, then player (starts as player)
+    triggerEvent(document.getElementById('all_sort'), 'click');
+    triggerEvent(document.getElementById('tracked_sort'), 'click');
   });
 
   function addSortListeners() {

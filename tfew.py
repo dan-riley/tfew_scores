@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.23'
+        self.version = 'v1.24'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -164,6 +164,20 @@ class TFEW():
             filt = [PrimeEffect.date.between(self.start_day, self.end_day)]
         self.primeEffects = PrimeEffect.query.order_by(PrimeEffect.date.desc()).filter(*filt).all()
 
+    def setupRanker(self):
+        # Default opponents
+        if not self.opp_ids:
+            self.opp_ids = [53,107,362,19,88,152,159]
+        self.filt.append(War.opponent_id.in_(self.opp_ids))
+
+        # Remove the alliance filter that may have been set by default
+        self.alliance = 9999
+        newfilt = []
+        for filt in self.filt:
+            if 'wars.alliance_id =' not in str(filt):
+                newfilt.append(filt)
+        self.filt = newfilt
+
     def buildAverages(self, player):
         allScore = 0
         allCount = 0
@@ -277,6 +291,7 @@ class TFEW():
         player.trackedAvg = round(trackedAvg)
         player.primeAvg = round(primeAvg)
         player.cyberAvg = round(cyberAvg)
+        player.count = allCount
 
     def updatePlayers(self, fplayers):
         self.updates = {}

@@ -65,6 +65,7 @@
                 <a class="dropdown-item {% block nav_player_editor %}{% endblock %}" href="{{url_for('player_editor')}}">Edit Players</a>
                 <a class="dropdown-item {% block nav_alliance_editor %}{% endblock %}" href="{{url_for('alliance_editor')}}">Edit Alliances</a>
                 <a class="dropdown-item {% block nav_prime_editor %}{% endblock %}" href="{{url_for('prime_editor')}}">Edit Prime Dates</a>
+                <a class="dropdown-item {% block nav_ranker %}{% endblock %}" href="{{url_for('ranker')}}">Player Ranker</a>
             </div>
           </li>
           <!-- <li class="nav&#45;item {% block nav_upload %}{% endblock %}"> -->
@@ -164,6 +165,11 @@
             {% endblock %}
             <input class="btn btn-light btn-sm" type="button" id="zoom_reset" value="Reset Zoom">
             <input class="btn btn-light btn-sm" type="button" id="zoom_out" value="Zoom Out">
+            {% block min_wars %}
+            <input class="hide" type="checkbox" name="min_wars_check">
+            <input class="form-control min-wars" type="number" id="min_wars" value="4">
+            <label for="min_wars" class="update-label">Min Wars</label>
+            {% endblock %}
           </div>
         </div>
       </form>
