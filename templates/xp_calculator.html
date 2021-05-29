@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='xp_calculator.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}XP Calculator{% endblock %}
+{% block header %}TFEW XP Calculator{% endblock %}
+{% block nav_utilities %}active{% endblock %}
+{% block nav_xp %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+
+{% block content %}
+Enter the starting and ending level for your bot, and it's star level.  Also enter any additional XP needed.  For instance, if your bot is at level 53 and halfway to 54, enter 54 as the starting level, and the amount of XP you need to get to 54 in the Extra XP field.  Also enter the minimum zone you want to calculate, to reduce the number of potential results to view.  Finally enter whether it's Super, Triple or Normal XP.
+      <br />
+      <form>
+        <table class="table table-sm w-auto" id="starting_input_table">
+          <thead>
+            <tr>
+              <th>Bot Star</th>
+              <th>Starting Level</th>
+              <th>Ending Level</th>
+              <th>Extra XP</th>
+              <th>Min Zone</th>
+              <th>XP Type</th>
+            </tr>
+          </thead>
+          <tr>
+            <td>
+              <select class="custom-select" id="stars" title="Star level for the bot.">
+                <option value="0">3*</option>
+                <option value="1">4*</option>
+                <option value="2" selected>5*</option>
+              </select>
+            </td>
+            <td>
+              <input class="form-control" type="number" id="starting_level" value="51" min="1" max="64" title="Bot level to start the calculations from.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="ending_level" value="60" min="1" max="65" title="Target bot level to reach.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="extra_xp" value="0" title="Additional XP needed.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="min_zone" value="12" min="11" max="15" title="Minimum zone to calculate, to reduce size of results.">
+            </td>
+            <td>
+              <select class="custom-select" id="xp_type" title="Type of XP to use.">
+                <option value="0" selected>Super</option>
+                <option value="1">Triple</option>
+                <option value="2">Normal</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+
+        <b>Total XP needed:</b> <span id="total_xp"></span>
+        <br />
+        <b>Average level battled:</b> <span id="avg_level"></span>
+        <br />
+        <br />
+
+        Number of battles needed to achieve the desired XP, for 1-4 bots in each zone, or a full team of 8 bots, and with and without an XP core on the leveling bot.  Common zone/bot combinations are bolded.  Hover for additional information, such as XP received per battle, fuel required to complete, and approximate number of coins needed (some assumptions made on how many battles won't be coined, so this may be wildly off!).
+        <br />
+        <div class="row">
+          <div class="col-auto">
+            <table class="table table-sm w-auto" id="results_table">
+              <thead>
+                <tr class="text-center">
+                  <th colspan="6">No XP Core</th>
+                </tr>
+                <tr class="text-center text-nowrap">
+                  <th title="Zone battled in.">Zone</th>
+                  <th title="Only the leveling bot used.">1 Bot</th>
+                  <th title="Two bots deployed per battle.">2 Bots</th>
+                  <th title="Three bots deployed per battle.">3 Bots</th>
+                  <th title="Four bots deployed per battle.">4 Bots</th>
+                  <th title="Full team deployed.">8 Bots</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-auto">
+            <table class="table table-sm w-auto" id="gold_results_table">
+              <thead>
+                <tr class="text-center">
+                  <th colspan="6">Gold XP Core</th>
+                </tr>
+                <tr class="text-center text-nowrap">
+                  <th title="Zone battled in.">Zone</th>
+                  <th title="Only the leveling bot used.">1 Bot</th>
+                  <th title="Two bots deployed per battle.">2 Bots</th>
+                  <th title="Three bots deployed per battle.">3 Bots</th>
+                  <th title="Four bots deployed per battle.">4 Bots</th>
+                  <th title="Full team deployed.">8 Bots</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-auto">
+            <table class="table table-sm w-auto" id="silver_results_table">
+              <thead>
+                <tr class="text-center">
+                  <th colspan="6">Silver XP Core</th>
+                </tr>
+                <tr class="text-center text-nowrap">
+                  <th title="Zone battled in.">Zone</th>
+                  <th title="Only the leveling bot used.">1 Bot</th>
+                  <th title="Two bots deployed per battle.">2 Bots</th>
+                  <th title="Three bots deployed per battle.">3 Bots</th>
+                  <th title="Four bots deployed per battle.">4 Bots</th>
+                  <th title="Full team deployed.">8 Bots</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        <div>
+      </form>
+{% endblock %}

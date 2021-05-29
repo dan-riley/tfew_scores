@@ -349,8 +349,11 @@ def bundle_calculator():
     bundles.append([100, 500, 15000])
     bundles.append([100, 500, 30000])
 
-
     return render_template('bundle_calculator.html', t=t, bundles=bundles)
+
+@app.route('/xp_calculator')
+def xp_calculator():
+    return render_template('xp_calculator.html', t=t)
 
 @app.route('/issues', methods=['GET', 'POST'])
 @login_required
