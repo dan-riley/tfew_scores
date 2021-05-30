@@ -10,6 +10,7 @@ var XPCalculator = (function() {
   var extra_xp_e;
   var min_zone_e;
   var xp_type_e;
+  var max_bots_e;
   var total_xp_e;
   var avg_level_e;
   var xp;
@@ -26,6 +27,7 @@ var XPCalculator = (function() {
     extra_xp_e = document.getElementById('extra_xp');
     min_zone_e = document.getElementById('min_zone');
     xp_type_e = document.getElementById('xp_type');
+    max_bots_e = document.getElementById('max_bots');
     total_xp_e = document.getElementById('total_xp');
     avg_level_e = document.getElementById('avg_level');
 
@@ -87,6 +89,7 @@ var XPCalculator = (function() {
     var extra_xp = extra_xp_e.valueAsNumber;
     var min_zone = min_zone_e.valueAsNumber;
     var xp_type = xp_type_e.value;
+    var max_bots = max_bots_e.value;
 
     // Calculate the initial info
     var total_xp = extra_xp;
@@ -111,43 +114,51 @@ var XPCalculator = (function() {
         else if (mult == 1.5) row = silver_results_table.tBodies[0].insertRow(r);
         else row = results_table.tBodies[0].insertRow(r);
         var zoneCell = row.insertCell(0);
-        var bot1Cell = row.insertCell(1);
-        var bot2Cell = row.insertCell(2);
-        var bot3Cell = row.insertCell(3);
-        var bot4Cell = row.insertCell(4);
-        var bot8Cell = row.insertCell(5);
+        zoneCell.innerHTML = parseInt(zone);
 
+        // XP for a single bot in this zone
         var xp_max = zones[xp_type][zone] * mult;
-        var bot1 = Math.ceil(total_xp / xp_max);
-        var bot2 = Math.ceil(total_xp / (xp_max / 2));
-        var bot3 = Math.ceil(total_xp / (xp_max / 3));
-        var bot4 = Math.ceil(total_xp / (xp_max / 4));
-        var bot8 = Math.ceil(total_xp / (xp_max / 8));
-
         // Average coins based on the average level battled
         var coins = Math.round(0.68 * (avg_level) - 1);
-        var bot1coins = (bot1 > 45) ? ((bot1 - 45) * coins) : (bot1 - 1) * coins;
-        var bot2coins = (bot2 > 45) ? ((bot2 - 45) * coins) : (bot2 - 1) * coins;
-        var bot3coins = (bot3 > 45) ? ((bot3 - 45) * coins) : (bot3 - 1) * coins;
-        var bot4coins = (bot4 > 45) ? ((bot4 - 45) * coins) : (bot4 - 1) * coins;
-        var bot8coins = (bot8 > 45) ? ((bot8 - 45) * coins) : (bot8 - 1) * coins;
 
-        zoneCell.innerHTML = parseInt(zone);
-        bot1Cell.innerHTML = bot1.toLocaleString();
-        bot2Cell.innerHTML = bot2.toLocaleString();
-        bot3Cell.innerHTML = bot3.toLocaleString();
-        bot4Cell.innerHTML = bot4.toLocaleString();
-        bot8Cell.innerHTML = bot8.toLocaleString();
-        bot1Cell.title = 'XP: ' + (xp_max).toLocaleString() + ', Fuel: ' + (bot1 * 5).toLocaleString() + ', Coins: ' + bot1coins.toLocaleString();
-        bot2Cell.title = 'XP: ' + (xp_max / 2).toLocaleString() + ', Fuel: ' + (bot2 * 5).toLocaleString() + ', Coins: ' + bot2coins.toLocaleString();
-        bot3Cell.title = 'XP: ' + (xp_max / 3).toLocaleString() + ', Fuel: ' + (bot3 * 5).toLocaleString() + ', Coins: ' + bot3coins.toLocaleString();
-        bot4Cell.title = 'XP: ' + (xp_max / 4).toLocaleString() + ', Fuel: ' + (bot4 * 5).toLocaleString() + ', Coins: ' + bot4coins.toLocaleString()
-        bot8Cell.title = 'XP: ' + (xp_max / 8).toLocaleString() + ', Fuel: ' + (bot8 * 5).toLocaleString() + ', Coins: ' + bot8coins.toLocaleString();
+        var bot = Array();
+        for (b = 1; b <= 8; b++) {
+          bot[b] = Object();
+          // Create the cell
+          bot[b]['cell'] = row.insertCell(b);
+          // Calculate number of battles
+          bot[b]['battles'] = Math.ceil(total_xp / (xp_max / b));
+          // Calculate approximate number of coins
+          bot[b]['coins'] = (bot[b].battles > 45) ? ((bot[b].battles - 45) * coins) : (bot[b].battles - 1) * coins;
+          // Write to the table
+          bot[b].cell.innerHTML = bot[b].battles.toLocaleString();
+          bot[b].cell.title = 'XP: ' + (xp_max).toLocaleString() + ', Fuel: ' + (bot[b].battles * 5).toLocaleString() + ', Coins: ' + bot[b].coins.toLocaleString();
+        }
 
-        if ((zone == 12) || (zone == 13)) bot1Cell.style.fontWeight = 'bold';
-        if ((zone == 13) || (zone == 14)) bot2Cell.style.fontWeight = 'bold';
-        if (zone == 15) bot3Cell.style.fontWeight = 'bold';
+        if ((zone == 12) || (zone == 13)) bot[1].cell.style.fontWeight = 'bold';
+        if ((zone == 13) || (zone == 14)) bot[2].cell.style.fontWeight = 'bold';
+        if (zone == 15) {
+          bot[3].cell.style.fontWeight = 'bold';
+          bot[8].cell.style.fontWeight = 'bold';
+        }
       }
+
+      var rows;
+      if (mult == 2) rows = gold_results_table.rows;
+      else if (mult == 1.5) rows = silver_results_table.rows;
+      else rows = results_table.rows;
+
+      // Hide the column if it's above the max set
+      for (let row of rows) {
+        for (let col of row.children) {
+          if ((col.cellIndex > max_bots) && (col.cellIndex != 8)) {
+            col.style.display = 'none';
+          } else {
+            col.style.display = 'table-cell';
+          }
+        }
+      }
+
     }
   }
 })();
