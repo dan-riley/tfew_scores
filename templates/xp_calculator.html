@@ -75,8 +75,18 @@ Enter the starting and ending level for your bot, and it's star level.  Also ent
         <br />
         <br />
 
-        Number of battles needed to achieve the desired XP, for 1-4 bots in each zone, or a full team of 8 bots, and with and without an XP core on the leveling bot.  Common zone/bot combinations are bolded.  Hover for additional information, such as XP received per battle, fuel required to complete, and approximate number of coins needed (some assumptions made on how many battles won't be coined, so this may be wildly off!).
+        Number of battles needed to achieve the desired XP, or XP per battle for the selected bot, or total coins needed for just the bot; for 1-4 bots in each zone, or a full team of 8 bots, and with and without an XP core on the leveling bot.  Common zone/bot combinations are bolded.  Hover for additional information, such as XP received per battle, fuel required to complete, and approximate number of coins needed (some assumptions made on how many battles won't be coined, so this may be wildly off!).
         <br />
+        <br />
+        <div class="col-md-3 col-sm-6">
+          <select class="custom-select" id="display_select" title="What to display.">
+            <option value="battles" selected>Number of Battles</option>
+            <option value="xp">XP per Battle</option>
+            <option value="coins">Total Coins</option>
+          </select>
+        </div>
+        <br />
+
         <div class="row">
           <div class="col-auto">
             <table class="table table-sm w-auto" id="results_table">

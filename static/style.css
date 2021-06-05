@@ -469,6 +469,24 @@ a.dropdown-item.active, a.dropdown-item:active {
   max-width: 800px;
 }
 
+@media (pointer: coarse), (hover: none) {
+  [title] {
+    position: relative;
+    display: inline-block;
+  }
+  [title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    top: 90%;
+    color: black;
+    background-color: white;
+    border: 1px solid;
+    width: fit-content;
+    padding: 3px;
+    z-index: 1020;
+  }
+}
+
 @media (max-width: 610px) {
   .nav-link, .dropdown-item {
     font-size: 0.7rem;

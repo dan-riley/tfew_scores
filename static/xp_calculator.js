@@ -13,6 +13,7 @@ var XPCalculator = (function() {
   var max_bots_e;
   var total_xp_e;
   var avg_level_e;
+  var display_select_e;
   var xp;
   var zones;
 
@@ -30,6 +31,7 @@ var XPCalculator = (function() {
     max_bots_e = document.getElementById('max_bots');
     total_xp_e = document.getElementById('total_xp');
     avg_level_e = document.getElementById('avg_level');
+    display_select_e = document.getElementById('display_select');
 
     // Load the data tables
     loadXP();
@@ -90,6 +92,7 @@ var XPCalculator = (function() {
     var min_zone = min_zone_e.valueAsNumber;
     var xp_type = xp_type_e.value;
     var max_bots = max_bots_e.value;
+    var display_select = display_select_e.value;
 
     // Calculate the initial info
     var total_xp = extra_xp;
@@ -126,13 +129,22 @@ var XPCalculator = (function() {
           bot[b] = Object();
           // Create the cell
           bot[b]['cell'] = row.insertCell(b);
+          bot[b]['xp'] = Math.round(xp_max / b);
           // Calculate number of battles
-          bot[b]['battles'] = Math.ceil(total_xp / (xp_max / b));
+          bot[b]['battles'] = Math.ceil(total_xp / bot[b].xp);
           // Calculate approximate number of coins
           bot[b]['coins'] = (bot[b].battles > 45) ? ((bot[b].battles - 45) * coins) : (bot[b].battles - 1) * coins;
           // Write to the table
-          bot[b].cell.innerHTML = bot[b].battles.toLocaleString();
-          bot[b].cell.title = 'XP: ' + (xp_max).toLocaleString() + ', Fuel: ' + (bot[b].battles * 5).toLocaleString() + ', Coins: ' + bot[b].coins.toLocaleString();
+          if (display_select == 'battles') {
+            bot[b].cell.innerHTML = bot[b].battles.toLocaleString();
+            bot[b].cell.title = 'XP: ' + bot[b].xp.toLocaleString() + ', Fuel: ' + (bot[b].battles * 5).toLocaleString() + ', Coins: ' + bot[b].coins.toLocaleString();
+          } else if (display_select == 'xp') {
+            bot[b].cell.innerHTML = bot[b].xp.toLocaleString();
+            bot[b].cell.title = 'Battles: ' + bot[b].battles.toLocaleString() + ', Fuel: ' + (bot[b].battles * 5).toLocaleString() + ', Coins: ' + bot[b].coins.toLocaleString();
+          } else if (display_select == 'coins') {
+            bot[b].cell.innerHTML = bot[b].coins.toLocaleString();
+            bot[b].cell.title = 'Battles: ' + bot[b].battles.toLocaleString() + ', XP: ' + bot[b].xp.toLocaleString() + ', Fuel: ' + (bot[b].battles * 5).toLocaleString();
+          }
         }
 
         if ((zone == 12) || (zone == 13)) bot[1].cell.style.fontWeight = 'bold';
