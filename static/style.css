@@ -470,8 +470,9 @@ a.dropdown-item.active, a.dropdown-item:active {
 }
 
 @media (pointer: coarse), (hover: none) {
-  [title] {
+  [title]:hover {
     position: relative;
+    top: 0px;
     display: inline-block;
   }
   [title]:hover::after {
