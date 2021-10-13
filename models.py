@@ -31,6 +31,7 @@ class Player(UserMixin, db.Model):
     alliance = db.relationship('Alliance', foreign_keys='Player.alliance_id')
     strikes = 0
     drops = 0
+    avg_drops = 0
 
     def score(self, war_id):
         return Score.query.filter(Score.player_id == self.id, Score.war_id == war_id).first()
@@ -55,17 +56,26 @@ class Player(UserMixin, db.Model):
                 self.strikes += 1
 
     def setDrops(self, wars):
+        count = 0
         for war in wars:
             if war.b1 == self.id and war.b1_drops:
                 self.drops += war.b1_drops
+                count += 1
             elif war.b2 == self.id and war.b2_drops:
                 self.drops += war.b2_drops
+                count += 1
             elif war.b3 == self.id and war.b3_drops:
                 self.drops += war.b3_drops
+                count += 1
             elif war.b4 == self.id and war.b4_drops:
                 self.drops += war.b4_drops
+                count += 1
             elif war.b5 == self.id and war.b5_drops:
                 self.drops += war.b5_drops
+                count += 1
+
+        if count:
+            self.avg_drops = self.drops / count
 
     def alliances(self):
         alliances = []

@@ -69,7 +69,7 @@
         <tr>
           <th class="header-right" colspan="9">Base 1</th>
           {% for war in t.wars %}
-          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}} text-nowrap">
               {{war.b1p.name}}
               {% if war.b1_drops %}
                 ({{war.b1_drops}})
@@ -80,7 +80,7 @@
         <tr>
           <th class="header-right" colspan="9">Base 2</th>
           {% for war in t.wars %}
-          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}} text-nowrap">
             {{war.b2p.name}}
             {% if war.b2_drops %}
               ({{war.b2_drops}})
@@ -91,7 +91,7 @@
         <tr>
           <th class="header-right" colspan="9">Base 3</th>
           {% for war in t.wars %}
-          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}} text-nowrap">
             {{war.b3p.name}}
             {% if war.b3_drops %}
               ({{war.b3_drops}})
@@ -102,7 +102,7 @@
         <tr>
           <th class="header-right" colspan="9">Base 4</th>
           {% for war in t.wars %}
-          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}} text-nowrap">
             {{war.b4p.name}}
             {% if war.b4_drops %}
               ({{war.b4_drops}})
@@ -113,7 +113,7 @@
         <tr>
           <th class="header-right" colspan="9">Base 5</th>
           {% for war in t.wars %}
-          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
+          <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}} text-nowrap">
             {{war.b5p.name}}
             {% if war.b5_drops %}
               ({{war.b5_drops}})
@@ -189,7 +189,7 @@
           <td class="light">{{player.primeAvg}}</td>
           <td class="light">{{player.cyberAvg}}</td>
           <td class="light">{{player.allAvg}}</td>
-          <td class="light">{{player.drops}}</td>
+          <td class="light">{{player.avg_drops}}</td>
           <td class="light">{{player.strikes}}</td>
           {% for war in t.wars %}
           {% set score = player.scoresRange[war.id].score %}
