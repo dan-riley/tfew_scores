@@ -14,7 +14,7 @@
     <div class="col scoreboard">
       <table id="summary_table" class="table table-sm table-bordered">
         <tr>
-          <th class="header-right" colspan="8">Date</th>
+          <th class="header-right" colspan="9">Date</th>
           {% for war in t.wars %}
           <td class="sticky-top-1 min-width {{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {% if current_user.officer %}
@@ -26,7 +26,7 @@
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Opponent</th>
+          <th class="header-right" colspan="9">Opponent</th>
           {% for war in t.wars %}
           <td class="sticky-top-2 {{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             <a href="{{url_for('scoreboard', alliance_id=t.alliance, opponent_id=war.opponent_id)}}">{{war.opponent.name}}</a>
@@ -34,7 +34,7 @@
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">League</th>
+          <th class="header-right" colspan="9">League</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {{war.leagueText()}}
@@ -42,7 +42,7 @@
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Tracked</th>
+          <th class="header-right" colspan="9">Tracked</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {{war.trackedText()}}
@@ -51,7 +51,7 @@
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Our Points</th>
+          <th class="header-right" colspan="9">Our Points</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {{war.our_score}}
@@ -59,7 +59,7 @@
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Opponent Points</th>
+          <th class="header-right" colspan="9">Opponent Points</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {{war.opp_score}}
@@ -67,42 +67,57 @@
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Base 1</th>
+          <th class="header-right" colspan="9">Base 1</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
-            {{war.b1p.name}}
+              {{war.b1p.name}}
+              {% if war.b1_drops %}
+                ({{war.b1_drops}})
+              {% endif %}
           </td>
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Base 2</th>
+          <th class="header-right" colspan="9">Base 2</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {{war.b2p.name}}
+            {% if war.b2_drops %}
+              ({{war.b2_drops}})
+            {% endif %}
           </td>
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Base 3</th>
+          <th class="header-right" colspan="9">Base 3</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {{war.b3p.name}}
+            {% if war.b3_drops %}
+              ({{war.b3_drops}})
+            {% endif %}
           </td>
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Base 4</th>
+          <th class="header-right" colspan="9">Base 4</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {{war.b4p.name}}
+            {% if war.b4_drops %}
+              ({{war.b4_drops}})
+            {% endif %}
           </td>
           {% endfor %}
         </tr>
         <tr>
-          <th class="header-right" colspan="8">Base 5</th>
+          <th class="header-right" colspan="9">Base 5</th>
           {% for war in t.wars %}
           <td class="{{war.winClass()}} {{war.trackedClass()}} cls{{war.id}}">
             {{war.b5p.name}}
+            {% if war.b5_drops %}
+              ({{war.b5_drops}})
+            {% endif %}
           </td>
           {% endfor %}
         </tr>
@@ -123,6 +138,7 @@
           <th class="summary_sort sticky-top-1 sorted-none" id="prime_sort">Prime</th>
           <th class="summary_sort sticky-top-1 sorted-none" id="cyber_sort">Cybertron</th>
           <th class="summary_sort sticky-top-1 sorted-none" id="all_sort">All</th>
+          <th class="summary_sort sticky-top-1 sorted-none" id="drops_sort">Drops</th>
           <th class="summary_sort sticky-top-1 sorted-none" id="strike_sort">Strikes</th>
         </tr>
         <tr>
@@ -136,6 +152,7 @@
           <td class="light avgScore" id="avg_prime"></td>
           <td class="light avgScore" id="avg_cyber"></td>
           <td class="light avgScore" id="avg_all"></td>
+          <td class="light avgScore" id="avg_drops"></td>
           <td class="light avgScore" id="avg_strike"></td>
         </tr>
 
@@ -172,6 +189,7 @@
           <td class="light">{{player.primeAvg}}</td>
           <td class="light">{{player.cyberAvg}}</td>
           <td class="light">{{player.allAvg}}</td>
+          <td class="light">{{player.drops}}</td>
           <td class="light">{{player.strikes}}</td>
           {% for war in t.wars %}
           {% set score = player.scoresRange[war.id].score %}

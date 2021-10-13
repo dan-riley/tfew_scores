@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.29'
+        self.version = 'v1.30'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -198,6 +198,8 @@ class TFEW():
 
         # Set the number of protocol strikes for this player
         player.setProtocol(self.alliance, self.end_day)
+        # Set the total number of drops the player caused in these wars
+        player.setDrops(self.wars)
 
         # Get the scores and initial averages for this player
         for war in self.wars:
@@ -599,6 +601,27 @@ class TFEW():
             war.b5 = fwar['b5']
         else:
             war.b5 = None
+
+        if fwar['b1_drops']:
+            war.b1_drops = fwar['b1_drops']
+        else:
+            war.b1_drops = None
+        if fwar['b2_drops']:
+            war.b2_drops = fwar['b2_drops']
+        else:
+            war.b2_drops = None
+        if fwar['b3_drops']:
+            war.b3_drops = fwar['b3_drops']
+        else:
+            war.b3_drops = None
+        if fwar['b4_drops']:
+            war.b4_drops = fwar['b4_drops']
+        else:
+            war.b4_drops = None
+        if fwar['b5_drops']:
+            war.b5_drops = fwar['b5_drops']
+        else:
+            war.b5_drops = None
 
         # If no scores were added when war was initially created, this can be empty so check
         if 'players' not in fwar:

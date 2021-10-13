@@ -113,6 +113,9 @@
                 {% endfor %}
               </select>
             </td>
+            <td>
+              <input class="form-control" type="number" name="b1_drops" value="{{war.b1_drops}}" step="1" min="0" max="40">
+            </td>
           </tr>
           <tr>
             <th>Base 2</th>
@@ -124,6 +127,9 @@
                 {%- if war.b2 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
               </select>
+            </td>
+            <td>
+              <input class="form-control" type="number" name="b2_drops" value="{{war.b2_drops}}" step="1" min="0" max="40">
             </td>
           </tr>
           <tr>
@@ -137,6 +143,9 @@
                 {% endfor %}
               </select>
             </td>
+            <td>
+              <input class="form-control" type="number" name="b3_drops" value="{{war.b3_drops}}" step="1" min="0" max="40">
+            </td>
           </tr>
           <tr>
             <th>Base 4</th>
@@ -149,6 +158,9 @@
                 {% endfor %}
               </select>
             </td>
+            <td>
+              <input class="form-control" type="number" name="b4_drops" value="{{war.b4_drops}}" step="1" min="0" max="40">
+            </td>
           </tr>
           <tr>
             <th>Base 5</th>
@@ -160,6 +172,9 @@
                 {%- if war.b5 == player.id %} selected {% endif %}>{{player.name}}</option>
                 {% endfor %}
               </select>
+            </td>
+            <td>
+              <input class="form-control" type="number" name="b5_drops" value="{{war.b5_drops}}" step="1" min="0" max="40">
             </td>
           </tr>
         </table>

@@ -7,6 +7,7 @@ var Main = (function() {
   var untrackedOrder;
   var primeOrder;
   var allOrder;
+  var dropsOrder;
   var strikeOrder;
   var lastSort = 2;
   var skip = 12;
@@ -91,12 +92,21 @@ var Main = (function() {
       sortTable(summary_table, lastSort, allOrder, skip)
     });
 
-    document.getElementById('strike_sort').addEventListener('click', function() {
+    document.getElementById('drops_sort').addEventListener('click', function() {
       if (lastSort == 8)
+        dropsOrder = (strikeOrder == 'asc') ? 'desc' : 'asc';
+      else
+        dropsOrder = 'desc';
+      lastSort = 8;
+      sortTable(summary_table, lastSort, dropsOrder, skip)
+    });
+
+    document.getElementById('strike_sort').addEventListener('click', function() {
+      if (lastSort == 9)
         strikeOrder = (strikeOrder == 'asc') ? 'desc' : 'asc';
       else
         strikeOrder = 'desc';
-      lastSort = 8;
+      lastSort = 9;
       sortTable(summary_table, lastSort, strikeOrder, skip)
     });
 
@@ -110,7 +120,7 @@ var Main = (function() {
         this.classList.add('col-collapse');
         this.classList.remove('col-expand');
         display = 'table-cell';
-        colSpan = 8;
+        colSpan = 9;
       } else {
         this.classList.add('col-expand');
         this.classList.remove('col-collapse');
@@ -130,6 +140,7 @@ var Main = (function() {
           row.children[i].style.display = display;
         }
         row.children[7].style.display = display;
+        row.children[8].style.display = display;
       });
     });
   }

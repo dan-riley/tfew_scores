@@ -30,6 +30,7 @@ class Player(UserMixin, db.Model):
     ocr = db.relationship('OCR', backref='player')
     alliance = db.relationship('Alliance', foreign_keys='Player.alliance_id')
     strikes = 0
+    drops = 0
 
     def score(self, war_id):
         return Score.query.filter(Score.player_id == self.id, Score.war_id == war_id).first()
@@ -52,6 +53,19 @@ class Player(UserMixin, db.Model):
             pscore = self.score(war.id)
             if pscore.broke_protocol:
                 self.strikes += 1
+
+    def setDrops(self, wars):
+        for war in wars:
+            if war.b1 == self.id and war.b1_drops:
+                self.drops += war.b1_drops
+            elif war.b2 == self.id and war.b2_drops:
+                self.drops += war.b2_drops
+            elif war.b3 == self.id and war.b3_drops:
+                self.drops += war.b3_drops
+            elif war.b4 == self.id and war.b4_drops:
+                self.drops += war.b4_drops
+            elif war.b5 == self.id and war.b5_drops:
+                self.drops += war.b5_drops
 
     def alliances(self):
         alliances = []
@@ -105,6 +119,11 @@ class War(db.Model):
     tracked = db.Column(db.Integer())
     our_score = db.Column(db.Integer())
     opp_score = db.Column(db.Integer())
+    b1_drops = db.Column(db.Integer())
+    b2_drops = db.Column(db.Integer())
+    b3_drops = db.Column(db.Integer())
+    b4_drops = db.Column(db.Integer())
+    b5_drops = db.Column(db.Integer())
     b1 = db.Column(db.Integer(), db.ForeignKey('players.id'))
     b2 = db.Column(db.Integer(), db.ForeignKey('players.id'))
     b3 = db.Column(db.Integer(), db.ForeignKey('players.id'))

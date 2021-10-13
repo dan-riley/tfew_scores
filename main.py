@@ -185,6 +185,7 @@ def player_view():
 
     # Process data
     t.buildAverages(t.player)
+    t.player.setDrops(t.wars)
 
     if t.flash:
         flash(t.flash)

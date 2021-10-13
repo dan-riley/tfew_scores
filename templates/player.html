@@ -49,7 +49,7 @@
           </tr>
 
           <tr>
-            <th class="{{'strikeOne' if t.player.strikes == 1}} {{'strikeTwo' if t.player.strikes == 2}} {{'strikeThree' if t.player.strikes >= 3}}">{{t.player.name}}</th>
+            <th class="{{'strikeOne' if t.player.strikes == 1}} {{'strikeTwo' if t.player.strikes == 2}} {{'strikeThree' if t.player.strikes >= 3}}">{{t.player.name}} ({{t.player.drops}})</th>
             <th>{{t.player.trackedAvg}}</th>
             <th>{{t.player.untrackedAvg}}</th>
             <th>{{t.player.primeAvg}}</th>
@@ -133,11 +133,22 @@
               {{war.our_score}}-{{war.opp_score}}
             </td>
             <td class="{{war.winClass()}} {{war.trackedClass()}}">
-              {{- 'B1' if war.b1 == t.player.id }}
-              {{- 'B2' if war.b2 == t.player.id }}
-              {{- 'B3' if war.b3 == t.player.id }}
-              {{- 'B4' if war.b4 == t.player.id }}
-              {{- 'B5' if war.b5 == t.player.id }}
+              {% if war.b1 == t.player.id %}
+                {{- 'B1' }}
+                {{- ' (' + war.b1_drops|string + ')' if war.b1_drops }}
+              {% elif war.b2 == t.player.id %}
+                {{- 'B2' }}
+                {{- ' (' + war.b2_drops|string + ')' if war.b2_drops }}
+              {% elif war.b3 == t.player.id %}
+                {{- 'B3' }}
+                {{- ' (' + war.b3_drops|string + ')' if war.b3_drops }}
+              {% elif war.b4 == t.player.id %}
+                {{- 'B4' }}
+                {{- ' (' + war.b4_drops|string + ')' if war.b4_drops }}
+              {% elif war.b5 == t.player.id %}
+                {{- 'B5' }}
+                {{- ' (' + war.b5_drops|string + ')' if war.b5_drops }}
+              {% endif %}
             </td>
             {% set score = t.player.scoresRange[war.id].score %}
             {% set brokeProtocol = t.player.scoresRange[war.id].broke_protocol %}
