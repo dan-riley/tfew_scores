@@ -37,14 +37,14 @@ class Player(UserMixin, db.Model):
         return Score.query.filter(Score.player_id == self.id, Score.war_id == war_id).first()
 
     def setProtocol(self, palliance_id, date):
-        # Find the number of strikes in the last 90 days, only in this alliance
+        # Find the number of strikes in the last 45 days, only in this alliance
         self.strikes = 0
         # Don't count infractions before this date
         protocolStart = datetime(2021,1,22).date()
         end_day = date
         if isinstance(end_day, str):
             end_day = datetime.strptime(end_day, "%Y-%m-%d").date()
-        start_day = end_day - timedelta(days=90)
+        start_day = end_day - timedelta(days=45)
         if start_day < protocolStart:
             start_day = protocolStart
 

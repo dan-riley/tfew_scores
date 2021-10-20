@@ -4,6 +4,7 @@ var Main = (function() {
   var summary_table;
   var playerOrder = 'asc';
   var trackedOrder;
+  var rawOrder;
   var untrackedOrder;
   var primeOrder;
   var allOrder;
@@ -56,57 +57,66 @@ var Main = (function() {
       sortTable(summary_table, lastSort, trackedOrder, skip)
     });
 
-    document.getElementById('untracked_sort').addEventListener('click', function() {
+    document.getElementById('raw_sort').addEventListener('click', function() {
       if (lastSort == 4)
+        rawOrder = (rawOrder == 'asc') ? 'desc' : 'asc';
+      else
+        rawOrder = 'desc';
+      lastSort = 4;
+      sortTable(summary_table, lastSort, rawOrder, skip)
+    });
+
+    document.getElementById('untracked_sort').addEventListener('click', function() {
+      if (lastSort == 5)
         untrackedOrder = (untrackedOrder == 'asc') ? 'desc' : 'asc';
       else
         untrackedOrder = 'desc';
-      lastSort = 4;
+      lastSort = 5;
       sortTable(summary_table, lastSort, untrackedOrder, skip)
     });
 
     document.getElementById('prime_sort').addEventListener('click', function() {
-      if (lastSort == 5)
+      if (lastSort == 6)
         primeOrder = (primeOrder == 'asc') ? 'desc' : 'asc';
       else
         primeOrder = 'desc';
-      lastSort = 5;
+      lastSort = 6;
       sortTable(summary_table, lastSort, primeOrder, skip)
     });
 
     document.getElementById('cyber_sort').addEventListener('click', function() {
-      if (lastSort == 6)
+      if (lastSort == 7)
         cyberOrder = (cyberOrder == 'asc') ? 'desc' : 'asc';
       else
         cyberOrder = 'desc';
-      lastSort = 6;
+      lastSort = 7;
       sortTable(summary_table, lastSort, cyberOrder, skip)
     });
 
     document.getElementById('all_sort').addEventListener('click', function() {
-      if (lastSort == 7)
+      if (lastSort == 8)
         allOrder = (allOrder == 'asc') ? 'desc' : 'asc';
       else
         allOrder = 'desc';
-      lastSort = 7;
+      lastSort = 8;
       sortTable(summary_table, lastSort, allOrder, skip)
     });
 
     document.getElementById('drops_sort').addEventListener('click', function() {
-      if (lastSort == 8)
+      if (lastSort == 9)
         dropsOrder = (strikeOrder == 'asc') ? 'desc' : 'asc';
       else
         dropsOrder = 'desc';
-      lastSort = 8;
+      lastSort = 9;
       sortTable(summary_table, lastSort, dropsOrder, skip)
     });
 
     document.getElementById('strike_sort').addEventListener('click', function() {
-      if (lastSort == 9)
+      if (lastSort == 10)
         strikeOrder = (strikeOrder == 'asc') ? 'desc' : 'asc';
       else
         strikeOrder = 'desc';
-      lastSort = 9;
+      lastSort = 10;
       sortTable(summary_table, lastSort, strikeOrder, skip)
     });
 
@@ -120,7 +130,7 @@ var Main = (function() {
         this.classList.add('col-collapse');
         this.classList.remove('col-expand');
         display = 'table-cell';
-        colSpan = 9;
+        colSpan = 10;
       } else {
         this.classList.add('col-expand');
         this.classList.remove('col-collapse');
@@ -136,11 +146,11 @@ var Main = (function() {
       // Set the display for remaining rows
       rows = rows.slice(skip-1);
       rows.forEach(function(row) {
-        for (var i = 3; i < 6; i++) {
+        for (var i = 3; i < 7; i++) {
           row.children[i].style.display = display;
         }
-        row.children[7].style.display = display;
         row.children[8].style.display = display;
+        row.children[9].style.display = display;
       });
     });
   }
@@ -148,6 +158,7 @@ var Main = (function() {
 
 function getAverages(table, skip) {
   tracked = 0;
+  raw = 0;
   untracked = 0;
   prime = 0;
   cyber = 0;
@@ -158,15 +169,17 @@ function getAverages(table, skip) {
   rows.forEach(function(row) {
     if ((row.style.display != 'none') && (row.children[1].children[0].innerText.trim() != 'Average')) {
       tracked += parseInt(row.children[2].innerText);
-      untracked += parseInt(row.children[3].innerText);
-      prime += parseInt(row.children[4].innerText);
-      cyber += parseInt(row.children[5].innerText);
-      all += parseInt(row.children[6].innerText);
+      raw += parseInt(row.children[3].innerText);
+      untracked += parseInt(row.children[4].innerText);
+      prime += parseInt(row.children[5].innerText);
+      cyber += parseInt(row.children[6].innerText);
+      all += parseInt(row.children[7].innerText);
       count += 1;
     }
   });
 
   document.getElementById('avg_tracked').innerText = Math.round(tracked / count);
+  document.getElementById('avg_raw').innerText = Math.round(raw / count);
   document.getElementById('avg_untracked').innerText = Math.round(untracked / count);
   document.getElementById('avg_prime').innerText = Math.round(prime / count);
   document.getElementById('avg_cyber').innerText = Math.round(cyber / count);

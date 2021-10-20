@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.30'
+        self.version = 'v1.31'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -234,6 +234,9 @@ class TFEW():
                     if score.score < cyberMin:
                         cyberMin = score.score
 
+        rawCount = trackedCount
+        rawScore = trackedScore
+
         # If player doesn't have strikes, remove the minimum scores if we have enough
         if player.strikes == 0:
             if allCount > 3:
@@ -262,6 +265,7 @@ class TFEW():
         trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
         primeAvg = primeScore / primeCount if primeCount else primeScore
         cyberAvg = cyberScore / cyberCount if cyberCount else cyberScore
+        rawAvg = rawScore / rawCount if rawCount else rawScore
 
         # Go back and add in optional scores
         for war in self.wars:
@@ -272,20 +276,33 @@ class TFEW():
                         trackedScore += score.score
                         trackedCount += 1
 
+                    if score.score > rawAvg:
+                        rawScore += score.score
+                        rawCount += 1
+
                     if war.league == 8 and score.score > primeAvg:
                         primeScore += score.score
                         primeCount += 1
+
+                    if war.league == 7 and score.score > cyberAvg:
+                        cyberScore += score.score
+                        cyberCount += 1
 
         # Recalculate the averages with the optional scores added
         trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
         primeAvg = primeScore / primeCount if primeCount else primeScore
         cyberAvg = cyberScore / cyberCount if cyberCount else cyberScore
+        rawAvg = rawScore / rawCount if rawCount else rawScore
 
         # Deduct points for strikes
-        if player.strikes == 1:
-            trackedAvg -= 10
-        elif player.strikes >= 2:
-            trackedAvg -= 20
+        if player.alliance_id in [2, 339, 340]:
+            if player.strikes >= 2:
+                trackedAvg -= 10
+        else:
+            if player.strikes == 1:
+                trackedAvg -= 10
+            elif player.strikes >= 2:
+                trackedAvg -= 20
 
         # Save the final averages, rounded for display
         player.allAvg = round(allAvg)
@@ -293,6 +310,7 @@ class TFEW():
         player.trackedAvg = round(trackedAvg)
         player.primeAvg = round(primeAvg)
         player.cyberAvg = round(cyberAvg)
+        player.rawAvg = round(rawAvg)
         player.count = allCount
 
     def updatePlayers(self, fplayers):
