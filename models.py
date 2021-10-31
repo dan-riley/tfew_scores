@@ -58,19 +58,19 @@ class Player(UserMixin, db.Model):
     def setDrops(self, wars):
         count = 0
         for war in wars:
-            if war.b1 == self.id and war.b1_drops:
+            if war.b1 == self.id and war.b1_drops != None:
                 self.drops += war.b1_drops
                 count += 1
-            elif war.b2 == self.id and war.b2_drops:
+            elif war.b2 == self.id and war.b2_drops != None:
                 self.drops += war.b2_drops
                 count += 1
-            elif war.b3 == self.id and war.b3_drops:
+            elif war.b3 == self.id and war.b3_drops != None:
                 self.drops += war.b3_drops
                 count += 1
-            elif war.b4 == self.id and war.b4_drops:
+            elif war.b4 == self.id and war.b4_drops != None:
                 self.drops += war.b4_drops
                 count += 1
-            elif war.b5 == self.id and war.b5_drops:
+            elif war.b5 == self.id and war.b5_drops != None:
                 self.drops += war.b5_drops
                 count += 1
 

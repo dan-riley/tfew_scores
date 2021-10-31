@@ -79,7 +79,7 @@ def login():
     if form.validate_on_submit():
         user = Player.query.filter_by(name=form.name.data).first()
         if user and user.check_password(password=form.password.data):
-            login_user(user)
+            login_user(user, remember=form.remember_check.data)
             next_page = request.args.get('next')
             return redirect(next_page or url_for('home_page'))
         flash('Invalid username/password combination')

@@ -38,6 +38,7 @@ body {
 .player_table {
   text-align: center;
   font-size: 0.8em;
+  white-space: nowrap;
 }
 
 #player_table th {
@@ -52,6 +53,11 @@ body {
 #history_table th {
   text-align: center;
   background: white;
+}
+
+#expand_spark, #expand_effects {
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 #ore_input_table, #war_input_table {
@@ -356,6 +362,18 @@ body {
 .custom-multiselect {
   background: white;
   border: 1px solid #ced4da;
+}
+
+.remember-label {
+  margin-top: 0.4rem;
+  margin-left: 0.5em;
+}
+
+.remember-check {
+  display: inline;
+  width: 1.5em;
+  vertical-align: middle;
+  margin-left: 1em;
 }
 
 .update-label {

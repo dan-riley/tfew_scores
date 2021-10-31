@@ -18,6 +18,19 @@ var History = (function() {
     addSortListeners();
     addZoomListeners(history_table);
     toggleRows('tracked_only', history_table, 1, 0, '0');
+
+    // Setup expanders for smaller screens
+    var expand_spark = document.getElementById('expand_spark');
+    var expand_effects = document.getElementById('expand_effects');
+    var spark_table = document.getElementById('spark_table');
+    var effects_table = document.getElementById('effects_table');
+    toggleRowsSimple(expand_spark, spark_table, 3);
+    toggleRowsSimple(expand_effects, effects_table, 2);
+
+    if (window.matchMedia('screen and (max-width:768px)').matches) {
+      triggerEvent(expand_spark, 'click');
+      triggerEvent(expand_effects, 'click');
+    }
   });
 
   function addSortListeners() {

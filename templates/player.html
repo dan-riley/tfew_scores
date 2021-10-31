@@ -49,7 +49,7 @@
           </tr>
 
           <tr>
-            <th class="{{'strikeOne' if t.player.strikes == 1}} {{'strikeTwo' if t.player.strikes == 2}} {{'strikeThree' if t.player.strikes >= 3}}">{{t.player.name}} ({{t.player.drops}} / {{t.player.avg_drops}})</th>
+            <th class="nowrap {{'strikeOne' if t.player.strikes == 1}} {{'strikeTwo' if t.player.strikes == 2}} {{'strikeThree' if t.player.strikes >= 3}}">{{t.player.name}} ({{t.player.drops}} / {{t.player.avg_drops}})</th>
             <th>{{t.player.trackedAvg}}</th>
             <th>{{t.player.untrackedAvg}}</th>
             <th>{{t.player.primeAvg}}</th>

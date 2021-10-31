@@ -14,7 +14,7 @@
       <div class="col-md-5 table-responsive float-sm-none float-md-right">
         <table id="spark_table" class="table table-sm table-bordered">
           <tr>
-            <th class="sticky-top">Month</th>
+            <th class="sticky-top">Month<span id="expand_spark"> -</span></th>
             <th class="sticky-top">Prime Record</th>
             <th class="sticky-top">Prime Average</th>
             <th class="sticky-top">Cybertron Record</th>
@@ -45,7 +45,7 @@
         </table>
         <table id="effects_table" class="table table-sm table-bordered">
           <tr>
-            <th class="sticky-top">Date</th>
+            <th class="sticky-top">Date<span id="expand_effects"> -</span></th>
             <th class="sticky-top">Effects</th>
           </tr>
           {% for pe in t.primeEffects %}

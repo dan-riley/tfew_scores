@@ -251,6 +251,27 @@ function addZoomListeners(el) {
   });
 }
 
+function toggleRowsSimple(listen, table, skip) {
+  listen.addEventListener('click', function() {
+    var rows = Array.from(table.querySelectorAll('tr'));
+    rows = rows.slice(skip);
+
+    var display = 'table-row';
+    if (this.innerText == ' -') {
+      display = 'none';
+      spark_expanded = false;
+      this.innerText = ' +';
+    } else {
+      spark_expanded = true;
+      this.innerText = ' -';
+    }
+
+    rows.forEach(function(row) {
+      row.style.display = display;
+    });
+  });
+}
+
 function toggleRows(listen, table, skip, col, value, fnstring='', fnparams=[]) {
   // Toggle rows on and off, by looking at a hidden input on column=col equal to value
   // fnstring is optional function to run at the end, using array of params in fnparams
