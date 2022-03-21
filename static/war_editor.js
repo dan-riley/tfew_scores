@@ -5,6 +5,7 @@ var WarEditor = (function() {
   var playerOrder;
   var scoreOrder;
   var lastSort = 0;
+  var dblValue = 300;
 
   document.addEventListener('DOMContentLoaded', function(event) {
     alert_wrapper = document.getElementById('alert_wrapper');
@@ -27,12 +28,13 @@ var WarEditor = (function() {
         else if (this.style.backgroundColor == 'red')
           this.style.backgroundColor = '';
 
+        dblValue = this.value
         totalScores();
       });
 
       players[i].addEventListener('dblclick', function() {
         if (this.value == '')
-          this.value = 300;
+          this.value = dblValue;
       });
     }
 
