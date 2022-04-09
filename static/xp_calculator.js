@@ -1,6 +1,7 @@
 var XPCalculator = (function() {
 
   var results_table;
+  var gmetal_results_table;
   var gold_results_table;
   var silver_results_table;
   var starting_input_table;
@@ -10,6 +11,7 @@ var XPCalculator = (function() {
   var extra_xp_e;
   var min_zone_e;
   var xp_type_e;
+  var bonus_e;
   var max_bots_e;
   var total_xp_e;
   var avg_level_e;
@@ -19,6 +21,7 @@ var XPCalculator = (function() {
 
   document.addEventListener('DOMContentLoaded', function(event) {
     results_table = document.getElementById('results_table');
+    gmetal_results_table = document.getElementById('gmetal_results_table');
     gold_results_table = document.getElementById('gold_results_table');
     silver_results_table = document.getElementById('silver_results_table');
     starting_input_table = document.getElementById('starting_input_table');
@@ -28,6 +31,7 @@ var XPCalculator = (function() {
     extra_xp_e = document.getElementById('extra_xp');
     min_zone_e = document.getElementById('min_zone');
     xp_type_e = document.getElementById('xp_type');
+    bonus_e = document.getElementById('bonus');
     max_bots_e = document.getElementById('max_bots');
     total_xp_e = document.getElementById('total_xp');
     avg_level_e = document.getElementById('avg_level');
@@ -91,6 +95,7 @@ var XPCalculator = (function() {
     var extra_xp = extra_xp_e.valueAsNumber;
     var min_zone = min_zone_e.valueAsNumber;
     var xp_type = xp_type_e.value;
+    var bonus = bonus_e.value;
     var max_bots = max_bots_e.value;
     var display_select = display_select_e.value;
 
@@ -106,21 +111,23 @@ var XPCalculator = (function() {
     avg_level_e.innerHTML = avg_level;
 
     results_table.getElementsByTagName("tbody")[0].innerHTML = "";
+    gmetal_results_table.getElementsByTagName("tbody")[0].innerHTML = "";
     gold_results_table.getElementsByTagName("tbody")[0].innerHTML = "";
     silver_results_table.getElementsByTagName("tbody")[0].innerHTML = "";
-    for (mult = 1; mult <= 2; mult+=0.5) {
+    for (mult = 1; mult <= 2.5; mult+=0.5) {
       for (zone = min_zone; zone <= 15; zone++) {
         // Build the results
         var r = zone - min_zone;
         var row;
-        if (mult == 2) row = gold_results_table.tBodies[0].insertRow(r);
+        if (mult == 2.5) row = gmetal_results_table.tBodies[0].insertRow(r);
+        else if (mult == 2) row = gold_results_table.tBodies[0].insertRow(r);
         else if (mult == 1.5) row = silver_results_table.tBodies[0].insertRow(r);
         else row = results_table.tBodies[0].insertRow(r);
         var zoneCell = row.insertCell(0);
         zoneCell.innerHTML = parseInt(zone);
 
         // XP for a single bot in this zone
-        var xp_max = zones[xp_type][zone] * mult;
+        var xp_max = zones[xp_type][zone] * mult * bonus;
         // Average coins based on the average level battled
         var coins = Math.round(0.68 * (avg_level) - 1);
 
@@ -156,7 +163,8 @@ var XPCalculator = (function() {
       }
 
       var rows;
-      if (mult == 2) rows = gold_results_table.rows;
+      if (mult == 2.5) rows = gmetal_results_table.rows;
+      else if (mult == 2) rows = gold_results_table.rows;
       else if (mult == 1.5) rows = silver_results_table.rows;
       else rows = results_table.rows;
 

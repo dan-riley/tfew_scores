@@ -12,7 +12,7 @@
 {% block update_form %}{% endblock %}
 
 {% block content %}
-Enter the starting and ending level for your bot, and it's star level.  Also enter any additional XP needed.  For instance, if your bot is at level 53 and halfway to 54, enter 54 as the starting level, and the amount of XP you need to get to 54 in the Extra XP field.  Also enter the minimum zone you want to calculate, to reduce the number of potential results to view.  Finally enter whether it's Super, Triple or Normal XP, and the maximum number of bots to display in the tables.
+Enter the starting and ending level for your bot, and it's star level.  Also enter any additional XP needed.  For instance, if your bot is at level 53 and halfway to 54, enter 54 as the starting level, and the amount of XP you need to get to 54 in the Extra XP field.  Also enter the minimum zone you want to calculate, to reduce the number of potential results to view.  Finally enter whether it's Super, Triple or Normal XP, whether you have a bonus such as +25% from the Cyber Pass, and the maximum number of bots to display in the tables.
       <br />
       <form>
         <table class="table table-sm w-auto" id="starting_input_table">
@@ -24,6 +24,7 @@ Enter the starting and ending level for your bot, and it's star level.  Also ent
               <th>Extra XP</th>
               <th>Min Zone</th>
               <th>XP Type</th>
+              <th>Bonus</th>
               <th>Max Bots</th>
             </tr>
           </thead>
@@ -52,6 +53,12 @@ Enter the starting and ending level for your bot, and it's star level.  Also ent
                 <option value="0" selected>Super</option>
                 <option value="1">Triple</option>
                 <option value="2">Normal</option>
+              </select>
+            </td>
+            <td>
+              <select class="custom-select" id="bonus" title="Bonus XP, such as +25% from Cyber Pass.">
+                <option value="1">None</option>
+                <option value="1.25" selected>25%</option>
               </select>
             </td>
             <td>
@@ -93,6 +100,28 @@ Enter the starting and ending level for your bot, and it's star level.  Also ent
               <thead>
                 <tr class="text-center">
                   <th colspan="9">No XP Core</th>
+                </tr>
+                <tr class="text-center text-nowrap">
+                  <th title="Zone battled in.">Zone</th>
+                  <th title="Only the leveling bot used.">1 Bot</th>
+                  <th title="Two bots deployed per battle.">2 Bots</th>
+                  <th title="Three bots deployed per battle.">3 Bots</th>
+                  <th title="Four bots deployed per battle.">4 Bots</th>
+                  <th title="Five bots deployed per battle.  What's wrong with you?">5 Bots</th>
+                  <th title="Six bots deployed per battle.  Why would you do this?">6 Bots</th>
+                  <th title="Seven bots deployed per battle.  This is silly.">7 Bots</th>
+                  <th title="Full team deployed.">8 Bots</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-auto">
+            <table class="table table-sm w-auto" id="gmetal_results_table">
+              <thead>
+                <tr class="text-center">
+                  <th colspan="9">GMetal XP Core</th>
                 </tr>
                 <tr class="text-center text-nowrap">
                   <th title="Zone battled in.">Zone</th>
