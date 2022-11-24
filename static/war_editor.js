@@ -33,7 +33,7 @@ var WarEditor = (function() {
       });
 
       players[i].addEventListener('dblclick', function() {
-        if (this.value == '')
+        if ((this.value == '') || (this.value == '300'))
           this.value = dblValue;
       });
     }
