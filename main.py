@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 import ocr
 from models import db, Player, OCR, War, Score, Alliance
 from forms import LoginForm, SignupForm
+import stripe
 import tfew
 
 app = Flask(__name__, instance_relative_config=True)
@@ -922,6 +923,46 @@ def checkPlayerAlliance():
     # db.session.commit()
 
     return render_template('utility.html', html=html)
+
+@app.route('/donate', methods=['GET', 'POST'])
+def donate():
+    if request.method == 'GET':
+        if 'success' in request.args:
+            t.flash = 'Thanks for your donation!'
+        elif 'cancel' in request.args:
+            t.flash = 'Sorry you changed your mind!  You can always reconsider!'
+
+    if request.method == 'POST':
+        amount = int(float(request.form['amount']) * 100)
+        stripe.api_key = app.config['STRIPE_SECRET_KEY']
+        checkout_session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        'price_data': {
+                            'product_data': {
+                                'name': 'TFEW Scores Donation',
+                            },
+                            'unit_amount': amount,
+                            'currency': 'usd',
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                payment_intent_data={
+                    'metadata': {'CPpercent': request.form['CPperc'], 'note': request.form['note']},
+                },
+                payment_method_types=['card'],
+                mode='payment',
+                submit_type='donate',
+                success_url=request.host_url + 'donate?success',
+                cancel_url=request.host_url + 'donate?cancel',
+                )
+        return redirect(checkout_session.url)
+
+    if t.flash:
+        flash(t.flash)
+        t.flash = None
+    return render_template('donate.html', t=t)
 
 if __name__ == "__main__":
     manager.run()

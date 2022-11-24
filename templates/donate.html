@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='donate.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}Donate{% endblock %}
+{% block header %}TFEW Scoreboard Donation{% endblock %}
+{% block nav_donate %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+
+{% block content %}
+      <br />
+      <div class="col-auto">Select a donation amount, or enter a custom amount.  The value is in US Dollars!</div>
+      <br />
+      <form method="POST">
+        <div class="form-group col-auto">
+          <input type="hidden" name="requester" value="{{t.player_id}}">
+          <div class="row">
+            <div class="col-auto">
+              <input class="btn btn-success btn-lg" type="button" name="amount5" value="$5">
+            </div>
+            <div class="col-auto">
+              <input class="btn btn-success btn-lg" type="button" name="amount10" value="$10">
+            </div>
+            <div class="col-auto">
+              <input class="btn btn-success btn-lg" type="button" name="amount20" value="$20">
+            </div>
+          </div>
+          <br />
+          <div class="row">
+            <div class="input-group currency-fixed">
+              <div class="input-group-prepend">
+                <span class="input-group-text">$</span>
+              </div>
+              <input class="form-control" type="number" name="amount" value="10.00" min="1">
+            </div>
+            <div id="CPToggle">
+              <input class="form-control remember-check" type="checkbox" name="CPToggleCheck">
+              <label for="CPToggle" id="CPlabel" class="remember-label">Change Cyber Pass %</label>
+            </div>
+            <div class="input-group percent-fixed" id="CPinput" style="display: none">
+              <input class="form-control" type="number" name="CPperc" value="10" min="0" max="80">
+              <div class="input-group-append">
+                <span class="input-group-text">%</span>
+              </div>
+            </div>
+          </div>
+          <br />
+          <div class="row">
+            <div class="col-6 col-md-4">
+              <textarea class="form-control" rows="3" name="note" placeholder="Add a note if you'd like!"></textarea>
+            </div>
+          </div>
+          <br />
+          <div class="row">
+            <div class="col-auto">
+              <input class="btn btn-primary" type="submit" name="submit" value="Donate Now!">
+            </div>
+          </div>
+        </div>
+      </form>
+      <br />
+      <div class="col-auto">
+        <h3>Donation FAQ</h3>
+        <ul>
+          <li>
+            <b>Is this safe?</b>
+            <br />
+            Absolutely!  Payments are processed by Stripe, which is one of the most used and trusted payment processors out there!  When you click 'Donate Now!' you'll be taken to a Stripe Checkout page, hosted by them, and all payment info goes to them, not through this site.  Currently the transaction is fully anonymous as far as this site goes...no information is connected to your user id / in-game name.  That may change in the future to add more capability, but that will be posted.
+          </li>
+          <br />
+          <li>
+            <b>Why not PayPal?</b>
+            <br />
+            PayPal recently raised their fees, and they take a significant cut compared to Stripe or other payment processors (see below for fees I pay out of your donation).  If you wanted to give me a dollar, after PayPal fees I would only get 46 cents!  That said, if you would like to use PayPal or Venmo or another payment method and send me money through Friends and Family (or understand that only a smaller portion will actually go to me / the fund if paying Goods and Services), feel free to contact me and we can work that out.
+          </li>
+          <br />
+          <li>
+            <b>Why would I give you any money?</b>
+            <br />
+            Any reason you want!  I certainly don't expect it!  But if you'd like to show your appreciation for the site, or help contribute to the server costs, or help fund some Cyber Pass giveaways to members of the Sector 7 family, this is your opportunity!
+          </li>
+          <br />
+          <li>
+            <b>Cyber Pass giveaway?!  What do you mean?!</b>
+            <br />
+            Since Space Ape is allowing us to gift Cyber Passes, I thought it would be cool if we could give away some passes to members of the family without one individual having to pay the full cost!  I don't have a full plan of how the passes will be given away just yet, but rest assured I will work with the other S7 leadership to come up with a fair plan.  It might be random drawings among all players, it might be a contest based on event scores, or war scores...who knows!  We'll also gladly take input from the family on your ideas!
+          </li>
+          <br />
+          <li>
+            <b>Neat!  But what if Space Ape stops allowing Cyber Pass gifts, and we've already given you some money?</b>
+            <br />
+            That's a good question!  Hopefully they keep the gifting since it's been very popular!  But if they do, there will be a few options:
+            <ul>
+              <li>I keep it, and it will go toward server costs.</li>
+              <li>I return it to you, but you may be responsible for any lost fees in the transaction.</li>
+              <li>I will donate all remaining Cyber Pass money to a charity to be named later.</li>
+            </ul>
+          </li>
+          <br />
+          <li>
+            <b>How much of my donation will go toward the Cyber Pass fund?</b>
+            <br />
+            By default, 10%.  You can change that by clicking the "Change Cyber Pass %" checkbox and then entering a new value.  The maximum percentage you can contribute is 80%.  You can also change it to 0% if you don't want to contribute any to the Cyber Pass fund.
+          </li>
+          <br />
+          <li>
+            <b>Why can't I contribute 100% to the Cyber Pass?  And what is the minimum I can donate?</b>
+            <br />
+            The minimum donation is $1 (USD).  The payment processor (Stripe) charges 2.9% plus 0.30 cents per transaction, so with a $1 donation, only 67 cents makes it to me.  So anything less than a dollar isn't really worth all of the fees for anyone.  If there is demand for people to make 100% donations to the Cyber Pass fund without any going to me, we can consider that in the future, but the processing fees will still have to be taken out.  So for now I'm just taking the processing fees out of my "cut", so you know that exactly whatever percent you select for your donation, that is what is going to the fund.
+          </li>
+          <br />
+          <li>
+            <b>What information about the transactions are you storing on the website or elsewhere?</b>
+            <br />
+            Currently zero information related to the transaction is being stored on the website.  In the future, depending on what capabilities we would like, the most that will be stored is the information on this form (amount, Cyber Pass percentage, and note) tied to your user id.  No personal information will be stored here.  Stripe has an array of data such as the email address you give for the transaction, name, credit card last 4, etc.  This information will only ever be stored on the Stripe servers, just like any other storefront.  Important details of the transaction, such as total donation, net donation, percent contributed, etc., will be used in a local spreadsheet for tabulating the current fund total and other related details.  But NO personal information will be stored/used by me.
+          </li>
+          <br />
+          <li>
+            <b>What payment methods can I use?</b>
+            <br />
+            All major credit cards, Google Pay and Apple Pay are accepted through the Stripe payment gateway.  If you have a payment method that you think should work but it's not available, please let me know and I can try to add it.  There are lots of options but I'm not familiar with many foreign methods!
+          </li>
+          <br />
+          <li>
+            <b>Do I really have to pay in USD?</b>
+            <br />
+            Currently, yes.  I have to accept funds in USD, and a conversion has to happen somewhere.  My understanding is that its better for you to choose the conversion on your end.  If there is demand for adding further currencies we can certainly investigate it!
+          </li>
+          <br />
+          <li>
+            <b>What is the textbox for?</b>
+            <br />
+            Any note you might want to pass along!  As stated above, the donations are currently anonymous (as far as in-game name), so if you'd like for me to know who you are, this is your opportunity!
+          </li>
+          <br />
+          <li>
+            <b>Will any of the total donations be made public?</b>
+            <br />
+            The number of Cyber Passes gifted and the winners certainly will be!  As for other information, such as total donated, or current fund size, that's to be determined.
+          </li>
+        </ul>
+      </div>
+{% endblock %}

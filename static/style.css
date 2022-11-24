@@ -487,6 +487,18 @@ a.dropdown-item.active, a.dropdown-item:active {
   max-width: 800px;
 }
 
+.currency-fixed {
+  flex: 0 0 150px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.percent-fixed {
+  flex: 0 0 130px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
 @media (pointer: coarse), (hover: none) {
   [title]:hover {
     position: relative;
