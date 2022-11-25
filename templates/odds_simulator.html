@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block loadjs %}
+    <script type="text/javascript" src="{{url_for('static', filename='odds_simulator.js')+v}}"></script>
+{% endblock %}
+
+{% block title %}Odds Simulator{% endblock %}
+{% block header %}TFEW Odds Simulator{% endblock %}
+{% block nav_utilities %}active{% endblock %}
+{% block nav_odds %}active{% endblock %}
+
+{% block update_form %}{% endblock %}
+
+{% block content %}
+Run a bunch of simulated crystal openings to find out what you can expect to pull!
+      <br />
+      <form>
+        <table class="table table-sm w-auto" id="starting_input_table">
+          <thead>
+            <tr>
+              <th>Number of Simulations</th>
+              <th>Number of Crystals</th>
+              <th>Crystal Type</th>
+              <th>4* Odds</th>
+              <th>3* Odds</th>
+              <th>2* Odds</th>
+              <th>Additional 5* Shards</th>
+            </tr>
+          </thead>
+          <tr>
+            <td>
+              <input class="form-control" type="number" id="num_sims" value="10000" min="1" max="1000000" title="Number of simulations to run.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="num_crystals" value="80" min="1" max="100000" title="Number of crystals opened.">
+            </td>
+            <td>
+              <select class="custom-select" id="crystal_type" title="Type of crystals.">
+                <option value="0" selected>Bots</option>
+                <option value="1">Combat Bots</option>
+              </select>
+            </td>
+            <td>
+              <input class="form-control" type="number" id="odds4" value="2" min="0" max="100" title="Percentage odds to receive a 4* crystal.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="odds3" value="25" min="0" max="100" title="Percentage odds to receive a 3* crystal.">
+            </td>
+            <td>
+              <input class="form-control" type="number" id="odds2" value="73" min="0" max="100" title="Percentage odds to receive a 2* crystal.  Auto-calculated." disabled>
+            </td>
+            <td>
+              <input class="form-control" type="number" id="add5" value="0" min="0" max="100000" title="Additional 5* shards received from a bundle.  Added to the totals below.">
+            </td>
+
+          </tr>
+        </table>
+
+        <b>Average 5* shards received (including additional):</b> <span id="avg_shards"></span>
+        <br />
+        <b>Most common 5* shards received (including additional):</b> <span id="common_shards"></span>
+
+        <br />
+        <br />
+        Every crystal is randomly pulled based on the given odds, and the number of shards received is displayed and totaled for each simulation run.  Then the averages for all of the simulations are shown, and the top 3 most common actual results, which may give a better idea of expected results, especially when the number of crystals results in an odd percentage (ie, 80 crystals at 2% is 1.6, which isn't a possible result).
+        <br />
+        <input class="btn btn-light btn-small" type="button" name="refresh" value="Run simulation">
+        <br />
+        <input class="form-control update-check" type="checkbox" name="clear_check">
+        Clear summary
+        <div class="row">
+          <div class="col-auto">
+            <table class="table table-sm w-auto" id="counts_table">
+              <thead>
+                <tr class="text-center text-nowrap">
+                  <th title="Result type (number of occurances).">Result</th>
+                  <th title="Number of 2* crystals pulled.">2*</th>
+                  <th title="Number of 3* crystals pulled.">3*</th>
+                  <th title="Number of 4* crystals pulled.">4*</th>
+                  <th title="Number of 3* shards received.">3* Shards</th>
+                  <th title="Number of 4* shards received.">4* Shards</th>
+                  <th title="Number of 5* shards received.">5* Shards</th>
+                  <th title="Total number of 5* shards received.  Only used for combat bots.">Total 5* Shards</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <br />
+        Breakdown of results: <b>(WARNING!  Displaying totals may take an extremely long time if the number set is high, approximately >1000 simulations and/or >100 crystals!)</b>
+
+        <br />
+        <input class="form-control update-check" type="checkbox" name="sim_check">
+        Display simulation totals
+        <br />
+        <input class="form-control update-check" type="checkbox" name="crystals_check">
+        Display individual crystal pulls
+
+        <div class="row">
+          <div class="col-auto">
+            <table class="table table-sm w-auto" id="results_table">
+              <thead>
+                <tr class="text-center text-nowrap">
+                  <th title="Simulation number.">Simulation</th>
+                  <th title="Crystal number.">Crystal</th>
+                  <th title="Star level pulled.">Star</th>
+                  <th title="Number of 2* crystal pulled.">2*</th>
+                  <th title="Number of 3* crystal pulled.">3*</th>
+                  <th title="Number of 4* crystal pulled.">4*</th>
+                  <th title="Number of 3* shards received.">3* Shards</th>
+                  <th title="Number of 4* shards received.">4* Shards</th>
+                  <th title="Number of 5* shards received.">5* Shards</th>
+                  <th title="Total number of 5* shards received.  Only used for combat bots.">Total 5* Shards</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        <div>
+      </form>
+{% endblock %}

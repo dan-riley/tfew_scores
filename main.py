@@ -357,6 +357,10 @@ def bundle_calculator():
 def xp_calculator():
     return render_template('xp_calculator.html', t=t)
 
+@app.route('/odds_simulator')
+def odds_simulator():
+    return render_template('odds_simulator.html', t=t)
+
 @app.route('/issues', methods=['GET', 'POST'])
 @login_required
 def issues():
