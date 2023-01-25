@@ -24,6 +24,7 @@ class Player(UserMixin, db.Model):
     alliance_id = db.Column(db.Integer(), db.ForeignKey('alliances.id'))
     officer = db.Column(db.Boolean(), default=0)
     password_hash = db.Column(db.String(128))
+    note = db.Column(db.String(255), default='')
 
     scores = db.relationship('Score', back_populates='player')
     wars = db.relationship('War', secondary='scores', order_by='War.date')
@@ -103,6 +104,8 @@ class Player(UserMixin, db.Model):
         update['Reset'] = None
         update['Officer'] = None
         update['Alliance'] = None
+        update['Note'] = {}
+        update['New_Note'] = {}
         update['OCR'] = {}
         update['New_OCR'] = None
         i = 0

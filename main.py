@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 import ocr
 from models import db, Player, OCR, War, Score, Alliance
 from forms import LoginForm, SignupForm
+import subs
 import stripe
 import tfew
 
@@ -872,6 +873,163 @@ def importSectorScores():
             newwar.scores.append(newscore)
 
             db.session.add(newscore)
+
+    db.session.commit()
+    return render_template('utility.html', html=html)
+
+@app.route('/import_scorched_wars')
+@officer_required
+def importScorchedWars():
+    alliances = Alliance.query.order_by('name').all()
+    alliancesDict = dict(zip([alliance.name for alliance in alliances], alliances))
+    corrections = subs.loadAllianceCorrections(os.path.join(app.root_path, 'data/alliance_corrections.csv'))
+
+    html = []
+    with open(os.path.join(app.root_path, 'data/scorched_earth_wars.csv'), 'r') as f:
+        csv_reader = csv.reader(f, delimiter=',')
+        for row in reversed(list(csv_reader)):
+            wardate = datetime.strptime(row[0].strip(), '%Y/%m/%d').date()
+            alliance = row[1].strip()
+            opponent = subs.translateTFEW(row[2].strip(), corrections)
+            league = row[3].strip()
+            our_score = int(row[4].strip())
+            opp_score = int(row[5].strip())
+            tracked = row[7].strip()
+
+            alliance_id = alliancesDict[alliance].id
+            if opponent not in alliancesDict:
+                newopp = Alliance()
+                newopp.name = opponent
+                html.append('opponent ' + newopp.name + ' added')
+                alliancesDict[opponent] = newopp
+                db.session.add(newopp)
+
+            newwar = None
+            for war in alliancesDict[alliance].wars:
+                if war.date == wardate and war.opponent.id == alliancesDict[opponent].id:
+                    newwar = war
+                    break
+
+            if not newwar:
+                newwar = War()
+                newwar.opponent = alliancesDict[opponent]
+
+                if league in ('PRIME', 'Prime', 'UNICRON', 'Unicron'):
+                    newwar.league = 8
+                elif league in ('CYBERTRON', 'Cybertron', 'CYBER'):
+                    newwar.league = 7
+                elif league in ('CAMINUS', 'Caminus'):
+                    newwar.league = 6
+                elif league in ('PLATINUM', 'Platinum'):
+                    newwar.league = 5
+                elif league in ('GOLD', 'Gold'):
+                    newwar.league = 4
+
+                newwar.alliance_id = alliance_id
+                newwar.date = wardate
+                newwar.our_score = our_score
+                newwar.opp_score = opp_score
+
+                if tracked == 'false':
+                    newwar.tracked = 0
+                elif tracked == 'true':
+                    newwar.tracked = 1
+                elif tracked == 'Optional':
+                    newwar.tracked = 2
+                else:
+                    newwar.tracked = 0
+
+                html.append('war added ' + str(newwar.date) + ' ' + alliance + ' ' + opponent)
+                alliancesDict[alliance].wars.append(newwar)
+
+    db.session.commit()
+    return render_template('utility.html', html=html)
+
+@app.route('/import_scorched_scores')
+@officer_required
+def importScorchedScores():
+    players = Player.query.order_by('name').all()
+    alliances = Alliance.query.order_by('name').all()
+    acorrections = subs.loadAllianceCorrections(os.path.join(app.root_path, 'data/alliance_corrections.csv'))
+    pcorrections = subs.loadAllianceCorrections(os.path.join(app.root_path, 'data/player_corrections.csv'))
+
+    playersDict = dict(zip([player.name for player in players], players))
+    playersDictUpper = dict(zip([player.name.upper() for player in players], players))
+    alliancesDict = dict(zip([alliance.name for alliance in alliances], alliances))
+    tempNames = []
+    reported = []
+    scored = []
+
+    html = []
+    with open(os.path.join(app.root_path, 'data/scorched_united.csv'), 'r') as f:
+        csv_reader = csv.reader(f, delimiter=',')
+        for row in reversed(list(csv_reader)):
+            wardate = datetime.strptime(row[0].strip(), '%Y/%m/%d').date()
+            name = row[1].strip()
+            alliance = row[2].strip()
+            opponent = subs.translateTFEW(row[3].strip(), acorrections)
+            league = row[4].strip()
+            score = int(row[5].strip())
+            tracked = row[6].strip()
+
+            # Remove extraneous characters and add to note
+            name, note = subs.removeExtra(name)
+            # Translate player names into our names
+            name = subs.translateTFEW(name, pcorrections)
+
+            alliance_id = alliancesDict[alliance].id
+            if name not in playersDict:
+                if name.upper() in playersDictUpper:
+                    playersDictUpper[name.upper()].name = name
+                    playersDict[name] = playersDictUpper[name.upper()]
+                    html.append('fixed player name ' + name)
+                    db.session.add(playersDictUpper[name.upper()])
+                else:
+                    player = Player()
+                    player.name = name
+                    html.append('adding player ' + player.name)
+
+                    player.alliance_id = alliance_id
+                    player.note = note
+
+                    newocr = OCR()
+                    newocr.ocr_string = name
+                    player.ocr.append(newocr)
+
+                    playersDict[name] = player
+                    tempNames.append(name)
+                    db.session.add(player)
+            else:
+                if name not in tempNames and name not in reported:
+                    html.append('.......................player here ' + name)
+                    reported.append(name)
+
+                for war in playersDict[name].wars:
+                    if war.date == wardate:
+                        html.append('player already exists ' + name)
+
+            # This should actually cause a crash, but just in case...
+            if opponent not in alliancesDict:
+                html.append('opponent ' + opponent + ' missing!')
+
+            newwar = None
+            for war in alliancesDict[alliance].wars:
+                if war.date == wardate and war.opponent.id == alliancesDict[opponent].id:
+                    newwar = war
+                    break
+
+            # Hack for duplicate entries in Phoenix
+            tester = str(newwar.id) + name
+            if tester not in scored:
+                scored.append(tester)
+                newscore = Score()
+                newscore.score = score
+                # Not sure why it makes me do this here but not other imports...but it works!
+                with db.session.no_autoflush:
+                    newscore.player = playersDict[name]
+                    newwar.scores.append(newscore)
+
+                db.session.add(newscore)
 
     db.session.commit()
     return render_template('utility.html', html=html)

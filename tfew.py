@@ -354,6 +354,12 @@ class TFEW():
                 pupdate['Alliance'] = alliance.name
                 changed = True
 
+            # Edit the note
+            newnote = fplayer['note'].strip()
+            if newnote and player.note != newnote:
+                pupdate['New_Note'] = newnote
+                changed = True
+
             # Edit the OCR strings
             i = 0
             for pocr in player.ocr:
@@ -384,6 +390,7 @@ class TFEW():
                 pupdate['New_Name'] = fplayers['newName']
                 alliance = Alliance.query.get(fplayers['newAlliance'])
                 pupdate['Alliance'] = alliance.name
+                pupdate['New_Note'] = fplayers['newNote']
                 self.updates['new'] = pupdate
 
                 # For now we require a player to have logged in before giving officer rights
@@ -408,6 +415,9 @@ class TFEW():
                     alliance_id = getIDbyName(Alliance, fplayer['Alliance'])
                     player.alliance_id = alliance_id
 
+                if fplayer['New_Note'] is not None:
+                    player.note = fplayer['New_Note']
+
                 for oid in fplayer['OCR']:
                     if fplayer['OCR'][oid] is not None:
                         i = 0
@@ -430,6 +440,7 @@ class TFEW():
                 newplayer = Player()
                 newplayer.name = fplayer['New_Name']
                 newplayer.alliance_id = getIDbyName(Alliance, fplayer['Alliance'])
+                newplayer.note = fplayer['New_Note']
 
                 newocr = OCR()
                 newocr.ocr_string = fplayer['New_Name'].upper()

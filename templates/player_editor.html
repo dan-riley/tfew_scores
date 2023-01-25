@@ -45,6 +45,7 @@
               <th>Name</th>
               <th>Officer</th>
               <th>Allliance</th>
+              <th>Note</th>
               <th>OCR Strings</th>
               <th colspan="100"></th>
             </tr>
@@ -76,6 +77,9 @@
                   {% endif %}
                 {% endfor %}
               </select>
+            </td>
+            <td>
+              <input class="form-control" type="text" name="players[{{player.id}}][note]" value="{{player.note}}">
             </td>
             {% for ocr in player.ocr %}
               {% if loop.index0 % 2 == 0 %}
@@ -124,6 +128,9 @@
                   {% endif %}
                 {% endfor %}
               </select>
+            </td>
+            <td>
+              <input class="form-control" type="text" name="newNote">
             </td>
             <td colspan="100"></td>
           </tr>
