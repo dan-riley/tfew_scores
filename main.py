@@ -800,7 +800,7 @@ def importSectorScores():
                     player.alliance_id = alliance_id
 
                     newocr = OCR()
-                    newocr.ocr_string = name
+                    newocr.ocr_string = name.strip().upper()
                     player.ocr.append(newocr)
 
                     playersDict[name] = player
@@ -975,7 +975,7 @@ def importScorchedScores():
             # Remove extraneous characters and add to note
             name, note = subs.removeExtra(name)
             # Translate player names into our names
-            name = subs.translateTFEW(name, pcorrections)
+            name = subs.translateTFEW(name, pcorrections).strip()
 
             alliance_id = alliancesDict[alliance].id
             if name not in playersDict:
@@ -990,10 +990,10 @@ def importScorchedScores():
                     html.append('adding player ' + player.name)
 
                     player.alliance_id = alliance_id
-                    player.note = note
+                    player.note = note.strip()
 
                     newocr = OCR()
-                    newocr.ocr_string = name
+                    newocr.ocr_string = name.upper()
                     player.ocr.append(newocr)
 
                     playersDict[name] = player

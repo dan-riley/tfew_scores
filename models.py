@@ -104,8 +104,8 @@ class Player(UserMixin, db.Model):
         update['Reset'] = None
         update['Officer'] = None
         update['Alliance'] = None
-        update['Note'] = {}
-        update['New_Note'] = {}
+        update['Note'] = self.note
+        update['New_Note'] = None
         update['OCR'] = {}
         update['New_OCR'] = None
         i = 0

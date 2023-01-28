@@ -382,6 +382,7 @@ class TFEW():
                 pupdate = player.updater()
                 alliance = Alliance.query.get(fplayers['newAlliance'])
                 pupdate['Alliance'] = alliance.name
+                pupdate['New_Note'] = fplayers['newNote']
                 self.updates[player.id] = pupdate
             else:
                 newplayer = Player()
