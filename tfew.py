@@ -236,6 +236,7 @@ class TFEW():
 
         rawCount = trackedCount
         rawScore = trackedScore
+        mulligan = False
 
         # If player doesn't have strikes, remove the minimum scores if we have enough
         if player.strikes == 0:
@@ -250,6 +251,7 @@ class TFEW():
             if trackedCount > 3:
                 trackedScore -= trackedMin
                 trackedCount -= 1
+                mulligan = True
 
             if primeCount > 3:
                 primeScore -= primeMin
@@ -287,6 +289,12 @@ class TFEW():
                     if war.league == 7 and score.score > cyberAvg:
                         cyberScore += score.score
                         cyberCount += 1
+
+        # If there weren't enough tracked wars before, but there were
+        # Optional wars counted, give the player their mulligan
+        if not mulligan and player.strikes == 0 and trackedCount > 3:
+            trackedScore -= trackedMin
+            trackedCount -= 1
 
         # Recalculate the averages with the optional scores added
         trackedAvg = trackedScore / trackedCount if trackedCount else trackedScore
