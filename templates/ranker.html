@@ -120,4 +120,69 @@
         </tr>
         {% endfor %}
       </table>
+
+      <div class="modal fade" id="reorg" tabindex="-1" role="dialog" aria-labelledby="reorg" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="reorgTitle">TFEW Reorganization</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <table class="table table-sm">
+                <tr>
+                  <th>Alliance</th>
+                  <th>Old Count</th>
+                  <th>Old Avg</th>
+                  <th>New Avg</th>
+                </tr>
+                <tr>
+                  <td>Sector 7</td>
+                  <td id="S7count"></td>
+                  <td id="S7old"></td>
+                  <td id="S7new"></td>
+                </tr>
+                <tr>
+                  <td>Scorched Earth</td>
+                  <td id="SEcount"></td>
+                  <td id="SEold"></td>
+                  <td id="SEnew"></td>
+                </tr>
+                <tr>
+                  <td>Scorched Moon</td>
+                  <td id="SMcount"></td>
+                  <td id="SMold"></td>
+                  <td id="SMnew"></td>
+                </tr>
+                <tr>
+                  <td>S7 Omega</td>
+                  <td id="SOcount"></td>
+                  <td id="SOold"></td>
+                  <td id="SOnew"></td>
+                </tr>
+              </table>
+              <table id="reorgTable" class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Average</th>
+                    <th>Wars</th>
+                    <th>Old Alliance</th>
+                    <th>New Alliance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+              <a href="#" onclick="download_table_as_csv('reorgTable');">Download as CSV</a>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
 {% endblock %}

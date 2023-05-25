@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.35'
+        self.version = 'v1.36'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -167,7 +167,7 @@ class TFEW():
     def setupRanker(self):
         # Default opponents
         if not self.opp_ids:
-            self.opp_ids = [53,107,362,19,88,152,159]
+            self.opp_ids = [2,53,107,19,88,159,136,127]
         self.filt.append(War.opponent_id.in_(self.opp_ids))
 
         # Remove the alliance filter that may have been set by default
