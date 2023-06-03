@@ -55,6 +55,11 @@ class TFEW():
                 self.filt.append(War.opponent_id.in_(self.opp_ids))
 
             if self.start_day or self.end_day:
+                # When viewing rankings, don't show averages across the 2023 reorganization
+                if (dateWindow and date.fromisoformat(self.start_day) < date(2023, 6, 1) and
+                                   date.fromisoformat(self.end_day) > date(2023, 6, 1)):
+                    self.start_day = date(2023, 6, 1)
+                    self.flash = 'Start date automatically reset to reorganization date!'
                 self.filt.append(War.date.between(self.start_day, self.end_day))
 
             if not self.end_day:
@@ -77,6 +82,10 @@ class TFEW():
         if dateWindow and not self.filt:
             self.end_day = datetime.now(pytz.timezone('US/Central')).date()
             self.start_day = self.end_day - timedelta(days=dateWindow)
+            # When viewing rankings, don't show averages across the 2023 reorganization
+            # Don't need to check end_day since at this point it will always be after here
+            if self.start_day < date(2023, 6, 1):
+                self.start_day = date(2023, 6, 1)
             self.filt = [War.date.between(self.start_day, self.end_day)]
 
         if self.alliance != 9999:
