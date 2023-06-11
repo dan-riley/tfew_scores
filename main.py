@@ -4,7 +4,7 @@ import json
 import csv
 from functools import wraps
 import pytz
-from flask import Flask, render_template, flash, request, send_file, jsonify, make_response, redirect, url_for
+from flask import Flask, render_template, flash, request, send_file, jsonify, make_response, redirect, url_for, abort
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from werkzeug.utils import secure_filename
 import ocr
@@ -27,6 +27,11 @@ login_manager.init_app(app)
 
 # Initialize our class that holds data for easier access
 t = tfew.TFEW(current_user)
+
+@app.before_request
+def check_for_maintenance():
+    if app.config['MAINTENANCE']:
+        abort(503)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
