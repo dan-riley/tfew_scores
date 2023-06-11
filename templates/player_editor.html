@@ -81,7 +81,9 @@
             <td>
               <input class="form-control" type="text" name="players[{{player.id}}][note]" value="{{player.note}}">
             </td>
+            {% set looptest = namespace(set=false) %}
             {% for ocr in player.ocr %}
+              {% set looptest.set = true %}
               {% if loop.index0 % 2 == 0 %}
                 <td>
               {% endif %}
@@ -97,6 +99,9 @@
                 </td>
               {% endif %}
             {% endfor %}
+            {% if not looptest.set %}
+              <td><input class="form-control" type="text" name="players[{{player.id}}][newocr]" value=""></td>
+            {% endif %}
             <td colspan="100"></td>
           </tr>
           {% endfor %}
