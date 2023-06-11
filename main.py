@@ -5,7 +5,6 @@ import csv
 from functools import wraps
 import pytz
 from flask import Flask, render_template, flash, request, send_file, jsonify, make_response, redirect, url_for
-from flask_script import Manager
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from werkzeug.utils import secure_filename
 import ocr
@@ -16,7 +15,6 @@ import stripe
 import tfew
 
 app = Flask(__name__, instance_relative_config=True)
-manager = Manager(app)
 login_manager = LoginManager(app)
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'mp4', 'mov'])
@@ -1127,4 +1125,4 @@ def donate():
     return render_template('donate.html', t=t)
 
 if __name__ == "__main__":
-    manager.run()
+    app.run()

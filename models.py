@@ -27,7 +27,7 @@ class Player(UserMixin, db.Model):
     note = db.Column(db.String(255), default='')
 
     scores = db.relationship('Score', back_populates='player')
-    wars = db.relationship('War', secondary='scores', order_by='War.date')
+    wars = db.relationship('War', secondary='scores', order_by='War.date', overlaps='player,scores,war')
     ocr = db.relationship('OCR', backref='player')
     alliance = db.relationship('Alliance', foreign_keys='Player.alliance_id')
     strikes = 0
@@ -117,6 +117,7 @@ class Player(UserMixin, db.Model):
 
 
 class OCR(db.Model):
+    __tablename__ = 'OCR'
     dummy_id = db.Column(db.Integer(), primary_key=True)
     player_id = db.Column(db.Integer(), db.ForeignKey('players.id'))
     ocr_string = db.Column(db.String(255), nullable=False)
@@ -150,7 +151,7 @@ class War(db.Model):
     alliance = db.relationship('Alliance', foreign_keys='War.alliance_id')
     opponent = db.relationship('Alliance', foreign_keys='War.opponent_id')
     scores = db.relationship('Score', back_populates='war', cascade='delete, delete-orphan')
-    players = db.relationship('Player', secondary='scores', order_by='Player.name')
+    players = db.relationship('Player', secondary='scores', order_by='Player.name', overlaps='player,scores,war,wars')
     #players = association_proxy('scores', 'players')
 
     def winClass(self):
@@ -199,8 +200,8 @@ class Alliance(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     active = db.Column(db.Boolean())
     name = db.Column(db.String(255), nullable=False)
-    wars = db.relationship('War', foreign_keys='War.alliance_id')
-    oppwars = db.relationship('War', foreign_keys='War.opponent_id')
+    wars = db.relationship('War', foreign_keys='War.alliance_id', overlaps='alliance')
+    oppwars = db.relationship('War', foreign_keys='War.opponent_id', overlaps='opponent')
 
     def updater(self):
         update = {}
