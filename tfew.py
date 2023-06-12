@@ -674,6 +674,10 @@ class TFEW():
         if 'players' not in fwar:
             fwar['players'] = []
 
+        # Need this to set a war id.  Note that if it fails we lose that id.
+        db.session.add(war)
+        db.session.flush()
+
         if war.scores:
             for score in war.scores:
                 fplayer = fwar['players'][score.player_id]
@@ -687,6 +691,7 @@ class TFEW():
                         newscore = Score()
                         self.updateScore(fplayer, newscore)
                         newscore.player = Player.query.get(fplayer['id'])
+                        db.session.add(newscore)
                         war.scores.append(newscore)
 
         for fplayer in fwar['missing_players']:
@@ -697,6 +702,7 @@ class TFEW():
                     newscore = Score()
                     self.updateScore(fplayer, newscore)
                     newscore.player = Player.query.get(fplayer['id'])
+                    db.session.add(newscore)
                     war.scores.append(newscore)
 
         db.session.add(war)
