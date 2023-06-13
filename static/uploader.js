@@ -3,8 +3,6 @@ var Uploader = (function() {
   var progress, progress_wrapper, progress_status;
   var upload_btn, loading_btn, cancel_btn;
   var input, file_input_label;
-  var alert_wrapper, scores_table;
-  var players;
 
   document.addEventListener('DOMContentLoaded', function(event) {
     // Get a reference to the progress bar, wrapper & status label
@@ -19,8 +17,6 @@ var Uploader = (function() {
 
     // Get a reference to the alert wrapper
     alert_wrapper = document.getElementById('alert_wrapper');
-    scores_left = document.getElementById('scores_left');
-    scores_right = document.getElementById('scores_right');
 
     input = document.getElementById('file_input');
     file_input_label = document.getElementById('file_input_label');
@@ -40,112 +36,60 @@ var Uploader = (function() {
 
       upload();
     });
-
-    document.getElementById('load_scores').addEventListener('click', function() {
-        var request = new XMLHttpRequest();
-        request.responseType = 'json';
-
-        request.addEventListener('load', function (e) {
-            if (request.status == 200) {
-                show_alert('Loaded previous scores', 'success');
-                players = request.response;
-                loadScoresTable();
-            } else {
-                show_alert('Error uploading file', 'danger');
-            }
-            reset();
-        });
-        request.open('POST', '/load_scores', true);
-        request.send('');
-    });
-
-    document.getElementById('add_scores').addEventListener('click', function() {
-      addScores();
-    });
-
-    addSortListeners();
-
   });
 
-  function addSortListeners() {
-    document.getElementById('order').addEventListener('click', function() {
-      sortScores('order', 'asc');
-    });
-
-    document.getElementById('player').addEventListener('click', function() {
-      sortScores('name', 'asc');
-    });
-
-    document.getElementById('score').addEventListener('click', function() {
-      sortScores('score', 'desc');
-    });
-  }
-
   function upload() {
-    // Create a new FormData instance
+    // Setup the data
     var data = new FormData();
-
-    // Create a XMLHTTPRequest instance
     var request = new XMLHttpRequest();
-
-    // Set the response type
     request.responseType = 'json';
-
-    // Clear any existing alerts
     alert_wrapper.innerHTML = '';
-
-    // Disable the input during upload
     input.disabled = true;
 
-    // Hide the upload button
-    upload_btn.classList.add('d-none');
+    // Swap out some elements
+    upload_btn.classList.add('hide');
+    loading_btn.classList.remove('hide');
+    cancel_btn.classList.remove('hide');
+    progress_wrapper.classList.remove('hide');
 
-    // Show the loading button
-    loading_btn.classList.remove('d-none');
-
-    // Show the cancel button
-    cancel_btn.classList.remove('d-none');
-
-    // Show the progress bar
-    progress_wrapper.classList.remove('d-none');
-
-    // Get a reference to the file
+    // Get the file
     var file = input.files[0];
-
-    // Get a reference to the filename
     var filename = file.name;
-
-    // Get a reference to the filesize & set a cookie
     var filesize = file.size;
     document.cookie = `filesize=${filesize}`;
 
-    // Append the file to the FormData instance
+    // Append the file and alliance_id to the data for upload
     data.append('file', file);
+    data.append('alliance_id', document.getElementById('alliance_id').value);
 
-    // request progress handler
+    // Show the user the progress
     request.upload.addEventListener('progress', function (e) {
-
       // Get the loaded amount and total filesize (bytes)
       var loaded = e.loaded;
       var total = e.total
 
-        // Calculate percent uploaded
-        var percent_complete = (loaded / total) * 100;
+      // Calculate percent uploaded
+      var percent_complete = (loaded / total) * 100;
 
       // Update the progress text and progress bar
       progress.setAttribute('style', `width: ${Math.floor(percent_complete)}%`);
       progress_status.innerText = `${Math.floor(percent_complete)}% uploaded`;
 
-    })
+      // When upload is complete, change the text so user knows it's processing now
+      if (percent_complete == 100.0) loading_btn.innerHTML = 'Processing';
+    });
 
-    // request load handler (transfer complete)
+    // Process the return data
     request.addEventListener('load', function (e) {
       if (request.status == 200) {
         show_alert('Upload and processing complete!', 'success');
 
-        var row, cell;
-        players = request.response;
-        loadScoresTable();
+        // Build the debug data
+        document.getElementById('debug_btn').classList.remove('hide');
+        document.getElementById('debug_body').innerHTML = '<b>Unmatched:</b><br />' + request.response[2].replace(/\n/g, '<br />') + '<br /><br /><b>Matched:</b><br />' + request.response[1].replace(/\n/g, '<br />');
+
+        // Update the score table
+        updateAIScores(request.response[0]);
       } else {
         show_alert('Error uploading file', 'danger');
       }
@@ -174,79 +118,50 @@ var Uploader = (function() {
     })
   }
 
-  function addScores() {
-    var score = 0;
-    for (player of players) {
-      newScore = parseInt(document.getElementById(player.name).innerHTML.trim());
-      if (newScore) score += newScore;
+  function updateAIScores(aiplayers) {
+    var player, porder;
+    for (aiplayer of aiplayers) {
+      // Update the score and AI order for each player
+      player = document.getElementsByName('players[' + aiplayer.id.toString() + '][score]')[0];
+      porder = document.getElementsByName('players[' + aiplayer.id.toString() + '][airank]')[0];
+      if (!player) {
+        // If the player wasn't in the main table they must be a missing player
+        player = document.getElementsByName('missing_players[' + aiplayer.id.toString() + '][score]')[0];
+        porder = document.getElementsByName('missing_players[' + aiplayer.id.toString() + '][airank]')[0];
+        // Unhide the player in case it wasn't already expanded
+        player.parentElement.parentElement.classList.remove('collapse');
+      }
+      // Set the score in the input
+      player.value = aiplayer.score;
+      // Set the AI order in the hidden input and display it
+      if (aiplayer.order != '99'){
+        porder.value = aiplayer.order;
+        document.getElementById('airank[' + aiplayer.id.toString() + ']').innerHTML = aiplayer.order;
+      }
     }
 
-    document.getElementById('add_scores').innerHTML = 'Total (click to update): ' + score;
+    // Sort the table and trigger the totalizer with the last player
+    triggerEvent(document.getElementById('ai_sort'), 'click');
+    triggerEvent(player, 'blur');
+
+    // Remove the missing players button as it won't be needed but gets re-added by sort
+    missingRow = document.getElementById('missingPlayersButtonRow');
+    if (missingRow)
+      missingRow.parentNode.removeChild(missingRow);
   }
 
-  function loadScoresTable() {
-    for (player of players) {
-      row = scores_left.insertRow();
-      cell = row.insertCell(0);
-      cell.innerHTML = player.order;
-      cell = row.insertCell(1);
-      cell.innerHTML = player.name;
-
-      row = scores_right.insertRow();
-      cell = row.insertCell(0);
-      if (player.score)
-        cell.innerHTML = player.score;
-      else
-        cell.innerHTML = '&nbsp;';
-      cell.setAttribute('contenteditable', 'true');
-      cell.id = player.name
-    }
-
-    addScores();
-  }
-
-  function sortScores(sorter, order) {
-    // Update player scores with any changes
-    for (player of players) {
-      player.score = document.getElementById(player.name).innerHTML.trim();
-    }
-
-    // Sort
-    players.sort(compareValues(sorter, order));
-
-    //Remove all the rows except the title
-    scores_left.getElementsByTagName('tbody')[0].innerHTML = scores_left.rows[0].innerHTML;
-    scores_right.getElementsByTagName('tbody')[0].innerHTML = scores_right.rows[0].innerHTML;
-
-    // Re-add the listeners and then rebuild the table
-    addSortListeners();
-    loadScoresTable();
-  }
-
-  // Function to reset the page
   function reset() {
-    // Clear the input
+    // Reset the buttons and inputs to the state before processing started
     input.value = null;
-
-    // Hide the cancel button
-    cancel_btn.classList.add('d-none');
-
-    // Reset the input element
     input.disabled = false;
 
-    // Show the upload button
-    upload_btn.classList.remove('d-none');
+    upload_btn.classList.remove('hide');
+    cancel_btn.classList.add('hide');
+    loading_btn.classList.add('hide');
+    loading_btn.innerHTML = 'Uploading...';
+    progress_wrapper.classList.add('hide');
 
-    // Hide the loading button
-    loading_btn.classList.add('d-none');
-
-    // Hide the progress bar
-    progress_wrapper.classList.add('d-none');
-
-    // Reset the progress bar state
     progress.setAttribute('style', "width: 0%");
-
-    // Reset the input placeholder
     file_input_label.innerText = 'Select file';
   }
 })();

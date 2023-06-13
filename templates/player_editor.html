@@ -46,8 +46,6 @@
               <th>Officer</th>
               <th>Allliance</th>
               <th>Note</th>
-              <th>OCR Strings</th>
-              <th colspan="100"></th>
             </tr>
           </thead>
           {% for player in t.players %}
@@ -81,28 +79,6 @@
             <td>
               <input class="form-control" type="text" name="players[{{player.id}}][note]" value="{{player.note}}">
             </td>
-            {% set looptest = namespace(set=false) %}
-            {% for ocr in player.ocr %}
-              {% set looptest.set = true %}
-              {% if loop.index0 % 2 == 0 %}
-                <td>
-              {% endif %}
-              <input class="form-control" type="text" name="players[{{player.id}}][ocr][]" value="{{ocr.ocr_string}}">
-              {% if loop.index0 % 2 == 1 %}
-                </td>
-              {% endif %}
-              {% if loop.index0 % 2 == 1 and loop.last %}
-                <td>
-              {% endif %}
-              {% if loop.last %}
-                  <input class="form-control" type="text" name="players[{{player.id}}][newocr]" value="">
-                </td>
-              {% endif %}
-            {% endfor %}
-            {% if not looptest.set %}
-              <td><input class="form-control" type="text" name="players[{{player.id}}][newocr]" value=""></td>
-            {% endif %}
-            <td colspan="100"></td>
           </tr>
           {% endfor %}
           <tr>
@@ -137,7 +113,6 @@
             <td>
               <input class="form-control" type="text" name="newNote">
             </td>
-            <td colspan="100"></td>
           </tr>
         </table>
 

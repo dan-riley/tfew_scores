@@ -8,7 +8,7 @@ from flask import Flask, render_template, flash, request, send_file, jsonify, ma
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from werkzeug.utils import secure_filename
 import ocr
-from models import db, Player, OCR, War, Score, Alliance
+from models import db, Player, War, Score, Alliance
 from forms import LoginForm, SignupForm
 import subs
 import stripe
@@ -375,41 +375,42 @@ def issues():
 
     return render_template('issues.html', t=t)
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods=['POST'])
 @officer_required
 def upload():
+    debug = False
+    saveJSON = False
     if request.method == 'POST':
-        file = request.files['file']
+        # Get the alliance for the war, and load the players in this alliance
+        t.alliance = int(request.values['alliance_id'])
+        t.setPlayersAlliance(t.alliance)
 
+        file = request.files['file']
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            fullfile = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(fullfile)
+            fullfile = ''
+            if debug:
+                fullfile = 'upload/Screen_Recording_20230531-153459_Transformers.mp4'
+            else:
+                filename = secure_filename(file.filename)
+                fullfile = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(fullfile)
 
             # Process the video or image and return the result to javascript
-            scores = ocr.main(app.root_path, fullfile)
-            response = make_response(jsonify(scores), 200)
-            with open(os.path.join(app.root_path, 'scores.json'), 'w') as fo:
-                json.dump(scores, fo)
+            scores, matched, unmatched = ocr.main(t, app.root_path, fullfile)
+            response = make_response(jsonify([scores, matched, unmatched]), 200)
 
-            os.remove(fullfile)
+            if saveJSON:
+                with open(os.path.join(app.root_path, 'scores.json'), 'w') as fo:
+                    json.dump(scores, fo)
+
+            if not debug:
+                os.remove(fullfile)
         else:
             response = make_response(jsonify({"message": "Invalid file type"}), 300)
 
         return response
 
-    return render_template('upload.html', t=t)
-
-@app.route('/load_scores', methods=['GET', 'POST'])
-@officer_required
-def loadScores():
-    if request.method == 'POST':
-        with open(os.path.join(app.root_path, 'scores.json'), 'r') as fo:
-            scores = json.load(fo)
-
-            return make_response(jsonify(scores), 200)
-
-    return render_template('upload.html')
+    return make_response(jsonify({"message": "Invalid request!"}), 300)
 
 @app.route('/download')
 @officer_required
@@ -674,10 +675,6 @@ def importTFWScores():
                         player.name = name.strip()
                         player.active = False
 
-                        newocr = OCR()
-                        newocr.ocr_string = name.strip().upper()
-                        player.ocr.append(newocr)
-
                         db.session.add(player)
 
                     wplayers.append(player)
@@ -801,10 +798,6 @@ def importSectorScores():
                     html.append('adding player ' + player.name)
 
                     player.alliance_id = alliance_id
-
-                    newocr = OCR()
-                    newocr.ocr_string = name.strip().upper()
-                    player.ocr.append(newocr)
 
                     playersDict[name] = player
                     db.session.add(player)
@@ -994,10 +987,6 @@ def importScorchedScores():
 
                     player.alliance_id = alliance_id
                     player.note = note.strip()
-
-                    newocr = OCR()
-                    newocr.ocr_string = name.upper()
-                    player.ocr.append(newocr)
 
                     playersDict[name] = player
                     tempNames.append(name)

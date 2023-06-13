@@ -4,19 +4,22 @@ import csv
 import re
 import cv2
 import pytesseract
-pytesseract.pytesseract.tesseract_cmd = r'/home/olevelo/bin/tesseract'
+from rapidfuzz import fuzz
+from models import Alliance, Player
 
 class Player():
+    # Convert a player object to a simplified version for OCR
 
-    def __init__(self, name, pot_names):
-        self.name = name
-        self.names = pot_names
+    def __init__(self, player):
+        self.id = player.id
+        self.name = player.name
         self.score = ''
+        self.altscores = []
         self.order = 99
-        self.line = ''
 
     def serialize(self):
         return {
+            'id': self.id,
             'name': self.name,
             'score': self.score,
             'order': str(self.order)
@@ -25,33 +28,45 @@ class Player():
 
 class OCRTF():
 
-    def __init__(self, root_path, filename):
+    def __init__(self, t, root_path, filename):
+        self.t = t
+        self.root_path = root_path
         self.filename = filename
         self.imgs = []
-        self.output = ''
+        self.matched = ''
         self.unmatched = ''
-        self.alliance = 'TFW2005'
+        self.alliance = Alliance.query.get(t.alliance).name.upper()
         self.count = 1
         self.order = 0
+        self.tuningText = ''
+        # Write the Tesseract output to a file to use for quicker algorithm tuning
+        self.saveTuning = False
+        # Read the tuning file previously saved, and not the uploaded file
+        self.useTuning = False
+        # Print debugging info to the log
+        self.debug = False
+        # Save debugging info to a file
+        self.debugSave = False
 
-        if self.filename[-3:] == "mp4":
+        if self.useTuning:
+            with open(os.path.join(root_path, 'upload/tuning.txt'), 'r') as f:
+                self.tuningText = f.read()
+        elif self.filename[-3:] == "mp4":
+            self.dprint("Loading file(s)..." + filename)
             self.ocr_vid()
         else:
-            print("Loading file(s)..." + filename, file=sys.stderr)
+            self.dprint("Loading file(s)..." + filename)
             tmpfile = cv2.imread(filename)
-            print("Appending file...", file=sys.stderr)
             self.imgs.append(tmpfile)
+        self.dprint("File loaded...")
 
-        print("File loaded...", file=sys.stderr)
-        # Get the potential names
+        # Get the players for this alliance and rebuild for easier OCR processing
         self.players = []
-        with open(os.path.join(root_path, 'data/tfw2005_players.csv'), 'r') as f:
-            csv_reader = csv.reader(f, delimiter=',')
-            for row in csv_reader:
-                self.players.append(Player(row[0], row[1:]))
+        for player in t.players:
+            self.players.append(Player(player))
 
-    def getFrame(self, vid, sec):
-        vid.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
+    def getFrame(self, vid, frame):
+        vid.set(cv2.CAP_PROP_POS_FRAMES, frame)
         success, img = vid.read()
         if success:
             self.imgs.append(img)
@@ -62,21 +77,24 @@ class OCRTF():
     def ocr_vid(self):
         vid = cv2.VideoCapture(self.filename)
 
-        sec = 0
-        frameRate = 1
-        success = self.getFrame(vid, sec)
-        while success:
-            sec = sec + frameRate
-            sec = round(sec, 2)
-            success = self.getFrame(vid, sec)
+        # Read one frame per second.  Add a multiplier or divisor to fps to change.
+        frame = 0
+        fps = round(vid.get(cv2.CAP_PROP_FPS))
+        success = self.getFrame(vid, frame)
+        while success and frame + fps < vid.get(cv2.CAP_PROP_FRAME_COUNT):
+            frame += fps
+            success = self.getFrame(vid, frame)
 
     def ocr_img(self, img):
         # Crop image to read easier
         height, width = img.shape[0:2]
         img = img[0:height, 0:int(width / 2)]
 
-        # Invert image so text is black
-        img = cv2.bitwise_not(img)
+        # Preprocess the image.  These settings seem to be the best after trial and error.
+        img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = cv2.GaussianBlur(img, (5, 5), 0)
+        _,img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
         # Save the processed image for review
         # cv2.imwrite('processed/cvo' + str(self.count) + '.jpg', img)
@@ -86,109 +104,188 @@ class OCRTF():
         return pytesseract.image_to_string(img)
 
     def processText(self, text):
+        # Analyze the raw text to find best matches in this alliance
+        matched = []
         unmatched = []
-        start = False
+        # Check for common strings that allow us to ignore further checks
+        checks = [self.alliance, 'Soldier', 'Officer', 'Commander', 'WAR LEA', 'S70RCHED']
+
         for line in text.splitlines():
-            # Only include the line if it has enough text to be useful
-            if start and len(line) > 5:
-                keep = True
-                # Check each rule but stop checking if we match one
-                if 'Soldier' in line:
-                    keep = False
-                elif 'Officer' in line:
-                    keep = False
-                elif 'Commander' in line:
-                    keep = False
+            # Only include the line if it has enough text to be useful,
+            # it's not in the checks list, and there are at least 2 capital letters
+            if len(line) > 5 and not any(ck in line for ck in checks) and re.findall(r'[A-Z]{2,}', line):
+                # Set minimum confidence level for a match
+                conf = 60
+                player = None
+                # Find the highest matched player for this line
+                for tplayer in self.players:
+                    fuzzy = fuzz.partial_ratio(tplayer.name.upper(), line)
+                    # Only consider if it's not a short name and higher confidence
+                    # than previous names, or if it's short, has 100% confidence
+                    if (len(tplayer.name) > 3 and fuzzy >= conf) or fuzzy == 100:
+                        conf = fuzzy
+                        player = tplayer
+                    if fuzzy == 100:
+                        break
 
-                added = False
-                # Add the line if none of the rules were hit
-                # Could make this a final elif, but this seems cleaner
-                if keep:
-                    for player in self.players:
-                        for name in player.names:
-                            if name in line:
-                                rest = line.split(name)[1]
-                                scores = re.findall(r'\d+', rest)
-                                if scores:
-                                    score = scores[-1]
-                                    if int(score) % 5 or int(score) > 225:
-                                        score = ''
-                                else:
-                                    score = ''
+                # If we found a player, process it, otherwise add to unmatched
+                if player:
+                    # Pull the potential score from the end of the line
+                    rest = line[-5:]
+                    score = ''
+                    scores = re.findall(r'\d+', rest)
+                    if scores:
+                        score = scores[-1]
+                        # We know scores have be multiples of 5 and 300 or less
+                        if int(score) % 5 or int(score) > 300:
+                            score = ''
 
-                                if player.order == 99:
-                                    self.order += 1
-                                    player.score = score
-                                    player.order = self.order
-                                    player.line = line
-                                    # print(str(player.order) + ' ' + player.name + ' ' + score);
-                                elif score and (player.score == '' or score > player.score):
-                                    # print('Duplicate: ')
-                                    # print(player.name + ' old: ' + player.score + ' new: ' + score)
-                                    player.score = score
-                                    player.line = line
+                    # Build a string for the debug output
+                    save = '<b>' + str(round(conf)) + '% ' + player.name + ' ' + score + ':</b> ' + line
+                    # Add players in order, whether there's a valid score or not
+                    if player.order == 99:
+                        self.order += 1
+                        player.score = score
+                        player.order = self.order
+                        matched.append(save)
+                    elif score:
+                        # If they were already added, but we have a new score,
+                        # add it if it was blank before, or save alternate scores
+                        if player.score == '':
+                            player.score = score
+                            matched.append(save)
+                        elif score not in player.altscores:
+                            player.altscores.append(score)
+                            matched.append(save)
 
-                                added = True
-                                # Stop looking at this player
-                                break
-
-                        # Stop looking at other players because we matched already
-                        if added:
-                            break
-
-                    if not added:
-                        unmatched.append(line)
-
-            # Ignore everything up to the alliance name
-            if self.alliance in line:
-                start = True
+                else:
+                    unmatched.append(line)
 
         # Put the lines back together
-        return '\n'.join(unmatched)
+        return '\n'.join(matched), '\n'.join(unmatched)
 
     def processImages(self):
-        print("Processing Image(s)...", file=sys.stderr)
-        texts = []
+        # Process each image and collate the text
+        self.dprint("Processing Image(s)...")
+        mt = []
+        ut = []
+        tuningTexts = []
         for img in self.imgs:
+            # Get the text from the image
             text = self.ocr_img(img)
-            unmatched = self.processText(text)
+            # Find players and scores in the text
+            matched, unmatched = self.processText(text)
+            if matched:
+                mt.append(matched)
             if unmatched:
-                texts.append(unmatched)
+                ut.append(unmatched)
+            if self.saveTuning:
+                tuningTexts.append(text)
 
-        self.unmatched = '\n'.join(texts)
+        self.matched = '\n'.join(mt)
+        self.unmatched = '\n'.join(ut)
+
+        if self.saveTuning:
+            with open(os.path.join(self.root_path, 'upload/tuning.txt'), 'w') as fo:
+                fo.write('\n'.join(tuningTexts))
+
+    def adjustScores(self):
+        # Look for logical score changes based on the available data
+        lastscore = ''
+        nextscore = ''
+        for player in self.players:
+            # Don't try to guess players that weren't matched
+            if player.order != 99:
+                if player.order >= 2:
+                    score = self.players[player.order - 2].score
+                    # Save our last 'good' score
+                    if score:
+                        lastscore = score
+                nextscore = self.players[player.order].score
+
+                # Set defaults if there were blanks
+                if not lastscore:
+                    lastscore = '300'
+                if not nextscore:
+                    # Try one more after
+                    nextscore = self.players[player.order + 1].score
+                    if not nextscore:
+                        nextscore = '0'
+
+                # Fill in any obvious blanks (not always correct due to ordering but likely)
+                if not player.score:
+                    if lastscore == nextscore:
+                        self.dprint('Adjusted blank ' + player.name + ' ' + lastscore)
+                        player.score = lastscore
+
+                curscore = player.score
+                if not curscore:
+                    curscore = '3000'
+
+                # Find the alt score that's closest to the max of the previous or next score
+                upper = max(int(lastscore), int(nextscore))
+                max_test = abs(upper - int(curscore))
+                altscore = None
+                for score in player.altscores:
+                    test = abs(upper - int(score))
+                    if test < max_test:
+                        max_test = test
+                        altscore = score
+
+                if altscore:
+                    self.dprint('Adjusted alt ' + player.name + ' ' + player.score + ' ' + altscore)
+                    player.altscores.append(player.score)
+                    player.score = altscore
+
+                if (len(player.score) == 2 and len(lastscore) == 3 and len(nextscore) == 3 and
+                        lastscore[0] == nextscore[0] and lastscore[0] != '3'):
+                    self.dprint('Appended ' + player.name + ' ' + player.score + ' ' + lastscore[0])
+                    player.score = lastscore[0] + player.score
 
 
-def main(root_path, filename):
+    def buildDebug(self):
+        output = []
+        output.append('Order,Player,Score')
+        print('Data Review:\n')
+        for player in self.players:
+            if player.order != 99:
+                altscores = ''
+                for score in player.altscores:
+                    altscores += ' ' + score
+                print(player.name + ' ' + player.score + ' ' + altscores)
 
-    ocr = OCRTF(root_path, filename)
-    ocr.processImages()
+            output.append(str(player.order) + ',' + player.name + ',' + player.score)
 
-    output = []
-    output.append('Order,Player,Score')
-    print('Data Review:\n')
+        print("\n\nMatched:")
+        print(self.matched)
+
+        print("\n\nUnmatched:")
+        print(self.unmatched)
+        # output.append(self.unmatched)
+
+        if self.debugSave:
+            with open(os.path.join(root_path, 'output.csv'), 'w') as fo:
+                fo.write('\n'.join(output))
+
+    def dprint(self, text):
+        if self.debug:
+            print(text)
+
+
+def main(t, root_path, filename):
+    ocr = OCRTF(t, root_path, filename)
+    if ocr.useTuning:
+        ocr.matched, ocr.unmatched = ocr.processText(ocr.tuningText)
+    else:
+        ocr.processImages()
+
     ocr.players.sort(key=lambda x: x.order)
-    for player in ocr.players:
-        if player.order != 99:
-            print(player.name + ' ' + player.score)
-            orders = str(player.order)
-        else:
-            orders = ''
+    ocr.adjustScores()
 
-        output.append(orders + ',' + player.name + ',' + player.score)
+    if ocr.debug:
+        ocr.buildDebug()
 
-    # output.append('\nData Entry:\n')
-    # ocr.players.sort(key=lambda x: x.name)
-    # for player in ocr.players:
-    #     output.append(player.name + ',' + player.score)
-
-    print("\n\nUnmatched:")
-    print(ocr.unmatched)
-    # output.append(ocr.unmatched)
-
-    with open(os.path.join(root_path, 'output.csv'), 'w') as fo:
-        fo.write('\n'.join(output))
-
-    return [player.serialize() for player in ocr.players]
+    return [player.serialize() for player in ocr.players], ocr.matched, ocr.unmatched
 
 if __name__ == "__main__":
     main('', sys.argv[1])

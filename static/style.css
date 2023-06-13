@@ -258,6 +258,14 @@ body {
   display: none!important;
 }
 
+[data-toggle="collapse"].collapsed .if-not-collapsed {
+  display: none;
+}
+
+[data-toggle="collapse"]:not(.collapsed) .if-collapsed {
+  display: none;
+}
+
 .autocomplete {
   position: relative;
   display: inline-block;
@@ -462,8 +470,23 @@ body {
   white-space: nowrap;
 }
 
-#alert_wrapper {
-  width: 70em;
+#alert_wrapper, #progress_wrapper {
+  width: 50em;
+}
+
+#progress_status {
+  position: relative;
+  top: 1.1em;
+  left: 1em;
+  margin-bottom: 0;
+  z-index: 1;
+}
+
+#progress_bar_wrapper {
+  position: relative;
+  top: -1em;
+  height: 3em;
+  margin-bottom: 0!important;
 }
 
 a.dropdown-item {
@@ -481,6 +504,11 @@ a.dropdown-item.active, a.dropdown-item:active {
 
 .navbar-nav li:hover>.dropdown-menu {
   display: block;
+}
+
+.tfewfile {
+  width: 15em;
+  bottom: 2px;
 }
 
 .modal-wide {
@@ -527,5 +555,8 @@ a.dropdown-item.active, a.dropdown-item:active {
   }
   .scoreboard {
     height: calc(100vh - 48px);
+  }
+  #alert_wrapper, #progress_wrapper {
+    width: 32em;
   }
 }

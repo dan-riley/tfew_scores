@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 import pytz
-from models import db, Alliance, Player, OCR, War, Score, Issue, PrimeEffect
+from models import db, Alliance, Player, War, Score, Issue, PrimeEffect
 
 class TFEW():
     """ Holds global information for the app """
@@ -8,7 +8,7 @@ class TFEW():
     def __init__(self, user):
         self.user = user
         # Version control to force reload of static files
-        self.version = 'v1.36'
+        self.version = 'v1.38'
         # Defaults for request parameters.  Need to set based on logged in user.
         self.alliance = 2
         self.player_id = 0
@@ -377,18 +377,6 @@ class TFEW():
                 pupdate['New_Note'] = newnote
                 changed = True
 
-            # Edit the OCR strings
-            i = 0
-            for pocr in player.ocr:
-                if pocr.ocr_string != fplayer['ocr'][i]:
-                    pupdate['OCR'][str(i)] = fplayer['ocr'][i]
-                    changed = True
-                i += 1
-
-            if fplayer['newocr']:
-                pupdate['New_OCR'] = fplayer['newocr']
-                changed = True
-
             if changed:
                 self.updates[player.id] = pupdate
 
@@ -436,33 +424,12 @@ class TFEW():
                 if fplayer['New_Note'] is not None:
                     player.note = fplayer['New_Note']
 
-                for oid in fplayer['OCR']:
-                    if fplayer['OCR'][oid] is not None:
-                        i = 0
-                        for pocr in player.ocr:
-                            if i == int(oid):
-                                if fplayer['OCR'][oid]:
-                                    pocr.ocr_string = fplayer['OCR'][oid]
-                                else:
-                                    db.session.delete(pocr)
-                            i += 1
-
-                if fplayer['New_OCR'] is not None:
-                    newocr = OCR()
-                    newocr.player_id = player.id
-                    newocr.ocr_string = fplayer['New_OCR']
-                    db.session.add(newocr)
-
                 db.session.add(player)
             elif player_id == 'new':
                 newplayer = Player()
                 newplayer.name = fplayer['New_Name']
                 newplayer.alliance_id = getIDbyName(Alliance, fplayer['Alliance'])
                 newplayer.note = fplayer['New_Note']
-
-                newocr = OCR()
-                newocr.ocr_string = fplayer['New_Name'].upper()
-                newplayer.ocr.append(newocr)
 
                 db.session.add(newplayer)
 
@@ -576,6 +543,11 @@ class TFEW():
         else:
             score.score = None
 
+        if fplayer['airank']:
+            score.airank = int(fplayer['airank'].strip())
+        else:
+            score.airank = None
+
         # Get all of the checkboxes
         if 'excused' in fplayer:
             if not score.excused:
@@ -685,7 +657,8 @@ class TFEW():
         else:
             for fplayer in fwar['players']:
                 if fplayer:
-                    if (fplayer['score'] or 'excused' in fplayer or
+                    if (fplayer['score'] or fplayer['airank'] or
+                                            'excused' in fplayer or
                                             'minor_infraction' in fplayer or
                                             'broke_protocol' in fplayer):
                         newscore = Score()
@@ -696,7 +669,8 @@ class TFEW():
 
         for fplayer in fwar['missing_players']:
             if fplayer:
-                if (fplayer['score'] or 'excused' in fplayer or
+                if (fplayer['score'] or fplayer['airank'] or
+                                        'excused' in fplayer or
                                         'minor_infraction' in fplayer or
                                         'broke_protocol' in fplayer):
                     newscore = Score()

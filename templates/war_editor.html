@@ -2,6 +2,7 @@
 
 {% block loadjs %}
     <script type="text/javascript" src="{{url_for('static', filename='war_editor.js')+v}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='uploader.js')+v}}"></script>
 {% endblock %}
 
 {% block title %}War Editor{% endblock %}
@@ -187,6 +188,7 @@
             <tr class="text-center">
               <th class="sticky-top sorted-up" id="player_sort">Player</th>
               <th class="sticky-top sorted-none" id="score_sort">Score</th>
+              <th class="sticky-top sorted-none ai-col hide" id="ai_sort">AI</th>
               <th class="sticky-top">Excused</th>
               <th class="sticky-top" title="Didn't use all attempts in decided war, etc.">Minor Infraction</th>
               <th class="sticky-top" title="Rage coined, early flameout, no help, etc.">Broke Protocol</th>
@@ -201,6 +203,12 @@
             </td>
             <td>
               <input class="form-control edit-score" type="number" name="players[{{player.id}}][score]" value="{{player.score(war.id).score}}" step="5" min="0" max="300">
+            </td>
+            <td class="ai-col hide">
+              <input type="hidden" name="players[{{player.id}}][airank]" value="{{player.score(war.id).airank if player.score(war.id).airank is not none}}">
+              <div id="airank[{{player.id}}]">
+                {{player.score(war.id).airank if player.score(war.id).airank is not none}}
+              </div>
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="players[{{player.id}}][excused]" value="{{player.id}}"
@@ -222,8 +230,11 @@
 
           {% if missing_players %}
           <tr id="missingPlayersButtonRow">
-            <td>
-              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target=".missingPlayers" aria-expanded="false" aria-controls="missingPlayers">Add Missing Players</button>
+            <td colspan="6">
+              <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target=".missingPlayers" aria-expanded="false" aria-controls="missingPlayers">
+                <span class="if-collapsed">Add Missing Players</span>
+                <span class="if-not-collapsed">Remove Missing Players</span>
+              </button>
             </td>
           </tr>
           {% else %}
@@ -238,6 +249,10 @@
             </td>
             <td>
               <input class="form-control" type="number" name="missing_players[{{player.id}}][score]" value="{{player.score(war.id).score}}" step="5" min="0" max="300">
+            </td>
+            <td class="ai-col hide">
+              <input type="hidden" name="missing_players[{{player.id}}][airank]" value="{{player.score(war.id).airank if player.score(war.id).airank is not none}}">
+              <div id="airank[{{player.id}}]"></div>
             </td>
             <td>
               <input class="form-control" type="checkbox" tabindex="-1" name="missing_players[{{player.id}}][excused]" value="{{player.id}}"
@@ -257,15 +272,63 @@
           </tr>
           {% endfor %}
         </table>
-
-        <div class="sticky-bottom">
-          <input class="btn btn-primary" type="button" id="submit" value="Submit">
-          {% if war.id != None %}
-          <a href="/delete_war?war_id={{war.id}}" class="btn btn-danger">Delete War</a>
-          {% endif %}
-          <div id="alert_wrapper"></div>
-        </div>
       </form>
+
+      <div class="sticky-bottom">
+        <input class="btn btn-primary" type="button" id="submit" value="Submit">
+        {% if war.id != None %}
+        <a href="/delete_war?war_id={{war.id}}" class="btn btn-danger">Delete War</a>
+        {% endif %}
+
+        &nbsp;&nbsp;
+        <span id="toggle_upload">
+          <button id="toggle_upload_btn" class="btn btn-primary">AI Score</button>
+        </span>
+        <span id="upload_group" class="hide">
+          <div class="custom-file tfewfile">
+            <input type="file" class="custom-file-input" name="file_input" id="file_input" />
+            <label id="file_input_label" class="custom-file-label text-truncate" for="image">Select file</label>
+          </div>
+
+          <button id="upload_btn" class="btn btn-primary">Upload</button>
+
+          <button class="btn btn-primary hide" id="loading_btn" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Uploading...
+          </button>
+
+          <button type="button" id="cancel_btn" class="btn btn-secondary hide">Cancel upload</button>
+          <button id="debug_btn" class="btn btn-primary hide" data-toggle="modal" data-target="#debug_data">Debug</button>
+
+          <div id="progress_wrapper" class="hide">
+            <label id="progress_status"></label>
+            <div id="progress_bar_wrapper" class="progress mb-3">
+              <div id="progress" class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
+        </span>
+        <div id="alert_wrapper"></div>
+      </div>
       <div class="row">&nbsp;</div>
       <div class="row">&nbsp;</div>
+      <div class="row">&nbsp;</div>
+      <div class="row">&nbsp;</div>
+
+      <div class="modal fade" id="debug_data" tabindex="-1" role="dialog" aria-labelledby="debug_data" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="debugTitle">AI Debugging Data</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body" id="debug_body">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
 {% endblock %}

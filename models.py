@@ -10,6 +10,7 @@ class Score(db.Model):
     player_id = db.Column(db.Integer(), db.ForeignKey('players.id'), primary_key=True)
     war_id = db.Column(db.Integer(), db.ForeignKey('wars.id'), primary_key=True)
     score = db.Column(db.Integer())
+    airank = db.Column(db.Integer())
     excused = db.Column(db.Boolean())
     minor_infraction = db.Column(db.Boolean())
     broke_protocol = db.Column(db.Boolean())
@@ -28,7 +29,6 @@ class Player(UserMixin, db.Model):
 
     scores = db.relationship('Score', back_populates='player')
     wars = db.relationship('War', secondary='scores', order_by='War.date', overlaps='player,scores,war')
-    ocr = db.relationship('OCR', backref='player')
     alliance = db.relationship('Alliance', foreign_keys='Player.alliance_id')
     strikes = 0
     drops = 0
@@ -106,21 +106,8 @@ class Player(UserMixin, db.Model):
         update['Alliance'] = None
         update['Note'] = self.note
         update['New_Note'] = None
-        update['OCR'] = {}
-        update['New_OCR'] = None
-        i = 0
-        for pocr in self.ocr:
-            update['OCR'][str(i)] = None
-            i += 1
 
         return update
-
-
-class OCR(db.Model):
-    __tablename__ = 'OCR'
-    dummy_id = db.Column(db.Integer(), primary_key=True)
-    player_id = db.Column(db.Integer(), db.ForeignKey('players.id'))
-    ocr_string = db.Column(db.String(255), nullable=False)
 
 
 class War(db.Model):
