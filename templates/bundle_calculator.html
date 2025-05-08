@@ -12,7 +12,7 @@
 {% block update_form %}{% endblock %}
 
 {% block content %}
-      Enter data for only the time period you're looking at.  Examples:  Use the entire event to get 60,000 points, enter 60,000 total points and 72 hours.  If you want to reach the goal in 60 hours, only enter that.  If the event has started, and you want to get to 60,000 points and you already have 10,000, only enter 50,000 and the number of hours you have left to complete it, along with your current fuel.
+      Enter data for only the time period you're looking at.  Examples:  Use the entire event to get 60,000 points, enter 60,000 total points and 72 hours.  If you want to reach the goal in 60 hours, only enter that.  If the event has started, and you want to get to 60,000 points and you already have 10,000, only enter 50,000 and the number of hours you have left to complete it, along with your current fuel.  If running Mayhem mode and using 15 fuel cell battles, be sure to change the Fuel from 5 to 15, and also enter your expected points per battle (ie, for 15fc Z17, around 1100).
       <br />
       <form>
         <table class="table table-sm w-auto" id="starting_input_table">
@@ -20,6 +20,7 @@
             <tr>
               <th>Total Points</th>
               <th>Total Hours</th>
+              <th>Fuel</th>
               <th>Points per Battle</th>
               <th>Loss Rate</th>
               <th>Starting Fuel</th>
@@ -34,13 +35,19 @@
               <input class="form-control" type="number" id="total_hours" value="65" title="Number of hours to complete the point goal.  Default of 65 hours to allow a late start and early finish.">
             </td>
             <td>
-              <input class="form-control" type="number" id="points_per" value="190" title="Expected average points per battle.  Typical values: Z13 = 160, Z14 = 190, Z15 = 220">
+              <select class="custom-select" id="fc_per" title="Fuel cells per battle, primarily for Mayhem mode.">
+                <option value="5" selected>5</option>
+                <option value="15">15</option>
+              </select>
+            </td>
+            <td>
+              <input class="form-control" type="number" id="points_per" value="220" title="Expected average points per battle.  Typical values: Z13 = 160, Z14 = 190, Z15 = 220">
             </td>
             <td>
               <input class="form-control" type="number" id="loss_rate" value="0" title="Expected loss rate to add some headroom.  Enter as percentage, so if you expect to lose 10 percent of your battles, enter '10'.">
             </td>
             <td>
-              <input class="form-control" type="number" id="starting_fuel" value="50" title="Amount of fuel you will start with (usually 50 at the beginning of the event).  If calculating after the event starts, value is probably less.">
+              <input class="form-control" type="number" id="starting_fuel" value="75" title="Amount of fuel you will start with (usually 50 at the beginning of the event).  If calculating after the event starts, value is probably less.">
             </td>
             <td>
               <input class="form-control" type="number" id="starting_coins" value="0" title="Number of coins you have to start with.">
@@ -55,6 +62,8 @@
         <b>Remaining battles needed:</b> <span id="remaining_battles"></span>
         <br/>
         <b>Remaining fuel needed:</b> <span id="remaining_fuel"></span>
+        <br/>
+        <b>Coins needed for fuel refill:</b> <span id="fuel_coins"></span>
         <br/>
         <b>Coins needed for 1 bot / 2 bots / 3 bots:</b> <span id="bots_coins"></span>
         <br />

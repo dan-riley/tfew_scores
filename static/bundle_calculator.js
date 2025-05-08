@@ -5,6 +5,7 @@ var BundleCalculator = (function() {
   var bundle_input_table;
   var total_points_e;
   var total_hours_e;
+  var fc_per_e;
   var points_per_e;
   var loss_rate_e;
   var starting_fuel_e;
@@ -13,6 +14,7 @@ var BundleCalculator = (function() {
   var free_battles_e;
   var remaining_battles_e;
   var remaining_fuel_e;
+  var fuel_coins_e;
   var bots_coins_e;
   var bundle_sets;
 
@@ -22,6 +24,7 @@ var BundleCalculator = (function() {
     bundle_input_table = document.getElementById('bundle_input_table');
     total_points_e = document.getElementById('total_points');
     total_hours_e = document.getElementById('total_hours');
+    fc_per_e = document.getElementById('fc_per');
     points_per_e = document.getElementById('points_per');
     loss_rate_e = document.getElementById('loss_rate');
     starting_fuel_e = document.getElementById('starting_fuel');
@@ -30,6 +33,7 @@ var BundleCalculator = (function() {
     free_battles_e = document.getElementById('free_battles');
     remaining_battles_e = document.getElementById('remaining_battles');
     remaining_fuel_e = document.getElementById('remaining_fuel');
+    fuel_coins_e = document.getElementById('fuel_coins');
     bots_coins_e = document.getElementById('bots_coins');
     bundle_sets = document.querySelectorAll('[name^="bundle_"]');
 
@@ -49,6 +53,7 @@ var BundleCalculator = (function() {
     // Get the initial values
     var total_points = total_points_e.valueAsNumber;
     var total_hours = total_hours_e.valueAsNumber;
+    var fc_per = fc_per_e.value;
     var points_per = points_per_e.valueAsNumber;
     var loss_rate = loss_rate_e.valueAsNumber;
     var starting_fuel = starting_fuel_e.valueAsNumber;
@@ -56,9 +61,9 @@ var BundleCalculator = (function() {
 
     // Calculate the initial info
     var total_battles = Math.ceil((total_points / points_per) * (0.01 * loss_rate + 1));
-    var free_battles = total_hours * 60 / 4 / 5 + Math.floor(starting_fuel / 5);
+    var free_battles = total_hours * 60 / 4 / fc_per + Math.floor(starting_fuel / fc_per);
     var remaining_battles = total_battles - free_battles;
-    var remaining_fuel = remaining_battles * 5;
+    var remaining_fuel = remaining_battles * fc_per;
     var bot1coins = (total_battles - total_hours) * 40;
     var bot2coins = (total_battles - total_hours) * 40 * 2;
     var bot3coins = (total_battles - total_hours) * 40 * 3;
@@ -68,6 +73,7 @@ var BundleCalculator = (function() {
     free_battles_e.innerHTML = free_battles;
     remaining_battles_e.innerHTML = remaining_battles;
     remaining_fuel_e.innerHTML = remaining_fuel;
+    fuel_coins_e.innerHTML = Math.ceil((remaining_fuel / 75) * 1200);
     bots_coins_e.innerHTML = bot1coins.toLocaleString() + ' / ' + bot2coins.toLocaleString() + ' / ' + bot3coins.toLocaleString();
 
     // Get the bundle sets and totals
@@ -114,7 +120,7 @@ var BundleCalculator = (function() {
       var coinsAvailable = coins[i] + starting_coins;
       var fuelNeeded = remaining_fuel - fuel[i];
       if (fuelNeeded < 0) fuelNeeded = 0;
-      var coinsNeeded = Math.ceil((fuelNeeded / 50) * 800);
+      var coinsNeeded = Math.ceil((fuelNeeded / 75) * 1200);
       var bot1 = coinsNeeded + bot1coins;
       var bot2 = coinsNeeded + bot2coins;
       var bot3 = coinsNeeded + bot3coins;
