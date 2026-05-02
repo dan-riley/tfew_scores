@@ -38,6 +38,13 @@ var WarEditor = (function() {
         if ((this.value == '') || (this.value == '300'))
           this.value = dblValue;
       });
+
+      players[i].addEventListener('wheel', function(event) {
+        // Stop the scroll wheel from affecting the number field
+        if (document.activeElement === this) {
+          this.blur();
+        }
+      });
     }
 
     // Setup the form submission and response
